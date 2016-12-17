@@ -1,6 +1,7 @@
 # spamc
 
-## Python library that implementats the spamc client protocol
+## Description
+Python library that implementats the spamc client protocol
 
 ## Requirements
 * Python 3.5
