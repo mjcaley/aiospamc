@@ -13,7 +13,7 @@ class BadResponse(Exception):
     def __init__(self, response):
         self.response = response
         
-class Client2:
+class Client:
     def __init__(self, host = 'localhost', port = 783, ip_version = socket.AF_INET, ssl = False):
         self.host = host
         self.port = port
