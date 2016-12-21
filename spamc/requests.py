@@ -2,8 +2,7 @@
 
 import email.message
 
-from headers import *
-from responses import *
+from spamc.headers import *
 
 
 class SpamdRequest:

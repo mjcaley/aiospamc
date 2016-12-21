@@ -3,7 +3,7 @@
 import enum
 import re
 
-from headers import header_from_string
+from spamc.headers import header_from_string
 
 
 class SpamdStatus(enum.IntEnum):

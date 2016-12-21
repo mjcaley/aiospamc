@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
-import email
-import email.message
 import re
 import socket
 
-from requests import *
-from responses import *
+from spamc.requests import *
+from spamc.responses import *
 
 
 SERVER_SIGNATURE = re.compile(r'^SPAMD/\d+\.\d+ ') 
