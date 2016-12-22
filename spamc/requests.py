@@ -55,6 +55,10 @@ class Ping(SpamdRequest):
     def __repr__(self):
         return 'Ping()'
 
+class Process(SpamdRequest):
+    def __init__(self, message):
+        super().__init__('PROCESS', body = message)
+    
 class Report(SpamdRequest):
     def __init__(self, message):
         super().__init__('REPORT', body = message)

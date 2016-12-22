@@ -64,6 +64,12 @@ class Client:
         
         return response
     
+    def process(self, message):
+        request = Process(message)
+        response = self.send(bytes(request))
+        
+        return response
+    
     def report(self, message):
         request = Report(message)
         response = self.send(bytes(request))
