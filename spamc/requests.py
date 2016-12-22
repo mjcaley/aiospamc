@@ -47,34 +47,55 @@ class SpamdRequest:
 class Check(SpamdRequest):
     def __init__(self, message, headers = []):
         super().__init__('CHECK', message, headers)
+        
+    def __repr__(self):
+        return 'Check(message={}, headers={})'.format(self.body, self.headers)
 
 class Headers(SpamdRequest):
     def __init__(self, message, headers = []):
         super().__init__('HEADERS', message, headers)
+        
+    def __repr__(self):
+        return 'Headers(message={}, headers={})'.format(self.body, self.headers)
         
 class Ping(SpamdRequest):
     def __init__(self, headers = []):
         super().__init__('PING', headers = headers)
         
     def __repr__(self):
-        return 'Ping()'
+        return 'Ping(headers={})'.format(self.headers)
 
 class Process(SpamdRequest):
     def __init__(self, message, headers = []):
         super().__init__('PROCESS', message, headers)
+        
+    def __repr__(self):
+        return 'Process(message={}, headers={})'.format(self.body, self.headers)
     
 class Report(SpamdRequest):
     def __init__(self, message, headers = []):
         super().__init__('REPORT', message, headers)
         
+    def __repr__(self):
+        return 'Report(message={}, headers={})'.format(self.body, self.headers)
+        
 class ReportIfSpam(SpamdRequest):
     def __init__(self, message, headers = []):
         super().__init__('REPORT_IFSPAM', message, headers)
+        
+    def __repr__(self):
+        return 'ReportIfSpam(message={}, headers={})'.format(self.body, self.headers)
     
 class Symbols(SpamdRequest):
     def __init__(self, message, headers = []):
         super().__init__('SYMBOLS', message, headers)
         
+    def __repr__(self):
+        return 'Symbols(message={}, headers={})'.format(self.body, self.headers)
+        
 class Tell(SpamdRequest):
     def __init__(self, message, headers = []):
         super().__init__('TELL', message, headers)
+        
+    def __repr__(self):
+        return 'Tell(message={}, headers={})'.format(self.body, self.headers)
