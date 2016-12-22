@@ -52,44 +52,58 @@ class Client:
         
         return response
     
-    def check(self, message):
+    def check(self, message, user = None):
         request = Check(message = message)
+        if user:
+            request.headers.append(User(user))
         response = self.send(bytes(request))
         
         return response
         
-    def headers(self, message):
+    def headers(self, message, user = None):
         request = Headers(message = message)
+        if user:
+            request.headers.append(User(user))
         response = self.send(bytes(request))
         
         return response
         
-    def ping(self):
+    def ping(self, user = None):
         request = Ping()
+        if user:
+            request.headers.append(User(user))
         response = self.send(bytes(request))
         
         return response
     
-    def process(self, message):
+    def process(self, message, user = None):
         request = Process(message = message)
+        if user:
+            request.headers.append(User(user))
         response = self.send(bytes(request))
         
         return response
     
-    def report(self, message):
+    def report(self, message, user = None):
         request = Report(message = message)
+        if user:
+            request.headers.append(User(user))
         response = self.send(bytes(request))
         
         return response
     
-    def report_if_spam(self, message):
+    def report_if_spam(self, message, user = None):
         request = ReportIfSpam(message = message)
+        if user:
+            request.headers.append(User(user))
         response = self.send(bytes(request))
         
         return response
     
-    def symbols(self, message):
+    def symbols(self, message, user = None):
         request = Symbols(message = message)
+        if user:
+            request.headers.append(User(user))
         response = self.send(bytes(request))
         
         return response
@@ -98,13 +112,16 @@ class Client:
              message_class: MessageClassOption,
              message,
              set_destinations = {'local': False, 'remote': False},
-             remove_destinations = {'local': False, 'remote': False}
+             remove_destinations = {'local': False, 'remote': False}, 
+             user = None
             ):
         request = Tell(message,
                        [ MessageClass(message_class),
                          Set(**set_destinations),
                          Remove(**remove_destinations)
                        ])
+        if user:
+            request.headers.append(User(user))
         response = self.send(bytes(request))
         
         return response
