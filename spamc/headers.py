@@ -64,6 +64,9 @@ class ContentLength(Header):
     def __init__(self, length = 0):
         self.length = length
         
+    def __repr__(self):
+        return 'Content-length: {}'.format(self.length)
+        
     def compose(self):
         return 'Content-length: {}\r\n'.format(self.length)
     
@@ -248,7 +251,7 @@ class User(Header):
     def compose(self):
         return 'User: {}\r\n'.format(self.name)
     
-header_pattern = re.compile(r'(?P<header>\w+)\s*:\s*(?P<value>.+)(\r\n)?')
+header_pattern = re.compile(r'(?P<header>\S+)\s*:\s*(?P<value>.+)(\r\n)?')
 
 def header_from_string(string):
     match = header_pattern.match(string).groupdict()
