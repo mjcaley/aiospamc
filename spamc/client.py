@@ -63,3 +63,9 @@ class Client:
         response = self.send(bytes(request))
         
         return response
+    
+    def symbols(self, message):
+        request = Symbols(message)
+        response = self.send(bytes(request))
+        
+        return response

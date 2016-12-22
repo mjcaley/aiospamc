@@ -70,7 +70,7 @@ class SpamdResponse:
         return 'SpamdResponse(protocol_version={}, status_code={}, message={}, headers={}, body={})'.format(self.protocol_version, self.status_code, self.message, self.headers, self.body)
     
     def __str__(self):
-        return 'SpamdResponse [Status Code: {}, Headers: {}, Message: {}]'.format(self.status_code, self.headers, self.message)
+        return 'SpamdResponse [Status Code: {}, Headers: {}, Message: {}, Body: {}]'.format(self.status_code, self.headers, self.message, self.body)
     
     def __init__(self, protocol_version, status_code, message, headers = [], body = None):
         self.protocol_version = protocol_version

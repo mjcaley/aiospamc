@@ -54,3 +54,7 @@ class Ping(SpamdRequest):
         
     def __repr__(self):
         return 'Ping()'
+    
+class Symbols(SpamdRequest):
+    def __init__(self, message):
+        super().__init__('SYMBOLS', body = message)
