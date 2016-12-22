@@ -135,9 +135,9 @@ class Remove(Header):
         header = 'Remove: {}\r\n'
         values = []
         if self.local:
-            value.append('local')
+            values.append('local')
         if self.remote:
-            value.append('remote')
+            values.append('remote')
         header.format(', '.join(values))
 
         return header
@@ -177,9 +177,9 @@ class Set(Header):
         header = 'Set: {}'
         values = []
         if self.local:
-            value.append('local')
+            values.append('local')
         if self.remote:
-            value.append('remote')
+            values.append('remote')
         header.format(', '.join(values))
 
         return header

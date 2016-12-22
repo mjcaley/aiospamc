@@ -74,3 +74,7 @@ class ReportIfSpam(SpamdRequest):
 class Symbols(SpamdRequest):
     def __init__(self, message):
         super().__init__('SYMBOLS', body = message)
+        
+class Tell(SpamdRequest):
+    def __init__(self, headers, message):
+        super().__init__('TELL', headers = headers, body = message)

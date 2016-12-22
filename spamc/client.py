@@ -93,3 +93,19 @@ class Client:
         response = self.send(bytes(request))
         
         return response
+    
+    def tell(self,
+             message_class: MessageClassOption,
+             message,
+             set_destinations = {'local': False, 'remote': False},
+             remove_destinations = {'local': False, 'remote': False}
+            ):
+        request = Tell([ MessageClass(message_class),
+                         Set(**set_destinations),
+                         Remove(**remove_destinations)
+                       ],
+                       message)
+        response = self.send(bytes(request))
+        
+        return response
+        
