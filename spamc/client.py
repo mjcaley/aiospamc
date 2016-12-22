@@ -53,13 +53,13 @@ class Client:
         return response
     
     def check(self, message):
-        request = Check(message)
+        request = Check(message = message)
         response = self.send(bytes(request))
         
         return response
         
     def headers(self, message):
-        request = Headers(message)
+        request = Headers(message = message)
         response = self.send(bytes(request))
         
         return response
@@ -71,25 +71,25 @@ class Client:
         return response
     
     def process(self, message):
-        request = Process(message)
+        request = Process(message = message)
         response = self.send(bytes(request))
         
         return response
     
     def report(self, message):
-        request = Report(message)
+        request = Report(message = message)
         response = self.send(bytes(request))
         
         return response
     
     def report_if_spam(self, message):
-        request = ReportIfSpam(message)
+        request = ReportIfSpam(message = message)
         response = self.send(bytes(request))
         
         return response
     
     def symbols(self, message):
-        request = Symbols(message)
+        request = Symbols(message = message)
         response = self.send(bytes(request))
         
         return response
@@ -100,11 +100,11 @@ class Client:
              set_destinations = {'local': False, 'remote': False},
              remove_destinations = {'local': False, 'remote': False}
             ):
-        request = Tell([ MessageClass(message_class),
+        request = Tell(message,
+                       [ MessageClass(message_class),
                          Set(**set_destinations),
                          Remove(**remove_destinations)
-                       ],
-                       message)
+                       ])
         response = self.send(bytes(request))
         
         return response

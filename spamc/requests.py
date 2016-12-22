@@ -12,7 +12,7 @@ class SpamdRequest:
     request_with_body = '{verb} {protocol}\r\n{headers}\r\n{body}'
     request_without_body = '{verb} {protocol}\r\n{headers}\r\n'
     
-    def __init__(self, verb, headers = [], body = None):
+    def __init__(self, verb, body = None, headers = []):
         ''''''
         
         self.verb = verb
@@ -45,36 +45,36 @@ class SpamdRequest:
         return request
     
 class Check(SpamdRequest):
-    def __init__(self, message):
-        super().__init__('CHECK', body = message)
+    def __init__(self, message, headers = []):
+        super().__init__('CHECK', message, headers)
 
 class Headers(SpamdRequest):
-    def __init__(self, message):
-        super().__init__('HEADERS', body = message)
+    def __init__(self, message, headers = []):
+        super().__init__('HEADERS', message, headers)
         
 class Ping(SpamdRequest):
-    def __init__(self):
-        super().__init__('PING')
+    def __init__(self, headers = []):
+        super().__init__('PING', headers = headers)
         
     def __repr__(self):
         return 'Ping()'
 
 class Process(SpamdRequest):
-    def __init__(self, message):
-        super().__init__('PROCESS', body = message)
+    def __init__(self, message, headers = []):
+        super().__init__('PROCESS', message, headers)
     
 class Report(SpamdRequest):
-    def __init__(self, message):
-        super().__init__('REPORT', body = message)
+    def __init__(self, message, headers = []):
+        super().__init__('REPORT', message, headers)
         
 class ReportIfSpam(SpamdRequest):
-    def __init__(self, message):
-        super().__init__('REPORT_IFSPAM', body = message)
+    def __init__(self, message, headers = []):
+        super().__init__('REPORT_IFSPAM', message, headers)
     
 class Symbols(SpamdRequest):
-    def __init__(self, message):
-        super().__init__('SYMBOLS', body = message)
+    def __init__(self, message, headers = []):
+        super().__init__('SYMBOLS', message, headers)
         
 class Tell(SpamdRequest):
-    def __init__(self, headers, message):
-        super().__init__('TELL', headers = headers, body = message)
+    def __init__(self, message, headers = []):
+        super().__init__('TELL', message, headers)
