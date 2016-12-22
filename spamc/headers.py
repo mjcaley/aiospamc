@@ -112,8 +112,10 @@ class MessageClass(Header):
         
     def compose(self):
         return 'Message-class: {}\r\n'.format(self.value.name)
-        
-class Remove(Header):
+
+class _SetRemove(Header):
+    '''Base class for headers that implement "local" and "remote" rules.'''
+    
     pattern = re.compile(r'\s*(?P<remote>remote)\s*|\s*(?P<local>local)\s*', flags=re.IGNORECASE)
     
     @classmethod
@@ -138,64 +140,45 @@ class Remove(Header):
         self.local = local
         self.remote = remote
     
+    def _compose(self, header_name):
+        if not (self.local or self.remote):
+            raise InvalidHeader('Neither "local" or "remote" are set')
+        
+        values = []
+        if self.local:
+            values.append('local')
+        if self.remote:
+            values.append('remote')
+        
+        return '{}: {}\r\n'.format(header_name, ', '.join(values))
+    
+class DidRemove(_SetRemove):
+    def __repr(self):
+        return 'DidRemove(local={}, remote={})'.format(self.local, self.remote)
+    
+    def compose(self):
+        return self._compose('DidRemove')
+    
+class DidSet(_SetRemove):
+    def __repr(self):
+        return 'DidSet(local={}, remote={})'.format(self.local, self.remote)
+    
+    def compose(self):
+        return self._compose('DidSet')
+        
+class Remove(_SetRemove):
     def __repr(self):
         return 'Remove(local={}, remote={})'.format(self.local, self.remote)
     
     def compose(self):
-        if not (self.local or self.remote):
-            raise InvalidHeader('Neither "local" or "remote" are set')
+        return self._compose('Remove')
         
-        header = 'Remove: {}\r\n'
-        values = []
-        if self.local:
-            values.append('local')
-        if self.remote:
-            values.append('remote')
-        header.format(', '.join(values))
-
-        return header
-        
-class Set(Header):
-    pattern = re.compile(r'\s*(?P<remote>remote)\s*|\s*(?P<local>local)\s*', flags=re.IGNORECASE)
-    
-    @classmethod
-    def parse(cls, string):
-        obj = cls()
-        
-        for section in string.split(','):
-            match = cls.pattern.match(section)
-            if match:
-                if match.groupdict()['local']:
-                    obj.local = True
-                elif match.groupdict()['remote']:
-                    obj.remote = True
-
-        if not obj.local and not obj.remote:
-            # couldn't find any matches
-            return None
-        else:
-            return obj
-        
-    def __init__(self, local = False, remote = False):
-        self.local = local
-        self.remote = remote
-    
-    def __repr__(self):
+class Set(_SetRemove):
+    def __repr(self):
         return 'Set(local={}, remote={})'.format(self.local, self.remote)
     
     def compose(self):
-        if not (self.local or self.remote):
-            raise InvalidHeader('Neither "local" or "remote" are set')
-        
-        header = 'Set: {}'
-        values = []
-        if self.local:
-            values.append('local')
-        if self.remote:
-            values.append('remote')
-        header.format(', '.join(values))
-
-        return header
+        return self._compose('Set')
     
 class Spam(Header):
     pattern = re.compile(r'\s*((?P<true>true)|(?P<false>false))\s*;\s*(?P<score>\d+(\.\d+)?)\s*/\s*(?P<threshold>\d+(\.\d+)?)\s*', flags=re.IGNORECASE)
