@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import enum
 import getpass
 import re
 
@@ -69,6 +70,10 @@ class ContentLength(Header):
         
     def compose(self):
         return 'Content-length: {}\r\n'.format(self.length)
+
+class MessageClassOption(enum.Enum):
+    spam = 1
+    ham = 2
     
 class MessageClass(Header):
     pattern = re.compile(r'^\s*(?P<ham>ham)\s*$|^\s*(?P<spam>spam)\s*$', flags=re.IGNORECASE)
@@ -79,30 +84,21 @@ class MessageClass(Header):
         if match:
             obj = cls()
             if match.groupdict()['ham']:
-                obj.ham = True
+                obj.value = MessageClassOption.ham
             elif match.groupdict()['spam']:
-                obj.spam = True
+                obj.value = MessageClassOption.spam
             return obj
         else:
             return None
     
-    def __init__(self, ham = False, spam = False):
-        self.ham = ham
-        self.spam = spam
+    def __init__(self, value: MessageClassOption):
+        self.value = value
         
     def __repr__(self):
-        return 'MessageClass(ham={}, spam={})'.format(self.spam, self.ham)
+        return 'MessageClass(value={})'.format(self.value)
         
     def compose(self):
-        header = 'Message-class: {}\r\n'
-        if self.ham:
-            header = header.format('ham')
-        elif self.spam:
-            header = header.format('spam')
-        else:
-            raise InvalidHeader('Neither "ham" or "spam" are set')
-
-        return header
+        return 'Message-class: {}\r\n'.format(self.value.name)
         
 class Remove(Header):
     pattern = re.compile(r'\s*(?P<remote>remote)\s*|\s*(?P<local>local)\s*', flags=re.IGNORECASE)
