@@ -71,6 +71,19 @@ class ContentLength(Header):
     def compose(self):
         return 'Content-length: {}\r\n'.format(self.length)
 
+class XHeader(Header):
+    pattern = re.compile('\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
+    
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+        
+    def __repr__(self):
+        return 'XHeader(name={}, value=[])'.format(self.name, self.value)
+    
+    def compose(self):
+        return '{} : {}'.format(self.name, self.value)
+    
 class MessageClassOption(enum.Enum):
     spam = 1
     ham = 2
@@ -269,4 +282,4 @@ def header_from_string(string):
     elif header == 'user':
         return User.parse(value)
     else:
-        return None
+        return XHeader(header, value)
