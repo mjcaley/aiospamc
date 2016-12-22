@@ -48,6 +48,10 @@ class Check(SpamdRequest):
     def __init__(self, message):
         super().__init__('CHECK', body = message)
 
+class Headers(SpamdRequest):
+    def __init__(self, message):
+        super().__init__('HEADERS', body = message)
+        
 class Ping(SpamdRequest):
     def __init__(self):
         super().__init__('PING')

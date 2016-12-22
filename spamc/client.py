@@ -58,6 +58,12 @@ class Client:
         
         return response
         
+    def headers(self, message):
+        request = Headers(message)
+        response = self.send(bytes(request))
+        
+        return response
+        
     def ping(self):
         request = Ping()
         response = self.send(bytes(request))
