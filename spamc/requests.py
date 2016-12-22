@@ -54,6 +54,14 @@ class Ping(SpamdRequest):
         
     def __repr__(self):
         return 'Ping()'
+
+class Report(SpamdRequest):
+    def __init__(self, message):
+        super().__init__('REPORT', body = message)
+        
+class ReportIfSpam(SpamdRequest):
+    def __init__(self, message):
+        super().__init__('REPORT_IFSPAM', body = message)
     
 class Symbols(SpamdRequest):
     def __init__(self, message):

@@ -64,6 +64,18 @@ class Client:
         
         return response
     
+    def report(self, message):
+        request = Report(message)
+        response = self.send(bytes(request))
+        
+        return response
+    
+    def report_if_spam(self, message):
+        request = ReportIfSpam(message)
+        response = self.send(bytes(request))
+        
+        return response
+    
     def symbols(self, message):
         request = Symbols(message)
         response = self.send(bytes(request))
