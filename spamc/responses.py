@@ -34,28 +34,27 @@ class SpamdStatus(enum.IntEnum):
 
 
 class SpamdResponse:
-    headers_pattern = re.compile(r'^\s*(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)\s+(?P<status>\d+)\s+(?P<message>.*\r\n)(?P<headers>(.*:.*\r\n)*)')
+    request_pattern = re.compile(r'^\s*(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)\s+(?P<status>\d+)\s+(?P<message>.*)')
     
     @classmethod
     def parse(cls, response):
-        header, *body = response.split('\r\n\r\n', 1)
-        # Tack a newline at the end to make regex work on the last header
-        header += '\r\n'
+        request, *body = response.split('\r\n\r\n', 1)
+        request, *headers = request.split('\r\n')
         
-        # Process headers
-        match = cls.headers_pattern.match(header)
+        # Process request
+        match = cls.request_pattern.match(request)
         if match:
-            header_match = match.groupdict()
+            request_match = match.groupdict()
         else:
             # Not a SPAMD response
             return None
         
-        protocol_version = header_match['version'].strip()
-        status_code = SpamdStatus(int(header_match['status']))
-        message = header_match['message'].strip()
+        protocol_version = request_match['version'].strip()
+        status_code = SpamdStatus(int(request_match['status']))
+        message = request_match['message'].strip()
         header_list = []
-        for h in header_match['headers'].split('\r\n')[:-1]: # drop the last element since it's blank
-            header_obj = header_from_string(h)
+        for header in headers[:-1]: # drop last element since it'll be an empty string
+            header_obj = header_from_string(header)
             if header_obj:
                 header_list.append(header_obj)
         
