@@ -33,7 +33,7 @@ class SpamdRequest:
             request = self.request_with_body.format(verb = self.verb,
                                                     protocol = self.protocol,
                                                     headers = ''.join(map(str, self.headers)),
-                                                    body = self.body.to_string())
+                                                    body = self.body.as_string())
         else:
             self.headers.append( ContentLength(0) )
             request = self.request_without_body.format(verb = self.verb, 
@@ -44,6 +44,10 @@ class SpamdRequest:
         
         return request
     
+class Check(SpamdRequest):
+    def __init__(self, message):
+        super().__init__('CHECK', body = message)
+
 class Ping(SpamdRequest):
     def __init__(self):
         super().__init__('PING')

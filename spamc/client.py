@@ -37,12 +37,24 @@ class Client:
             sock.connect((self.host, self.port))
             return sock
         
-    def send(self, request, buffer = 1024):
+    def send(self, request):
         conn = self.connect()
         conn.send(bytes(request))
         conn.shutdown(socket.SHUT_WR)
-        response = SpamdResponse.parse(conn.recvmsg(buffer)[0].decode())
+        data = bytes()
+        while True:
+            received = conn.recv(4096)
+            if not received:
+                break
+            data += received
+        response = SpamdResponse.parse(data.decode())
         conn.close()
+        
+        return response
+    
+    def check(self, message):
+        request = Check(message)
+        response = self.send(bytes(request))
         
         return response
         

@@ -61,8 +61,8 @@ class ContentLength(Header):
         else:
             return None
     
-    def __init__(self, length: int = 0):
-        self.length = 0
+    def __init__(self, length = 0):
+        self.length = length
         
     def compose(self):
         return 'Content-length: {}\r\n'.format(self.length)
@@ -186,7 +186,7 @@ class Set(Header):
         return header
     
 class Spam(Header):
-    pattern = re.compile(r'^\s*((?P<true>true)|(?P<false>false))\s*;\s*(?P<score>\d+)\s*/\s*(?P<threshold>\d+)\s*$', flags=re.IGNORECASE)
+    pattern = re.compile(r'\s*((?P<true>true)|(?P<false>false))\s*;\s*(?P<score>\d+(\.\d+)?)\s*/\s*(?P<threshold>\d+(\.\d+)?)\s*', flags=re.IGNORECASE)
     
     @classmethod
     def parse(cls, string):
@@ -203,14 +203,14 @@ class Spam(Header):
                 obj.value = False
                 
             if score:
-                obj.score = threshold
+                obj.score = float(score)
             else:
-                obj.score = '0'
+                obj.score = 0.0
                 
             if threshold:
-                obj.threshold = threshold
+                obj.threshold = float(threshold)
             else:
-                obj.threshold = '0'
+                obj.threshold = 0.0
                 
             return obj
         else:
@@ -252,30 +252,22 @@ header_pattern = re.compile(r'(?P<header>\w+)\s*:\s*(?P<value>.+)(\r\n)?')
 
 def header_from_string(string):
     match = header_pattern.match(string).groupdict()
-    print(match)
     header = match['header'].strip().lower()
     value = match['value'].strip().lower()
     
     if header == 'compress':
-        print('matched compress')
         return Compress.parse(value)
     elif header == 'content-length':
-        print('matched content-length')
         return ContentLength.parse(value)
     elif header == 'message-class':
-        print('matched message-class')
         return MessageClass.parse(value)
     elif header == 'remove':
-        print('matched remove')
         return Remove.parse(value)
     elif header == 'set':
-        print('matched set')
         return Set.parse(value)
     elif header == 'spam':
-        print('matched spam')
         return Spam.parse(value)
     elif header == 'user':
-        print('matched user')
         return User.parse(value)
     else:
         return None
