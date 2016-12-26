@@ -13,37 +13,44 @@ class BadResponse(Exception):
     def __init__(self, response):
         self.response = response
         
+class NoSSL(Exception):
+    def __init__(self, description):
+        self.description = description
+        
 class Client:
-    def __init__(self, host = 'localhost', port = 783, ip_version = socket.AF_INET, ssl = False):
+    def __init__(self, host = 'localhost', port = 783, ip_version = 4, ssl = False, **ssl_options):
         self.host = host
         self.port = port
         self.ip_version = ip_version
         self.ssl = ssl
+        self.ssl_options = ssl_options
         
     def connect(self):
-        sock = socket.socket(self.ip_version)
+        if self.ip_version is 4:
+            sock = socket.socket(socket.AF_INET)
+        elif self.ip_version is 6:
+            sock = socket.socket(socket.AF_INET6)
+        else:
+            raise OSError('Invalid address family, must be IPv 4 or 6')
+        sock.connect((self.host, self.port))
+        
         if self.ssl:
             try:
                 import ssl
             except ImportError:
-                conn = None
-            else:
-                context = ssl.create_default_context()
-                conn = context.wrap_socket(sock,
-                                           server=self.host)
-                conn.connect((self.host, self.port))
-                return conn
+                raise NoSSL('SSL is not supported by this installation')
+                
+            ssl_sock = ssl.wrap_socket(sock, **self.ssl_options)
+            return ssl_sock
         else:
-            sock.connect((self.host, self.port))
             return sock
         
     def send(self, request):
         conn = self.connect()
         conn.send(bytes(request))
-        conn.shutdown(socket.SHUT_WR)
         data = bytes()
         while True:
-            received = conn.recv(4096)
+            received = conn.recv(1024)
             if not received:
                 break
             data += received
