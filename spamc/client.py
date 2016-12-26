@@ -65,7 +65,7 @@ class Client:
         request = Check(message = message, compress = self.compress)
         if self.user:
             request.headers.append(User(self.user))
-        response = self.send(bytes(request))
+        response = self.send(request)
         
         return response
         
@@ -73,7 +73,7 @@ class Client:
         request = Headers(message = message, compress = self.compress)
         if self.user:
             request.headers.append(User(self.user))
-        response = self.send(bytes(request))
+        response = self.send(request)
         
         return response
         
@@ -81,7 +81,7 @@ class Client:
         request = Ping()
         if self.user:
             request.headers.append(User(self.user))
-        response = self.send(bytes(request))
+        response = self.send(request)
         
         return response
     
@@ -89,7 +89,7 @@ class Client:
         request = Process(message = message, compress = self.compress)
         if self.user:
             request.headers.append(User(self.user))
-        response = self.send(bytes(request))
+        response = self.send(request)
         
         return response
     
@@ -97,7 +97,7 @@ class Client:
         request = Report(message = message, compress = self.compress)
         if self.user:
             request.headers.append(User(self.user))
-        response = self.send(bytes(request))
+        response = self.send(request)
         
         return response
     
@@ -105,7 +105,7 @@ class Client:
         request = ReportIfSpam(message = message, compress = self.compress)
         if self.user:
             request.headers.append(User(self.user))
-        response = self.send(bytes(request))
+        response = self.send(request)
         
         return response
     
@@ -113,7 +113,7 @@ class Client:
         request = Symbols(message = message, compress = self.compress)
         if self.user:
             request.headers.append(User(self.user))
-        response = self.send(bytes(request))
+        response = self.send(request)
         
         return response
     
@@ -131,7 +131,7 @@ class Client:
                        compress = self.compress)
         if self.user:
             request.headers.append(User(self.user))
-        response = self.send(bytes(request))
+        response = self.send(request)
         
         return response
         
