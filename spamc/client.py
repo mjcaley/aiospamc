@@ -18,10 +18,12 @@ class NoSSL(Exception):
         self.description = description
         
 class Client:
-    def __init__(self, host = 'localhost', port = 783, ip_version = 4, ssl = False, **ssl_options):
+    def __init__(self, host = 'localhost', port = 783, ip_version = 4, user = None, compress = False, ssl = False, **ssl_options):
         self.host = host
         self.port = port
         self.ip_version = ip_version
+        self.user = user
+        self.compress = compress
         self.ssl = ssl
         self.ssl_options = ssl_options
         
@@ -59,58 +61,58 @@ class Client:
         
         return response
     
-    def check(self, message, user = None):
-        request = Check(message = message)
-        if user:
-            request.headers.append(User(user))
+    def check(self, message):
+        request = Check(message = message, compress = self.compress)
+        if self.user:
+            request.headers.append(User(self.user))
         response = self.send(bytes(request))
         
         return response
         
-    def headers(self, message, user = None):
-        request = Headers(message = message)
-        if user:
-            request.headers.append(User(user))
+    def headers(self, message):
+        request = Headers(message = message, compress = self.compress)
+        if self.user:
+            request.headers.append(User(self.user))
         response = self.send(bytes(request))
         
         return response
         
-    def ping(self, user = None):
+    def ping(self):
         request = Ping()
-        if user:
-            request.headers.append(User(user))
+        if self.user:
+            request.headers.append(User(self.user))
         response = self.send(bytes(request))
         
         return response
     
-    def process(self, message, user = None):
-        request = Process(message = message)
-        if user:
-            request.headers.append(User(user))
+    def process(self, message):
+        request = Process(message = message, compress = self.compress)
+        if self.user:
+            request.headers.append(User(self.user))
         response = self.send(bytes(request))
         
         return response
     
-    def report(self, message, user = None):
-        request = Report(message = message)
-        if user:
-            request.headers.append(User(user))
+    def report(self, message):
+        request = Report(message = message, compress = self.compress)
+        if self.user:
+            request.headers.append(User(self.user))
         response = self.send(bytes(request))
         
         return response
     
-    def report_if_spam(self, message, user = None):
-        request = ReportIfSpam(message = message)
-        if user:
-            request.headers.append(User(user))
+    def report_if_spam(self, message):
+        request = ReportIfSpam(message = message, compress = self.compress)
+        if self.user:
+            request.headers.append(User(self.user))
         response = self.send(bytes(request))
         
         return response
     
-    def symbols(self, message, user = None):
-        request = Symbols(message = message)
-        if user:
-            request.headers.append(User(user))
+    def symbols(self, message):
+        request = Symbols(message = message, compress = self.compress)
+        if self.user:
+            request.headers.append(User(self.user))
         response = self.send(bytes(request))
         
         return response
@@ -119,16 +121,16 @@ class Client:
              message_class: MessageClassOption,
              message,
              set_destinations = {'local': False, 'remote': False},
-             remove_destinations = {'local': False, 'remote': False}, 
-             user = None
+             remove_destinations = {'local': False, 'remote': False}
             ):
         request = Tell(message,
                        [ MessageClass(message_class),
                          Set(**set_destinations),
                          Remove(**remove_destinations)
-                       ])
-        if user:
-            request.headers.append(User(user))
+                       ],
+                       compress = self.compress)
+        if self.user:
+            request.headers.append(User(self.user))
         response = self.send(bytes(request))
         
         return response
