@@ -32,6 +32,9 @@ class SpamdStatus(enum.IntEnum):
     EX_CONFIG       = 78, 'Configuration error'
     EX_TIMEOUT      = 79, 'Read timeout'
 
+class BadResponse(Exception):
+    '''Response is not in the expected format'''
+    pass
 
 class SpamdResponse:
     request_pattern = re.compile(r'^\s*(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)\s+(?P<status>\d+)\s+(?P<message>.*)')
@@ -47,7 +50,7 @@ class SpamdResponse:
             request_match = match.groupdict()
         else:
             # Not a SPAMD response
-            return None
+            raise BadResponse
         
         protocol_version = request_match['version'].strip()
         status_code = SpamdStatus(int(request_match['status']))
