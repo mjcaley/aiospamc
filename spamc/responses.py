@@ -11,9 +11,9 @@ class SpamdStatus(enum.IntEnum):
         obj = int.__new__(cls, value)
         obj._value_ = value
         obj.description = description
-        
+
         return obj
-    
+
     EX_OK           = 0,  'No problems'
     EX_USAGE        = 64, 'Command line usage error'
     EX_DATAERR      = 65, 'Data format error'
@@ -37,13 +37,18 @@ class BadResponse(Exception):
     pass
 
 class SpamdResponse:
-    request_pattern = re.compile(r'^\s*(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)\s+(?P<status>\d+)\s+(?P<message>.*)')
-    
+    request_pattern = re.compile(r'^\s*'
+                                 r'(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)'
+                                 r'\s+'
+                                 r'(?P<status>\d+)'
+                                 r'\s+'
+                                 r'(?P<message>.*)')
+
     @classmethod
     def parse(cls, response):
         request, *body = response.split('\r\n\r\n', 1)
         request, *headers = request.split('\r\n')
-        
+
         # Process request
         match = cls.request_pattern.match(request)
         if match:
@@ -51,7 +56,7 @@ class SpamdResponse:
         else:
             # Not a SPAMD response
             raise BadResponse
-        
+
         protocol_version = request_match['version'].strip()
         status_code = SpamdStatus(int(request_match['status']))
         message = request_match['message'].strip()
@@ -60,23 +65,29 @@ class SpamdResponse:
             header_obj = header_from_string(header)
             if header_obj:
                 header_list.append(header_obj)
-        
+
         if body != []:
             obj = cls(protocol_version, status_code, message, header_list, body[0])
         else:
             obj = cls(protocol_version, status_code, message, header_list)
-            
+
         return obj
-    
+
     def __repr__(self):
-        return 'SpamdResponse(protocol_version={}, status_code={}, message={}, headers={}, body={})'.format(self.protocol_version, self.status_code, self.message, self.headers, self.body)
-    
+        resp_format = 'SpamdResponse(protocol_version={}, status_code={}, message={}, headers={}, body={})'
+        
+        return resp_format.format(self.protocol_version,
+                                  self.status_code,
+                                  self.message,
+                                  self.headers,
+                                  self.body)
+
     def __str__(self):
         if self.body:
             return 'SPAMD/{} {} {}\n{}\n{}'.format(self.protocol_version, self.status_code, self.message, ''.join(map(str, self.headers)), ''.join([self.body[:80], '...\n']))
         else:
             return 'SPAMD/{} {} {}\n{}'.format(self.protocol_version, self.status_code, self.message, ''.join(map(str, self.headers)))
-    
+
     def __init__(self, protocol_version, status_code, message, headers = [], body = None):
         self.protocol_version = protocol_version
         self.status_code = status_code
