@@ -8,7 +8,7 @@ import sys
 path = pathlib.Path('..')
 sys.path.append(str(path.resolve()))
 
-import spamc
+import aiospamc
 
         
 def test():
@@ -48,7 +48,7 @@ You should send this test mail from an account outside of your network.
             logging.error(' '.join(['Error:', str(e)]))
     
     loop = asyncio.new_event_loop()
-    client = spamc.Client(loop=loop)
+    client = aiospamc.Client(loop=loop)
     
     loop.run_until_complete(
         asyncio.gather(

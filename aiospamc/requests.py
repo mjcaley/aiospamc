@@ -3,7 +3,7 @@
 import email.message
 import zlib
 
-from spamc.headers import *
+from aiospamc.headers import *
 
 
 class SpamdRequest:

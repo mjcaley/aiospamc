@@ -2,10 +2,10 @@
 
 import asyncio
 
-from spamc.headers import MessageClass, MessageClassOption, Remove, Set, User
-from spamc.requests import (Check, Headers, Ping, Process, 
+from aiospamc.headers import MessageClass, MessageClassOption, Remove, Set, User
+from aiospamc.requests import (Check, Headers, Ping, Process, 
                             Report, ReportIfSpam, Symbols, Tell)
-from spamc.responses import SpamdResponse
+from aiospamc.responses import SpamdResponse
 
 
 class Client():

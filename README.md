@@ -1,4 +1,4 @@
-# spamc
+# aiospamc
 
 ## Description
 Python library that implementats the spamc client protocol
