@@ -25,7 +25,7 @@ class SPAMCRequest:
         return self.compose()
 
     def __repr__(self):
-        return 'SPAMCRequest({}, {}, {})'.format(self.verb, self.headers, self.body)
+        return '{}({}, {}, {})'.format(self.__class__.__name__, self.verb, self.headers, self.body)
 
     def compose(self):
         '''Composes a request based on the verb and headers that are currently set.'''
@@ -59,53 +59,53 @@ class Check(SPAMCRequest):
         super().__init__('CHECK', message, headers, compress)
 
     def __repr__(self):
-        return 'Check(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
+        return '{}(message={}, headers={}, compress={})'.format(self.__class__.__name__, self.body, self.headers, self.compress)
 
 class Headers(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('HEADERS', message, headers, compress)
 
     def __repr__(self):
-        return 'Headers(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
+        return '{}(message={}, headers={}, compress={})'.format(self.__class__.__name__, self.body, self.headers, self.compress)
 
 class Ping(SPAMCRequest):
     def __init__(self, headers = []):
         super().__init__('PING', headers = headers)
 
     def __repr__(self):
-        return 'Ping(headers={}, compress={})'.format(self.headers, self.compress)
+        return '{}(headers={}, compress={})'.format(self.__class__.__name__, self.headers, self.compress)
 
 class Process(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('PROCESS', message, headers, compress)
 
     def __repr__(self):
-        return 'Process(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
+        return '{}(message={}, headers={}, compress={})'.format(self.__class__.__name__, self.body, self.headers, self.compress)
 
 class Report(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('REPORT', message, headers, compress)
 
     def __repr__(self):
-        return 'Report(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
+        return '{}(message={}, headers={}, compress={})'.format(self.__class__.__name__, self.body, self.headers, self.compress)
 
 class ReportIfSpam(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('REPORT_IFSPAM', message, headers, compress)
 
     def __repr__(self):
-        return 'ReportIfSpam(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
+        return '{}(message={}, headers={}, compress={})'.format(self.__class__.__name__, self.body, self.headers, self.compress)
 
 class Symbols(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('SYMBOLS', message, headers, compress)
 
     def __repr__(self):
-        return 'Symbols(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
+        return '{}(message={}, headers={}, compress={})'.format(self.__class__.__name__, self.body, self.headers, self.compress)
 
 class Tell(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('TELL', message, headers, compress)
 
     def __repr__(self):
-        return 'Tell(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
+        return '{}(message={}, headers={}, compress={})'.format(self.__class__.__name__, self.body, self.headers, self.compress)

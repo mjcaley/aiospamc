@@ -74,9 +74,10 @@ class SPAMDResponse:
         return obj
 
     def __repr__(self):
-        resp_format = 'SPAMDResponse(protocol_version={}, status_code={}, message={}, headers={}, body={})'
+        resp_format = '{}(protocol_version={}, status_code={}, message={}, headers={}, body={})'
         
-        return resp_format.format(self.protocol_version,
+        return resp_format.format(self.__class__.__name__,
+                                  self.protocol_version,
                                   self.status_code,
                                   self.message,
                                   self.headers,

@@ -48,7 +48,7 @@ class Compress(Header):
         self.zlib = True
 
     def __repr__(self):
-        return 'Compress()'
+        return '{}()'.format(self.__class__.__name__)
 
     def compose(self):
         return 'Compress: zlib\r\n'
@@ -69,7 +69,7 @@ class ContentLength(Header):
         self.length = length
 
     def __repr__(self):
-        return 'Content-length: {}'.format(self.length)
+        return '{}({})'.format(self.__class__.__name__, self.length)
 
     def compose(self):
         return 'Content-length: {}\r\n'.format(self.length)
@@ -82,7 +82,7 @@ class XHeader(Header):
         self.value = value
 
     def __repr__(self):
-        return 'XHeader(name={}, value={}})'.format(self.name, self.value)
+        return '{}(name={}, value={})'.format(self.__class__.__name__, self.name, self.value)
 
     def compose(self):
         return '{} : {}'.format(self.name, self.value)
@@ -107,7 +107,7 @@ class MessageClass(Header):
         self.value = value
 
     def __repr__(self):
-        return 'MessageClass(value={})'.format(self.value)
+        return '{}(value={})'.format(self.__class__.__name__, self.value)
 
     def compose(self):
         return 'Message-class: {}\r\n'.format(self.value.name)
@@ -141,28 +141,28 @@ class _SetRemove(Header):
 
 class DidRemove(_SetRemove):
     def __repr__(self):
-        return 'DidRemove(local={}, remote={})'.format(self.action.local, self.action.remote)
+        return '{}(local={}, remote={})'.format(self.__class__.__name__, self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('DidRemove')
 
 class DidSet(_SetRemove):
     def __repr__(self):
-        return 'DidSet(local={}, remote={})'.format(self.action.local, self.action.remote)
+        return '{}(local={}, remote={})'.format(self.__class__.__name__, self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('DidSet')
 
 class Remove(_SetRemove):
     def __repr__(self):
-        return 'Remove(local={}, remote={})'.format(self.action.local, self.action.remote)
+        return '{}(local={}, remote={})'.format(self.__class__.__name__, self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('Remove')
 
 class Set(_SetRemove):
     def __repr__(self):
-        return 'Set(local={}, remote={})'.format(self.action.local, self.action.remote)
+        return '{}(local={}, remote={})'.format(self.__class__.__name__, self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('Set')
@@ -210,7 +210,7 @@ class Spam(Header):
         self.threshold = threshold
 
     def __repr__(self):
-        return 'Spam(value={}, score={}, threshold={})'.format(self.value, self.score, self.threshold)
+        return '{}(value={}, score={}, threshold={})'.format(self.__class__.__name__, self.value, self.score, self.threshold)
 
     def compose(self):
         return 'Spam: {} ; {} / {}\r\n'.format(self.value, self.score, self.threshold)
@@ -231,7 +231,7 @@ class User(Header):
         self.name = name
 
     def __repr__(self):
-        return 'User(name={})'.format(self.name)
+        return '{}(name={})'.format(self.__class__.__name__, self.name)
 
     def compose(self):
         return 'User: {}\r\n'.format(self.name)
