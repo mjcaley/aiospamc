@@ -140,28 +140,28 @@ class _SetRemove(Header):
         return '{}: {}\r\n'.format(header_name, ', '.join(values))
 
 class DidRemove(_SetRemove):
-    def __repr(self):
+    def __repr__(self):
         return 'DidRemove(local={}, remote={})'.format(self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('DidRemove')
 
 class DidSet(_SetRemove):
-    def __repr(self):
+    def __repr__(self):
         return 'DidSet(local={}, remote={})'.format(self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('DidSet')
 
 class Remove(_SetRemove):
-    def __repr(self):
+    def __repr__(self):
         return 'Remove(local={}, remote={})'.format(self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('Remove')
 
 class Set(_SetRemove):
-    def __repr(self):
+    def __repr__(self):
         return 'Set(local={}, remote={})'.format(self.action.local, self.action.remote)
 
     def compose(self):
