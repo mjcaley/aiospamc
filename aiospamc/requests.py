@@ -6,7 +6,7 @@ import zlib
 from aiospamc.headers import *
 
 
-class SpamdRequest:
+class SPAMCRequest:
     '''SPAMC request object.'''
 
     protocol = 'SPAMC/1.5'
@@ -25,7 +25,7 @@ class SpamdRequest:
         return self.compose()
 
     def __repr__(self):
-        return 'SpamdRequest({}, {}, {})'.format(self.verb, self.headers, self.body)
+        return 'SPAMCRequest({}, {}, {})'.format(self.verb, self.headers, self.body)
 
     def compose(self):
         '''Composes a request based on the verb and headers that are currently set.'''
@@ -54,56 +54,56 @@ class SpamdRequest:
 
         return request
 
-class Check(SpamdRequest):
+class Check(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('CHECK', message, headers, compress)
 
     def __repr__(self):
         return 'Check(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
 
-class Headers(SpamdRequest):
+class Headers(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('HEADERS', message, headers, compress)
 
     def __repr__(self):
         return 'Headers(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
 
-class Ping(SpamdRequest):
+class Ping(SPAMCRequest):
     def __init__(self, headers = []):
         super().__init__('PING', headers = headers)
 
     def __repr__(self):
         return 'Ping(headers={}, compress={})'.format(self.headers, self.compress)
 
-class Process(SpamdRequest):
+class Process(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('PROCESS', message, headers, compress)
 
     def __repr__(self):
         return 'Process(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
 
-class Report(SpamdRequest):
+class Report(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('REPORT', message, headers, compress)
 
     def __repr__(self):
         return 'Report(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
 
-class ReportIfSpam(SpamdRequest):
+class ReportIfSpam(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('REPORT_IFSPAM', message, headers, compress)
 
     def __repr__(self):
         return 'ReportIfSpam(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
 
-class Symbols(SpamdRequest):
+class Symbols(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('SYMBOLS', message, headers, compress)
 
     def __repr__(self):
         return 'Symbols(message={}, headers={}, compress={})'.format(self.body, self.headers, self.compress)
 
-class Tell(SpamdRequest):
+class Tell(SPAMCRequest):
     def __init__(self, message, headers = [], compress = False):
         super().__init__('TELL', message, headers, compress)
 

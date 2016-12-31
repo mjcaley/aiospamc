@@ -6,7 +6,7 @@ import re
 from aiospamc.headers import header_from_string
 
 
-class SpamdStatus(enum.IntEnum):
+class SPAMDStatus(enum.IntEnum):
     def __new__(cls, value, description=''):
         obj = int.__new__(cls, value)
         obj._value_ = value
@@ -36,7 +36,7 @@ class BadResponse(Exception):
     '''Response is not in the expected format'''
     pass
 
-class SpamdResponse:
+class SPAMDResponse:
     request_pattern = re.compile(r'^\s*'
                                  r'(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)'
                                  r'\s+'
@@ -74,7 +74,7 @@ class SpamdResponse:
         return obj
 
     def __repr__(self):
-        resp_format = 'SpamdResponse(protocol_version={}, status_code={}, message={}, headers={}, body={})'
+        resp_format = 'SPAMDResponse(protocol_version={}, status_code={}, message={}, headers={}, body={})'
         
         return resp_format.format(self.protocol_version,
                                   self.status_code,

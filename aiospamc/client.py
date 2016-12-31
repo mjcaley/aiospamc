@@ -8,7 +8,7 @@ from aiospamc.headers import MessageClass, Remove, Set, User
 from aiospamc.options import Action, MessageClassOption
 from aiospamc.requests import (Check, Headers, Ping, Process,
                                Report, ReportIfSpam, Symbols, Tell)
-from aiospamc.responses import SpamdResponse
+from aiospamc.responses import SPAMDResponse
 
 
 class Client:
@@ -64,18 +64,18 @@ class Client:
 
         Parameters
         ----------
-        request : SpamdRequest
+        request : SPAMCRequest
             Request object to send.
 
         Returns
         -------
-        SpamdResponse
+        SPAMDResponse
         '''
 
         reader, writer = await self.connect()
         writer.write(bytes(request))
         data = await reader.read()
-        response = SpamdResponse.parse(data.decode())
+        response = SPAMDResponse.parse(data.decode())
 
         return response
 
@@ -95,7 +95,7 @@ class Client:
 
         Returns
         -------
-        SpamdResponse
+        SPAMDResponse
 
         Raises
         ------
@@ -126,7 +126,7 @@ class Client:
 
         Returns
         -------
-        SpamdResponse
+        SPAMDResponse
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -154,7 +154,7 @@ class Client:
 
         Returns
         -------
-        SpamdResponse
+        SPAMDResponse
             Response message will contain 'PONG' if successful.
 
         Raises
@@ -186,7 +186,7 @@ class Client:
 
         Returns
         -------
-        SpamdResponse
+        SPAMDResponse
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -221,7 +221,7 @@ class Client:
 
         Returns
         -------
-        SpamdResponse
+        SPAMDResponse
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -257,7 +257,7 @@ class Client:
 
         Returns
         -------
-        SpamdResponse
+        SPAMDResponse
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -296,7 +296,7 @@ class Client:
 
         Returns
         -------
-        SpamdResponse
+        SPAMDResponse
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
@@ -345,7 +345,7 @@ class Client:
 
         Returns
         -------
-        SpamdResponse
+        SPAMDResponse
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
