@@ -82,7 +82,7 @@ class XHeader(Header):
         self.value = value
 
     def __repr__(self):
-        return 'XHeader(name={}, value=[])'.format(self.name, self.value)
+        return 'XHeader(name={}, value={}})'.format(self.name, self.value)
 
     def compose(self):
         return '{} : {}'.format(self.name, self.value)
