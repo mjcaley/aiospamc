@@ -3,6 +3,9 @@
 import enum
 import getpass
 import re
+from collections import namedtuple
+
+from aiospamc.options import Action, MessageClassOption
 
 
 class Header:
@@ -84,10 +87,6 @@ class XHeader(Header):
     def compose(self):
         return '{} : {}'.format(self.name, self.value)
 
-class MessageClassOption(enum.Enum):
-    spam = 1
-    ham = 2
-
 class MessageClass(Header):
     pattern = re.compile(r'^\s*(?P<ham>ham)\s*$|^\s*(?P<spam>spam)\s*$', flags=re.IGNORECASE)
 
@@ -116,66 +115,54 @@ class MessageClass(Header):
 class _SetRemove(Header):
     '''Base class for headers that implement "local" and "remote" rules.'''
 
-    pattern = re.compile(r'\s*(?P<remote>remote)\s*|\s*(?P<local>local)\s*', flags=re.IGNORECASE)
+    local_pattern = re.compile(r'.*local.*', flags=re.IGNORECASE)
+    remote_pattern = re.compile(r'.*remote.*', flags=re.IGNORECASE)
 
     @classmethod
     def parse(cls, string):
-        obj = cls()
+        obj = cls(
+                  Action(bool(local_pattern.match(string)), 
+                         bool(remote_pattern.match(string)))
+                 )
 
-        for section in string.split(','):
-            match = cls.pattern.match(section)
-            if match:
-                if match.groupdict()['local']:
-                    obj.local = True
-                elif match.groupdict()['remote']:
-                    obj.remote = True
+        return obj
 
-        if not obj.local and not obj.remote:
-            # couldn't find any matches
-            return None
-        else:
-            return obj
-
-    def __init__(self, local=False, remote=False):
-        self.local = local
-        self.remote = remote
+    def __init__(self, action=Action(local=False, remote=False)):
+        self.action = action
 
     def _compose(self, header_name):
-        if not (self.local or self.remote):
-            raise InvalidHeader('Neither "local" or "remote" are set')
-
         values = []
-        if self.local:
+        if self.action.local:
             values.append('local')
-        if self.remote:
+        if self.action.remote:
             values.append('remote')
 
         return '{}: {}\r\n'.format(header_name, ', '.join(values))
 
 class DidRemove(_SetRemove):
     def __repr(self):
-        return 'DidRemove(local={}, remote={})'.format(self.local, self.remote)
+        return 'DidRemove(local={}, remote={})'.format(self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('DidRemove')
 
 class DidSet(_SetRemove):
     def __repr(self):
-        return 'DidSet(local={}, remote={})'.format(self.local, self.remote)
+        return 'DidSet(local={}, remote={})'.format(self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('DidSet')
 
 class Remove(_SetRemove):
     def __repr(self):
-        return 'Remove(local={}, remote={})'.format(self.local, self.remote)
+        return 'Remove(local={}, remote={})'.format(self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('Remove')
 
 class Set(_SetRemove):
     def __repr(self):
-        return 'Set(local={}, remote={})'.format(self.local, self.remote)
+        return 'Set(local={}, remote={})'.format(self.action.local, self.action.remote)
 
     def compose(self):
         return self._compose('Set')

@@ -4,7 +4,8 @@
 
 import asyncio
 
-from aiospamc.headers import MessageClass, MessageClassOption, Remove, Set, User
+from aiospamc.headers import MessageClass, Remove, Set, User
+from aiospamc.options import Action, MessageClassOption
 from aiospamc.requests import (Check, Headers, Ping, Process,
                                Report, ReportIfSpam, Symbols, Tell)
 from aiospamc.responses import SpamdResponse
@@ -320,10 +321,10 @@ class Client:
     async def tell(self,
                    message_class: MessageClassOption,
                    message,
-                   set_destinations={'local': False, 'remote': False},
-                   remove_destinations={'local': False, 'remote': False}
+                   set_action=Action(local=False, remote=False),
+                   remove_action=Action(local=False, remote=False)
                   ):
-        '''Instruct the SPAMD service to to mark the message 
+        '''Instruct the SPAMD service to to mark the message
 
         Parameters
         ----------
@@ -335,11 +336,11 @@ class Client:
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
-            
-        set_destinations : dict of str: bool
+
+        set_action : Action
             Contains 'local' and 'remote' options.
 
-        remove_destinations : dict of str: bool
+        remove_action : Action
             Contains 'local' and 'remote' options.
 
         Returns
@@ -362,9 +363,8 @@ class Client:
 
         request = Tell(message,
                        [MessageClass(message_class),
-                        Set(**set_destinations),
-                        Remove(**remove_destinations)
-                       ],
+                        Set(set_action),
+                        Remove(remove_action)],
                        compress=self.compress
                       )
         if self.user:
