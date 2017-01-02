@@ -3,6 +3,7 @@
 import enum
 import re
 
+from aiospamc.common import Inbound
 from aiospamc.headers import header_from_string
 
 
@@ -36,7 +37,7 @@ class BadResponse(Exception):
     '''Response is not in the expected format'''
     pass
 
-class SPAMDResponse:
+class SPAMDResponse(Inbound):
     request_pattern = re.compile(r'^\s*'
                                  r'(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)'
                                  r'\s+'
@@ -58,7 +59,7 @@ class SPAMDResponse:
             raise BadResponse
 
         protocol_version = request_match['version'].strip()
-        status_code = SpamdStatus(int(request_match['status']))
+        status_code = SPAMDStatus(int(request_match['status']))
         message = request_match['message'].strip()
         header_list = []
         for header in headers[:-1]: # drop last element since it'll be an empty string

@@ -3,10 +3,11 @@
 import email.message
 import zlib
 
+from aiospamc.common import Outbound
 from aiospamc.headers import *
 
 
-class SPAMCRequest:
+class SPAMCRequest(Outbound):
     '''SPAMC request object.'''
 
     protocol = 'SPAMC/1.5'
