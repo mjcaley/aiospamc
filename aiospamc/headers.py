@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import enum
+'''Collection of request and response headers.'''
+
 import getpass
 import re
-from collections import namedtuple
 
 from aiospamc.options import Action, MessageClassOption
 
@@ -75,7 +75,7 @@ class ContentLength(Header):
         return 'Content-length: {}\r\n'.format(self.length)
 
 class XHeader(Header):
-    pattern = re.compile('\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
+    pattern = re.compile(r'\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
 
     def __init__(self, name, value):
         self.name = name
@@ -121,9 +121,9 @@ class _SetRemove(Header):
     @classmethod
     def parse(cls, string):
         obj = cls(
-                  Action(bool(local_pattern.match(string)), 
-                         bool(remote_pattern.match(string)))
-                 )
+            Action(bool(cls.local_pattern.match(string)),
+                   bool(cls.remote_pattern.match(string)))
+            )
 
         return obj
 
@@ -141,28 +141,36 @@ class _SetRemove(Header):
 
 class DidRemove(_SetRemove):
     def __repr__(self):
-        return '{}(local={}, remote={})'.format(self.__class__.__name__, self.action.local, self.action.remote)
+        return '{}(local={}, remote={})'.format(self.__class__.__name__,
+                                                self.action.local,
+                                                self.action.remote)
 
     def compose(self):
         return self._compose('DidRemove')
 
 class DidSet(_SetRemove):
     def __repr__(self):
-        return '{}(local={}, remote={})'.format(self.__class__.__name__, self.action.local, self.action.remote)
+        return '{}(local={}, remote={})'.format(self.__class__.__name__,
+                                                self.action.local,
+                                                self.action.remote)
 
     def compose(self):
         return self._compose('DidSet')
 
 class Remove(_SetRemove):
     def __repr__(self):
-        return '{}(local={}, remote={})'.format(self.__class__.__name__, self.action.local, self.action.remote)
+        return '{}(local={}, remote={})'.format(self.__class__.__name__,
+                                                self.action.local,
+                                                self.action.remote)
 
     def compose(self):
         return self._compose('Remove')
 
 class Set(_SetRemove):
     def __repr__(self):
-        return '{}(local={}, remote={})'.format(self.__class__.__name__, self.action.local, self.action.remote)
+        return '{}(local={}, remote={})'.format(self.__class__.__name__,
+                                                self.action.local,
+                                                self.action.remote)
 
     def compose(self):
         return self._compose('Set')
@@ -210,7 +218,10 @@ class Spam(Header):
         self.threshold = threshold
 
     def __repr__(self):
-        return '{}(value={}, score={}, threshold={})'.format(self.__class__.__name__, self.value, self.score, self.threshold)
+        return '{}(value={}, score={}, threshold={})'.format(self.__class__.__name__,
+                                                             self.value,
+                                                             self.score,
+                                                             self.threshold)
 
     def compose(self):
         return 'Spam: {} ; {} / {}\r\n'.format(self.value, self.score, self.threshold)
@@ -227,7 +238,7 @@ class User(Header):
         else:
             return None
 
-    def __init__(self, name = getpass.getuser()):
+    def __init__(self, name=getpass.getuser()):
         self.name = name
 
     def __repr__(self):
@@ -236,10 +247,10 @@ class User(Header):
     def compose(self):
         return 'User: {}\r\n'.format(self.name)
 
-header_pattern = re.compile(r'(?P<header>\S+)\s*:\s*(?P<value>.+)(\r\n)?')
+HEADER_PATTERN = re.compile(r'(?P<header>\S+)\s*:\s*(?P<value>.+)(\r\n)?')
 
 def header_from_string(string):
-    match = header_pattern.match(string).groupdict()
+    match = HEADER_PATTERN.match(string).groupdict()
     header = match['header'].strip().lower()
     value = match['value'].strip().lower()
 
