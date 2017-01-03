@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
+#pylint: disable=no-self-use
 
 import pytest
 
 from aiospamc.exceptions import HeaderCantParse
-from aiospamc.headers import Compress, ContentLength, MessageClass
-from aiospamc.options import MessageClassOption
+from aiospamc.headers import Compress, ContentLength, MessageClass, _SetRemove
+from aiospamc.options import Action, MessageClassOption
 
 
 class TestCompressHeader:
@@ -89,3 +90,53 @@ class TestMessageClass:
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
             message_class = MessageClass.parse('invalid')
+
+class Test_SetRemove:
+    def test_instantiates(self):
+        _set_remove = _SetRemove('test')
+        assert _set_remove
+
+    def test_default_value(self):
+        _set_remove = _SetRemove('test')
+        assert _set_remove.action == Action(True, False)
+
+    def test_user_value(self):
+        _set_remove = _SetRemove('test', Action(True, True))
+        assert _set_remove.action == Action(True, True)
+
+    def test_header_field_name(self):
+        _set_remove = _SetRemove('test')
+        with pytest.raises(NotImplementedError):
+            _set_remove.header_field_name()
+
+    def test_compose_local(self):
+        _set_remove = _SetRemove('test', Action(local=True, remote=False))
+        assert _set_remove.compose() == 'test: local\r\n'
+
+    def test_compose_remote(self):
+        _set_remove = _SetRemove('test', Action(local=False, remote=True))
+        assert _set_remove.compose() == 'test: remote\r\n'
+
+    def test_compose_local_remote(self):
+        _set_remove = _SetRemove('test', Action(local=True, remote=True))
+        assert _set_remove.compose() == 'test: local, remote\r\n'
+
+    def test_parse_valid_local(self):
+        _set_remove = _SetRemove.parse('local')
+        assert _set_remove
+
+    def test_parse_valid_remote(self):
+        _set_remove = _SetRemove.parse('remote')
+        assert _set_remove
+
+    def test_parse_valid_local_remote(self):
+        _set_remove = _SetRemove.parse('local, remote')
+        assert _set_remove
+
+    def test_parse_valid_remote_local(self):
+        _set_remove = _SetRemove.parse('remote, local')
+        assert _set_remove
+
+    def test_parse_invalid(self):
+        with pytest.raises(HeaderCantParse):
+            _set_remove = _SetRemove.parse('invalid')
