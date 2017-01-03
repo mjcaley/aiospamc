@@ -287,9 +287,14 @@ class User(Header):
 HEADER_PATTERN = re.compile(r'(?P<header>\S+)\s*:\s*(?P<value>.+)(\r\n)?')
 
 def header_from_string(string):
-    match = HEADER_PATTERN.match(string).groupdict()
-    header = match['header'].strip().lower()
-    value = match['value'].strip().lower()
+    match = HEADER_PATTERN.match(string)
+    if not match:
+        raise HeaderCantParse({'message': 'Unable to parse string',
+                                   'string': string,
+                                   'pattern': HEADER_PATTERN.pattern})
+
+    header = match.groupdict()['header'].strip().lower()
+    value = match.groupdict()['value'].strip().lower()
 
     if header == 'compress':
         return Compress.parse(value)
