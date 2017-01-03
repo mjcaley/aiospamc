@@ -297,6 +297,10 @@ def header_from_string(string):
         return ContentLength.parse(value)
     elif header == 'message-class':
         return MessageClass.parse(value)
+    elif header == 'didremove':
+        return DidRemove.parse(value)
+    elif header == 'didset':
+        return DidSet.parse(value)
     elif header == 'remove':
         return Remove.parse(value)
     elif header == 'set':
