@@ -76,6 +76,17 @@ class ContentLength(Header):
 class XHeader(Header):
     pattern = re.compile(r'\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
 
+    @classmethod
+    def parse(cls, string):
+        match = cls.pattern.match(string)
+        if match:
+            obj = cls(match.groupdict()['name'], match.groupdict()['value'])
+            return obj
+        else:
+            raise HeaderCantParse({'message': 'Unable to parse string',
+                                   'string': string,
+                                   'pattern': cls.pattern.pattern})
+
     def __init__(self, name, value):
         self.name = name
         self.value = value
@@ -84,7 +95,7 @@ class XHeader(Header):
         return '{}(name={}, value={})'.format(self.__class__.__name__, self.name, self.value)
 
     def compose(self):
-        return '{} : {}'.format(self.header_field_name(), self.value)
+        return '{}: {}\r\n'.format(self.header_field_name(), self.value)
 
     def header_field_name(self):
         return self.name
