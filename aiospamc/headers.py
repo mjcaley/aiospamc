@@ -103,9 +103,11 @@ class MessageClass(Header):
                 obj.value = MessageClassOption.spam
             return obj
         else:
-            return None
+            raise HeaderCantParse({'message': 'Unable to parse string', 
+                                   'string': string,
+                                   'pattern': cls.pattern.pattern})
 
-    def __init__(self, value: MessageClassOption):
+    def __init__(self, value=MessageClassOption.ham):
         self.value = value
 
     def __repr__(self):
