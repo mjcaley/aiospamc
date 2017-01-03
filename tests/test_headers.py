@@ -11,7 +11,7 @@ from aiospamc.options import Action, MessageClassOption
 class TestCompressHeader:
     def test_instantiates(self):
         compress = Compress()
-        assert compress
+        assert 'compress' in locals()
 
     def test_value(self):
         compress = Compress()
@@ -36,7 +36,7 @@ class TestCompressHeader:
 class TestContentLength:
     def test_instantiates(self):
         content_length = ContentLength()
-        assert content_length
+        assert 'content_length' in locals()
 
     def test_default_value(self):
         content_length = ContentLength()
@@ -56,7 +56,7 @@ class TestContentLength:
 
     def test_parse_valid(self):
         content_length = ContentLength.parse('42')
-        assert content_length
+        assert 'content_length' in locals()
 
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
@@ -65,7 +65,7 @@ class TestContentLength:
 class TestMessageClass:
     def test_instantiates(self):
         message_class = MessageClass()
-        assert message_class
+        assert 'message_class' in locals()
 
     def test_default_value(self):
         message_class = MessageClass()
@@ -85,7 +85,7 @@ class TestMessageClass:
 
     def test_parse_valid(self):
         message_class = MessageClass.parse('spam')
-        assert message_class
+        assert 'message_class' in locals()
 
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
@@ -93,49 +93,37 @@ class TestMessageClass:
 
 class Test_SetRemove:
     def test_instantiates(self):
-        _set_remove = _SetRemove('test')
-        assert _set_remove
+        _set_remove = _SetRemove()
+        assert '_set_remove' in locals()
 
     def test_default_value(self):
-        _set_remove = _SetRemove('test')
+        _set_remove = _SetRemove()
         assert _set_remove.action == Action(True, False)
 
     def test_user_value(self):
-        _set_remove = _SetRemove('test', Action(True, True))
+        _set_remove = _SetRemove(Action(True, True))
         assert _set_remove.action == Action(True, True)
 
     def test_header_field_name(self):
-        _set_remove = _SetRemove('test')
+        _set_remove = _SetRemove()
         with pytest.raises(NotImplementedError):
             _set_remove.header_field_name()
 
-    def test_compose_local(self):
-        _set_remove = _SetRemove('test', Action(local=True, remote=False))
-        assert _set_remove.compose() == 'test: local\r\n'
-
-    def test_compose_remote(self):
-        _set_remove = _SetRemove('test', Action(local=False, remote=True))
-        assert _set_remove.compose() == 'test: remote\r\n'
-
-    def test_compose_local_remote(self):
-        _set_remove = _SetRemove('test', Action(local=True, remote=True))
-        assert _set_remove.compose() == 'test: local, remote\r\n'
-
     def test_parse_valid_local(self):
         _set_remove = _SetRemove.parse('local')
-        assert _set_remove
+        assert '_set_remove' in locals()
 
     def test_parse_valid_remote(self):
         _set_remove = _SetRemove.parse('remote')
-        assert _set_remove
+        assert '_set_remove' in locals()
 
     def test_parse_valid_local_remote(self):
         _set_remove = _SetRemove.parse('local, remote')
-        assert _set_remove
+        assert '_set_remove' in locals()
 
     def test_parse_valid_remote_local(self):
         _set_remove = _SetRemove.parse('remote, local')
-        assert _set_remove
+        assert '_set_remove' in locals()
 
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
