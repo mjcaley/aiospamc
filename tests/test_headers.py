@@ -26,6 +26,10 @@ class TestCompressHeader:
         compress = Compress()
         assert 'compress' in locals()
 
+    def test_repr(self):
+        compress = Compress()
+        assert repr(compress) == 'Compress()'
+
     def test_value(self):
         compress = Compress()
         assert compress.zlib == True
@@ -50,6 +54,10 @@ class TestContentLength:
     def test_instantiates(self):
         content_length = ContentLength()
         assert 'content_length' in locals()
+
+    def test_repr(self):
+        content_length = ContentLength()
+        assert repr(content_length) == 'ContentLength(length=0)'
 
     def test_default_value(self):
         content_length = ContentLength()
@@ -79,6 +87,10 @@ class TestMessageClass:
     def test_instantiates(self):
         message_class = MessageClass()
         assert 'message_class' in locals()
+
+    def test_repr(self):
+        message_class = MessageClass(MessageClassOption.ham)
+        assert repr(message_class) == 'MessageClass(value=MessageClassOption.ham)'
 
     def test_default_value(self):
         message_class = MessageClass()
@@ -147,6 +159,10 @@ class TestDidRemove:
         did_remove = DidRemove()
         assert did_remove.header_field_name() == 'DidRemove'
 
+    def test_repr(self):
+        did_remove = DidRemove(Action(local=True, remote=True))
+        assert repr(did_remove) == 'DidRemove(action=Action(local=True, remote=True))'
+
     def test_compose_local(self):
         did_remove = DidRemove(Action(local=True, remote=False))
         assert did_remove.compose() == 'DidRemove: local\r\n'
@@ -163,6 +179,10 @@ class TestDidSet:
     def test_header_field_name(self):
         did_set = DidSet()
         assert did_set.header_field_name() == 'DidSet'
+
+    def test_repr(self):
+        did_set = DidSet(Action(local=True, remote=True))
+        assert repr(did_set) == 'DidSet(action=Action(local=True, remote=True))'
 
     def test_compose_local(self):
         did_set = DidSet(Action(local=True, remote=False))
@@ -181,6 +201,10 @@ class TestRemove:
         remove = Remove()
         assert remove.header_field_name() == 'Remove'
 
+    def test_repr(self):
+        remove = Remove(Action(local=True, remote=True))
+        assert repr(remove) == 'Remove(action=Action(local=True, remote=True))'
+
     def test_compose_local(self):
         remove = Remove(Action(local=True, remote=False))
         assert remove.compose() == 'Remove: local\r\n'
@@ -198,6 +222,10 @@ class TestSet:
         set = Set()
         assert set.header_field_name() == 'Set'
 
+    def test_repr(self):
+        set_ = Set(Action(local=True, remote=True))
+        assert repr(set_) == 'Set(action=Action(local=True, remote=True))'
+
     def test_compose_local(self):
         set = Set(Action(local=True, remote=False))
         assert set.compose() == 'Set: local\r\n'
@@ -214,6 +242,10 @@ class TestSpam:
     def test_instantiates(self):
         spam = Spam()
         assert 'spam' in locals()
+
+    def test_repr(self):
+        spam = Spam(value=True, score=4.0, threshold=2.0)
+        assert repr(spam) == 'Spam(value=True, score=4.0, threshold=2.0)'
 
     def test_default_value(self):
         spam = Spam()
@@ -243,6 +275,10 @@ class TestUser:
     def test_instantiates(self):
         user = User()
         assert 'user' in locals()
+
+    def test_repr(self):
+        user = User('test-user')
+        assert repr(user) == 'User(name=\'test-user\')'
 
     def test_default_value(self):
         import getpass
@@ -275,6 +311,10 @@ class TestXHeader:
     def test_instantiates(self):
         x_header = XHeader('head-name', 'head-value')
         assert 'x_header' in locals()
+
+    def test_repr(self):
+        x_header = XHeader('head-name', 'head-value')
+        assert repr(x_header) == 'XHeader(name=\'head-name\', value=\'head-value\')'
 
     def test_user_value(self):
         x_header = XHeader('head-name', 'head-value')
