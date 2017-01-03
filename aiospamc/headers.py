@@ -57,7 +57,9 @@ class ContentLength(Header):
             obj = cls(int(match.group()))
             return obj
         else:
-            return None
+            raise HeaderCantParse({'message': 'Unable to parse string', 
+                                   'string': string,
+                                   'pattern': cls.pattern.pattern})
 
     def __init__(self, length=0):
         self.length = length
