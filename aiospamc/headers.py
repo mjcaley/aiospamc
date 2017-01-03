@@ -204,7 +204,7 @@ class Set(_SetRemove):
 
 class Spam(Header):
     pattern = re.compile(r'\s*'
-                         r'((?P<true>true)|(?P<false>false))'
+                         r'(?P<value>true|false)'
                          r'\s*;\s*'
                          r'(?P<score>\d+(\.\d+)?)'
                          r'\s*/\s*'
@@ -215,25 +215,10 @@ class Spam(Header):
     def parse(cls, string):
         match = cls.pattern.match(string)
         if match:
-            value = match.groupdict()['true']
-            score = match.groupdict()['score']
-            threshold = match.groupdict()['threshold']
-
             obj = cls()
-            if value:
-                obj.value = True
-            else:
-                obj.value = False
-
-            if score:
-                obj.score = float(score)
-            else:
-                obj.score = 0.0
-
-            if threshold:
-                obj.threshold = float(threshold)
-            else:
-                obj.threshold = 0.0
+            obj.value = bool(match.groupdict()['value'])
+            obj.score = float(match.groupdict()['score'])
+            obj.threshold = float(match.groupdict()['threshold'])
 
             return obj
         else:
