@@ -1,5 +1,5 @@
 
-# Created by https://www.gitignore.io/api/python
+# Created by https://www.gitignore.io/api/python,virtualenv
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -94,4 +94,18 @@ ENV/
 # Rope project settings
 .ropeproject
 
-# End of https://www.gitignore.io/api/python
+
+### VirtualEnv ###
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+.venv
+pip-selfcheck.json
+
+# End of https://www.gitignore.io/api/python,virtualenv
