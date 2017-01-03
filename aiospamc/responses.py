@@ -4,6 +4,7 @@ import enum
 import re
 
 from aiospamc.content_man import BodyHeaderManager
+from aiospamc.exceptions import BadResponse
 from aiospamc.headers import header_from_string
 from aiospamc.transport import Inbound
 
@@ -33,10 +34,6 @@ class SPAMDStatus(enum.IntEnum):
     EX_NOPERM       = 77, 'Permission denied'
     EX_CONFIG       = 78, 'Configuration error'
     EX_TIMEOUT      = 79, 'Read timeout'
-
-class BadResponse(Exception):
-    '''Response is not in the expected format'''
-    pass
 
 class SPAMDResponse(Inbound):
     request_pattern = re.compile(r'^\s*'
