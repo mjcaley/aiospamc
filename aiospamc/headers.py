@@ -65,7 +65,7 @@ class ContentLength(Header):
         self.length = length
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.length)
+        return '{}(length={})'.format(self.__class__.__name__, self.length)
 
     def compose(self):
         return '{}: {}\r\n'.format(self.header_field_name(), self.length)
@@ -92,7 +92,7 @@ class XHeader(Header):
         self.value = value
 
     def __repr__(self):
-        return '{}(name={}, value={})'.format(self.__class__.__name__, self.name, self.value)
+        return '{}(name=\'{}\', value=\'{}\')'.format(self.__class__.__name__, self.name, self.value)
 
     def compose(self):
         return '{}: {}\r\n'.format(self.header_field_name(), self.value)
@@ -122,7 +122,7 @@ class MessageClass(Header):
         self.value = value
 
     def __repr__(self):
-        return '{}(value={})'.format(self.__class__.__name__, self.value)
+        return '{}(value={})'.format(self.__class__.__name__, str(self.value))
 
     def compose(self):
         return '{}: {}\r\n'.format(self.header_field_name(), self.value.name)
@@ -168,36 +168,36 @@ class _SetRemove(Header):
 
 class DidRemove(_SetRemove):
     def __repr__(self):
-        return '{}(local={}, remote={})'.format(self.__class__.__name__,
-                                                self.action.local,
-                                                self.action.remote)
+        return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
+                                                               self.action.local,
+                                                               self.action.remote)
 
     def header_field_name(self):
         return 'DidRemove'
 
 class DidSet(_SetRemove):
     def __repr__(self):
-        return '{}(local={}, remote={})'.format(self.__class__.__name__,
-                                                self.action.local,
-                                                self.action.remote)
+        return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
+                                                               self.action.local,
+                                                               self.action.remote)
 
     def header_field_name(self):
         return 'DidSet'
 
 class Remove(_SetRemove):
     def __repr__(self):
-        return '{}(local={}, remote={})'.format(self.__class__.__name__,
-                                                self.action.local,
-                                                self.action.remote)
+        return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
+                                                               self.action.local,
+                                                               self.action.remote)
 
     def header_field_name(self):
         return 'Remove'
 
 class Set(_SetRemove):
     def __repr__(self):
-        return '{}(local={}, remote={})'.format(self.__class__.__name__,
-                                                self.action.local,
-                                                self.action.remote)
+        return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
+                                                               self.action.local,
+                                                               self.action.remote)
 
     def header_field_name(self):
         return 'Set'
@@ -276,7 +276,7 @@ class User(Header):
         self.name = name
 
     def __repr__(self):
-        return '{}(name={})'.format(self.__class__.__name__, self.name)
+        return '{}(name=\'{}\')'.format(self.__class__.__name__, self.name)
 
     def compose(self):
         return '{}: {}\r\n'.format(self.header_field_name(), self.name)
