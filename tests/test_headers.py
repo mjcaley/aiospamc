@@ -196,3 +196,32 @@ class TestSet:
     def test_compose_local_remote(self):
         set = Set(Action(local=True, remote=True))
         assert set.compose() == 'Set: local, remote\r\n'
+
+class TestSpam:
+    def test_instantiates(self):
+        spam = Spam()
+        assert 'spam' in locals()
+
+    def test_default_value(self):
+        spam = Spam()
+        assert spam.value == False and spam.score == 0.0 and spam.threshold == 0.0
+
+    def test_user_value(self):
+        spam = Spam(value=True, score=4.0, threshold=2.0)
+        assert spam.value == True and spam.score == 4.0 and spam.threshold == 2.0
+
+    def test_header_field_name(self):
+        spam = Spam()
+        assert spam.header_field_name() == 'Spam'
+
+    def test_compose(self):
+        spam = Spam()
+        assert spam.compose() == 'Spam: False ; 0.0 / 0.0\r\n'
+
+    def test_parse_valid(self):
+        spam = Spam.parse('True ; 4.0 / 2.0')
+        assert 'spam' in locals()
+
+    def test_parse_invalid(self):
+        with pytest.raises(HeaderCantParse):
+            spam = Spam.parse('invalid')
