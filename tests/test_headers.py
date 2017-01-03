@@ -4,7 +4,7 @@
 import pytest
 
 from aiospamc.exceptions import HeaderCantParse
-from aiospamc.headers import Compress, ContentLength, MessageClass, _SetRemove, DidRemove, DidSet, Remove, Set, Spam, User
+from aiospamc.headers import Compress, ContentLength, MessageClass, _SetRemove, DidRemove, DidSet, Remove, Set, Spam, User, XHeader
 from aiospamc.options import Action, MessageClassOption
 
 
@@ -257,3 +257,28 @@ class TestUser:
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
             user = User.parse('invalid=chars+[];\'\\"')
+
+class TestXHeader:
+    def test_instantiates(self):
+        x_header = XHeader('head-name', 'head-value')
+        assert 'x_header' in locals()
+
+    def test_user_value(self):
+        x_header = XHeader('head-name', 'head-value')
+        assert x_header.name == 'head-name' and x_header.value == 'head-value'
+
+    def test_header_field_name(self):
+        x_header = XHeader('head-name', 'head-value')
+        assert x_header.header_field_name() == 'head-name'
+
+    def test_compose(self):
+        x_header = XHeader('head-name', 'head-value')
+        assert x_header.compose() == 'head-name: head-value\r\n'
+
+    def test_parse_valid(self):
+        x_header = XHeader.parse('head-name : head-value')
+        assert 'x_header' in locals()
+
+    def test_parse_invalid(self):
+        with pytest.raises(HeaderCantParse):
+            x_header = XHeader.parse('invalid = invalid')
