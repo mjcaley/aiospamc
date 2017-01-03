@@ -10,7 +10,9 @@ from aiospamc.transport import Inbound
 
 
 class SPAMDStatus(enum.IntEnum):
+    #pylint: disable=C0326
     def __new__(cls, value, description=''):
+        #pylint: disable=protected-access
         obj = int.__new__(cls, value)
         obj._value_ = value
         obj.description = description
@@ -36,6 +38,7 @@ class SPAMDStatus(enum.IntEnum):
     EX_TIMEOUT      = 79, 'Read timeout'
 
 class SPAMDResponse(Inbound):
+    #pylint: disable=too-few-public-methods
     request_pattern = re.compile(r'^\s*'
                                  r'(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)'
                                  r'\s+'
@@ -74,7 +77,7 @@ class SPAMDResponse(Inbound):
 
     def __repr__(self):
         resp_format = '{}(protocol_version={}, status_code={}, message={}, headers={}, body={})'
-        
+
         return resp_format.format(self.__class__.__name__,
                                   self.protocol_version,
                                   self.status_code,
@@ -84,11 +87,19 @@ class SPAMDResponse(Inbound):
 
     def __str__(self):
         if self.body:
-            return 'SPAMD/{} {} {}\n{}\n{}'.format(self.protocol_version, self.status_code, self.message, ''.join(map(str, self.headers)), ''.join([self.body[:80], '...\n']))
+            return 'SPAMD/{} {} {}\n{}\n{}'.format(self.protocol_version,
+                                                   self.status_code,
+                                                   self.message,
+                                                   ''.join(map(str, self.headers)),
+                                                   ''.join([self.body[:80], '...\n']))
         else:
-            return 'SPAMD/{} {} {}\n{}'.format(self.protocol_version, self.status_code, self.message, ''.join(map(str, self.headers)))
+            return 'SPAMD/{} {} {}\n{}'.format(self.protocol_version,
+                                               self.status_code,
+                                               self.message,
+                                               ''.join(map(str, self.headers)))
 
-    def __init__(self, protocol_version, status_code, message, headers = [], body = None):
+    def __init__(self, protocol_version, status_code, message, headers=[], body=None):
+        #pylint: disable=too-many-arguments
         self.protocol_version = protocol_version
         self.status_code = status_code
         self.message = message

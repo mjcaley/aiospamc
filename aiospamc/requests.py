@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
-import email.message
-
 from aiospamc.content_man import BodyHeaderManager
-from aiospamc.headers import *
 from aiospamc.transport import Outbound
 
 
@@ -13,7 +10,7 @@ class SPAMCRequest(BodyHeaderManager, Outbound):
     protocol = b'SPAMC/1.5'
     request = b'%(verb)b %(protocol)b\r\n%(headers)b\r\n%(body)b'
 
-    def __init__(self, verb, body = None, *headers):
+    def __init__(self, verb, body=None, *headers):
         ''''''
 
         self.verb = verb.encode()
@@ -40,14 +37,18 @@ class Check(SPAMCRequest):
         super().__init__('CHECK', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__, self.body, self._headers)
+        return '{}(message={}, headers={})'.format(self.__class__.__name__,
+                                                   self.body,
+                                                   self._headers)
 
 class Headers(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('HEADERS', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__, self.body, self._headers)
+        return '{}(message={}, headers={})'.format(self.__class__.__name__,
+                                                   self.body,
+                                                   self._headers)
 
 class Ping(SPAMCRequest):
     def __init__(self, *headers):
@@ -61,32 +62,42 @@ class Process(SPAMCRequest):
         super().__init__('PROCESS', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__, self.body, self._headers)
+        return '{}(message={}, headers={})'.format(self.__class__.__name__,
+                                                   self.body,
+                                                   self._headers)
 
 class Report(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('REPORT', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__, self.body, self._headers)
+        return '{}(message={}, headers={})'.format(self.__class__.__name__,
+                                                   self.body,
+                                                   self._headers)
 
 class ReportIfSpam(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('REPORT_IFSPAM', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__, self.body, self._headers)
+        return '{}(message={}, headers={})'.format(self.__class__.__name__,
+                                                   self.body,
+                                                   self._headers)
 
 class Symbols(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('SYMBOLS', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__, self.body, self._headers)
+        return '{}(message={}, headers={})'.format(self.__class__.__name__,
+                                                   self.body,
+                                                   self._headers)
 
 class Tell(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('TELL', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__, self.body, self._headers)
+        return '{}(message={}, headers={})'.format(self.__class__.__name__,
+                                                   self.body,
+                                                   self._headers)
