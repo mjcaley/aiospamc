@@ -226,7 +226,9 @@ class Spam(Header):
 
             return obj
         else:
-            return None
+            raise HeaderCantParse({'message': 'Unable to parse string',
+                                   'string': string,
+                                   'pattern': cls.pattern.pattern})
 
     def __init__(self, value=False, score=0.0, threshold=0.0):
         self.value = value
