@@ -28,9 +28,8 @@ class TestCompressHeader:
         assert compress.parse('zlib')
 
     def test_parse_invalid(self):
-        compress = Compress()
         with pytest.raises(HeaderCantParse):
-            compress.parse('invalid')
+            compress = Compress.parse('invalid')
 
 class TestContentLength:
     def test_instantiates(self):
