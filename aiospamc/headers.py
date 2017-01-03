@@ -11,18 +11,51 @@ from aiospamc.options import Action, MessageClassOption
 
 
 class Header(Inbound, Outbound):
-    '''Header base class'''
+    '''Header base class.'''
+
+    @classmethod
+    def parse(cls, string):
+        '''Class method to parse a string and return an instance of the
+        class.
+
+        Parameters
+        ----------
+        string : str
+            Text of the header from a request or response.  Only includes the
+            field name, not the value.
+
+        Returns
+        -------
+        Header
+            A subclass of Header.
+
+        Raises
+        ------
+        HeaderCantParse
+        '''
+
+        raise NotImplementedError
 
     def __str__(self):
-        '''Text representation of the header.'''
         return self.compose()
 
     def header_field_name(self):
-        '''The string of the field name for the header.'''
+        '''Returns the the field name for the header.
+
+        Returns
+        -------
+        str
+        '''
+
         raise NotImplementedError
 
 class Compress(Header):
+    '''Compress header.  Specifies what encryption scheme to use.  So far only
+    'zlib' is supported.
+    '''
+
     pattern = re.compile(r'\s*zlib\s*')
+    '''Regular expression pattern to match 'zlib'.'''
 
     @classmethod
     def parse(cls, string):
@@ -48,7 +81,10 @@ class Compress(Header):
         return 'Compress'
 
 class ContentLength(Header):
+    '''ContentLength header.  Indicates the length of the body in bytes.'''
+
     pattern = re.compile(r'\s*\d+\s*')
+    '''Regular expression pattern to match one or more digits.'''
 
     @classmethod
     def parse(cls, string):
@@ -74,7 +110,14 @@ class ContentLength(Header):
         return 'Content-length'
 
 class XHeader(Header):
+    '''Extension header.  Used to specify a header that's not supported
+    natively by the SPAMD service.
+    '''
+
     pattern = re.compile(r'\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
+    '''Regular expresison pattern to match entire contents of a header
+    string.
+    '''
 
     @classmethod
     def parse(cls, string):
@@ -88,6 +131,16 @@ class XHeader(Header):
                                    'pattern': cls.pattern.pattern})
 
     def __init__(self, name, value):
+        '''XHeader constructor.
+
+        Parameters
+        ----------
+        name : str
+            Name of the header.
+        value : str
+            Contents of the value.
+        '''
+
         self.name = name
         self.value = value
 
@@ -103,7 +156,11 @@ class XHeader(Header):
         return self.name
 
 class MessageClass(Header):
+    '''MessageClass header.  Used to specify whether a message is 'spam' or
+    'ham.\''''
+
     pattern = re.compile(r'^\s*(?P<value>ham|spam)\s*$', flags=re.IGNORECASE)
+    '''Regular expression pattern to match either 'spam' or 'ham.\''''
 
     @classmethod
     def parse(cls, string):
@@ -133,7 +190,9 @@ class _SetRemove(Header):
     '''Base class for headers that implement "local" and "remote" rules.'''
 
     local_pattern = re.compile(r'.*local.*', flags=re.IGNORECASE)
+    '''Regular expression string to match 'local.\''''
     remote_pattern = re.compile(r'.*remote.*', flags=re.IGNORECASE)
+    '''Regular expression string to match 'remote.\''''
 
     @classmethod
     def parse(cls, string):
@@ -166,6 +225,10 @@ class _SetRemove(Header):
         raise NotImplementedError
 
 class DidRemove(_SetRemove):
+    '''DidRemove header.  Used by SPAMD to indicate if a message was removed
+    from either a local or remote database in response to a TELL request.
+    '''
+
     def __repr__(self):
         return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
                                                                self.action.local,
@@ -175,6 +238,10 @@ class DidRemove(_SetRemove):
         return 'DidRemove'
 
 class DidSet(_SetRemove):
+    '''DidRemove header.  Used by SPAMD to indicate if a message was added to
+    either a local or remote database in response to a TELL request.
+    '''
+
     def __repr__(self):
         return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
                                                                self.action.local,
@@ -184,6 +251,11 @@ class DidSet(_SetRemove):
         return 'DidSet'
 
 class Remove(_SetRemove):
+    '''Remove header.  Used in a TELL request to ask the SPAMD service remove
+    a message from a local or remote database.  The SPAMD service must have the
+    --allow-tells switch in order for this to do anything.
+    '''
+
     def __repr__(self):
         return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
                                                                self.action.local,
@@ -193,6 +265,11 @@ class Remove(_SetRemove):
         return 'Remove'
 
 class Set(_SetRemove):
+    '''Set header.  Used in a TELL request to ask the SPAMD service add a
+    message from a local or remote database.  The SPAMD service must have the
+    --allow-tells switch in order for this to do anything.
+    '''
+
     def __repr__(self):
         return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
                                                                self.action.local,
@@ -202,6 +279,10 @@ class Set(_SetRemove):
         return 'Set'
 
 class Spam(Header):
+    '''Spam header.  Used by the SPAMD service to report on if the submitted
+    message was spam and the score/threshold that it used.
+    '''
+
     pattern = re.compile(r'\s*'
                          r'(?P<value>true|false)'
                          r'\s*;\s*'
@@ -209,6 +290,9 @@ class Spam(Header):
                          r'\s*/\s*'
                          r'(?P<threshold>\d+(\.\d+)?)'
                          r'\s*', flags=re.IGNORECASE)
+    '''Regular expression pattern to match the 'true' or 'false' result, the
+    score, and the threshold of the submitted message.
+    '''
 
     @classmethod
     def parse(cls, string):
@@ -226,6 +310,18 @@ class Spam(Header):
                                    'pattern': cls.pattern.pattern})
 
     def __init__(self, value=False, score=0.0, threshold=0.0):
+        '''Spam header constructor.
+
+        Parameters
+        ----------
+        value : bool
+            True if the message is spam, False if not.
+        score : float
+            Score of the message after being scanned.
+        threshold : float
+            Threshold of which the message would have been marked as spam.
+        '''
+
         self.value = value
         self.score = score
         self.threshold = threshold
@@ -246,7 +342,12 @@ class Spam(Header):
         return 'Spam'
 
 class User(Header):
+    '''User header.  Used to specify which user the SPAMD service should use
+    when loading configuration files.
+    '''
+
     pattern = re.compile(r'^\s*(?P<user>[a-zA-Z0-9_-]+)\s*$')
+    '''Regular expression pattern to match the username.'''
 
     @classmethod
     def parse(cls, string):
@@ -272,8 +373,27 @@ class User(Header):
         return 'User'
 
 HEADER_PATTERN = re.compile(r'(?P<header>\S+)\s*:\s*(?P<value>.+)(\r\n)?')
+'''Regular expression pattern to match the header name and value.'''
 
 def header_from_string(string):
+    '''Instantiate a Header object from a string.
+
+    Parameters
+    ----------
+    string : str
+        Text of a single header from a request or response.
+
+    Returns
+    -------
+    Header
+        A subclass of Header.
+
+    Raises
+    ------
+    HeaderCantParse
+    '''
+
+    #pylint: disable=too-many-return-statements
     match = HEADER_PATTERN.match(string)
     if not match:
         raise HeaderCantParse({'message': 'Unable to parse string',
