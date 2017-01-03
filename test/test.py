@@ -45,7 +45,7 @@ You should send this test mail from an account outside of your network.
             resp = await func(*opts)
             print(title, repr(resp))
         except Exception as e:
-            logging.error(' '.join(['Error:', str(e)]))
+            logging.exception(' '.join(['Error:', str(e)]))
     
     loop = asyncio.new_event_loop()
     client = aiospamc.Client(loop=loop)
@@ -53,10 +53,10 @@ You should send this test mail from an account outside of your network.
     loop.run_until_complete(
         asyncio.gather(
             print_response('Ping 1', client.ping),
-            print_response('Check 1', client.check, gtube_msg),
-            print_response('Headers 1', client.headers, gtube_msg),
-            print_response('Process 1', client.process, gtube_msg),
-            print_response('Symbols 1', client.symbols, gtube_msg),
+            print_response('Check 1', client.check, str(gtube_msg)),
+            print_response('Headers 1', client.headers, str(gtube_msg)),
+            print_response('Process 1', client.process, str(gtube_msg)),
+            print_response('Symbols 1', client.symbols, str(gtube_msg)),
             print_response('Ping 2', client.ping),
             loop=loop)
     )

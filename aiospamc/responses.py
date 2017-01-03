@@ -3,8 +3,9 @@
 import enum
 import re
 
-from aiospamc.common import Inbound
+from aiospamc.content_man import BodyHeaderManager
 from aiospamc.headers import header_from_string
+from aiospamc.transport import Inbound
 
 
 class SPAMDStatus(enum.IntEnum):

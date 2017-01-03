@@ -4,7 +4,7 @@
 
 import asyncio
 
-from aiospamc.headers import MessageClass, Remove, Set, User
+from aiospamc.headers import Compress, MessageClass, Remove, Set, User
 from aiospamc.options import Action, MessageClassOption
 from aiospamc.requests import (Check, Headers, Ping, Process,
                                Report, ReportIfSpam, Symbols, Tell)
@@ -106,9 +106,11 @@ class Client:
         ConnectionRefusedError
         '''
 
-        request = Check(message=message, compress=self.compress)
+        request = Check(message)
+        if self.compress:
+            request.add_header(Compress())
         if self.user:
-            request.headers.append(User(self.user))
+            request.add_header(User(self.user))
         response = await self.send(request)
 
         return response
@@ -141,9 +143,11 @@ class Client:
         ConnectionRefusedError
         '''
 
-        request = Headers(message=message, compress=self.compress)
+        request = Headers(message)
+        if self.compress:
+            request.add_header(Compress())
         if self.user:
-            request.headers.append(User(self.user))
+            request.add_header(User(self.user))
         response = await self.send(request)
 
         return response
@@ -168,7 +172,7 @@ class Client:
 
         request = Ping()
         if self.user:
-            request.headers.append(User(self.user))
+            request.add_header(User(self.user))
         response = await self.send(request)
 
         return response
@@ -201,9 +205,11 @@ class Client:
         ConnectionRefusedError
         '''
 
-        request = Process(message=message, compress=self.compress)
+        request = Process(message)
+        if self.compress:
+            request.add_header(Compress())
         if self.user:
-            request.headers.append(User(self.user))
+            request.add_header(User(self.user))
         response = await self.send(request)
 
         return response
@@ -236,9 +242,11 @@ class Client:
         ConnectionRefusedError
         '''
 
-        request = Report(message=message, compress=self.compress)
+        request = Report(message)
+        if self.compress:
+            request.add_header(Compress())
         if self.user:
-            request.headers.append(User(self.user))
+            request.add_header(User(self.user))
         response = await self.send(request)
 
         return response
@@ -273,9 +281,11 @@ class Client:
         ConnectionRefusedError
         '''
 
-        request = ReportIfSpam(message=message, compress=self.compress)
+        request = ReportIfSpam(message)
+        if self.compress:
+            request.add_header(Compress())
         if self.user:
-            request.headers.append(User(self.user))
+            request.add_header(User(self.user))
         response = await self.send(request)
 
         return response
@@ -311,9 +321,11 @@ class Client:
         ConnectionRefusedError
         '''
 
-        request = Symbols(message=message, compress=self.compress)
+        request = Symbols(message)
+        if self.compress:
+            request.add_header(Compress())
         if self.user:
-            request.headers.append(User(self.user))
+            request.add_header(User(self.user))
         response = await self.send(request)
 
         return response
@@ -364,11 +376,12 @@ class Client:
         request = Tell(message,
                        [MessageClass(message_class),
                         Set(set_action),
-                        Remove(remove_action)],
-                       compress=self.compress
+                        Remove(remove_action)]
                       )
+        if self.compress:
+            request.add_header(Compress())
         if self.user:
-            request.headers.append(User(self.user))
+            request.add_header(User(self.user))
         response = await self.send(request)
 
         return response

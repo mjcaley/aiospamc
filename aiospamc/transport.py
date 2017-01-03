@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #pylint: disable=too-few-public-methods
 
-'''Common base classes used throughout the project.'''
+'''Classes that define the interface for transport methods.'''
 
 
 class Inbound:

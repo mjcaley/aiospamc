@@ -5,7 +5,7 @@
 import getpass
 import re
 
-from aiospamc.common import Inbound, Outbound
+from aiospamc.transport import Inbound, Outbound
 from aiospamc.options import Action, MessageClassOption
 
 
@@ -39,7 +39,7 @@ class Compress(Header):
         return '{}()'.format(self.__class__.__name__)
 
     def compose(self):
-        return 'Compress: zlib\r\n'
+        return '{}: zlib\r\n'.format(self.header_field_name())
 
     def header_field_name(self):
         return 'Compress'
@@ -63,7 +63,7 @@ class ContentLength(Header):
         return '{}({})'.format(self.__class__.__name__, self.length)
 
     def compose(self):
-        return 'Content-length: {}\r\n'.format(self.length)
+        return '{}: {}\r\n'.format(self.header_field_name(), self.length)
 
     def header_field_name(self):
         return 'Content-length'
@@ -79,7 +79,7 @@ class XHeader(Header):
         return '{}(name={}, value={})'.format(self.__class__.__name__, self.name, self.value)
 
     def compose(self):
-        return '{} : {}'.format(self.name, self.value)
+        return '{} : {}'.format(self.header_field_name(), self.value)
 
     def header_field_name(self):
         return self.name
@@ -107,7 +107,7 @@ class MessageClass(Header):
         return '{}(value={})'.format(self.__class__.__name__, self.value)
 
     def compose(self):
-        return 'Message-class: {}\r\n'.format(self.value.name)
+        return '{}: {}\r\n'.format(self.header_field_name(), self.value.name)
 
     def header_field_name(self):
         return 'Message-class'
@@ -127,31 +127,30 @@ class _SetRemove(Header):
 
         return obj
 
-    def __init__(self, action=Action(local=False, remote=False)):
+    def __init__(self, header_name, action=Action(local=False, remote=False)):
+        self.header_name = header_name
         self.action = action
 
-    def compose(self, header_name):
-        #pylint: disable=arguments-differ
+    def compose(self):
         values = []
         if self.action.local:
             values.append('local')
         if self.action.remote:
             values.append('remote')
 
-        return '{}: {}\r\n'.format(header_name, ', '.join(values))
+        return '{}: {}\r\n'.format(self.header_name, ', '.join(values))
 
     def header_field_name(self):
         raise NotImplementedError
 
 class DidRemove(_SetRemove):
+    def __init__(self, action=Action(local=False, remote=False)):
+        super().__init__(self.header_field_name(), action)
+
     def __repr__(self):
         return '{}(local={}, remote={})'.format(self.__class__.__name__,
                                                 self.action.local,
                                                 self.action.remote)
-
-    def compose(self):
-        #pylint: disable=arguments-differ
-        return super().compose('DidRemove')
 
     def header_field_name(self):
         return 'DidRemove'
@@ -162,35 +161,29 @@ class DidSet(_SetRemove):
                                                 self.action.local,
                                                 self.action.remote)
 
-    def compose(self):
-        #pylint: disable=arguments-differ
-        return super().compose('DidSet')
-
     def header_field_name(self):
         return 'DidSet'
 
 class Remove(_SetRemove):
+    def __init__(self, action=Action(local=False, remote=False)):
+        super().__init__(self.header_field_name(), action)
+
     def __repr__(self):
         return '{}(local={}, remote={})'.format(self.__class__.__name__,
                                                 self.action.local,
                                                 self.action.remote)
-
-    def compose(self):
-        #pylint: disable=arguments-differ
-        return super().compose('Remove')
 
     def header_field_name(self):
         return 'Remove'
 
 class Set(_SetRemove):
+    def __init__(self, action=Action(local=False, remote=False)):
+        super().__init__(self.header_field_name(), action)
+
     def __repr__(self):
         return '{}(local={}, remote={})'.format(self.__class__.__name__,
                                                 self.action.local,
                                                 self.action.remote)
-
-    def compose(self):
-        #pylint: disable=arguments-differ
-        return super().compose('Set')
 
     def header_field_name(self):
         return 'Set'
@@ -244,7 +237,7 @@ class Spam(Header):
                                                              self.threshold)
 
     def compose(self):
-        return 'Spam: {} ; {} / {}\r\n'.format(self.value, self.score, self.threshold)
+        return '{}: {} ; {} / {}\r\n'.format(self.header_field_name(), self.value, self.score, self.threshold)
 
     def header_field_name(self):
         return 'Spam'
@@ -268,7 +261,7 @@ class User(Header):
         return '{}(name={})'.format(self.__class__.__name__, self.name)
 
     def compose(self):
-        return 'User: {}\r\n'.format(self.name)
+        return '{}: {}\r\n'.format(self.header_field_name(), self.name)
 
     def header_field_name(self):
         return 'User'
