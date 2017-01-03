@@ -4,7 +4,7 @@
 import pytest
 
 from aiospamc.exceptions import HeaderCantParse
-from aiospamc.headers import Compress, ContentLength, MessageClass, _SetRemove, DidRemove, DidSet, Remove, Set, Spam
+from aiospamc.headers import Compress, ContentLength, MessageClass, _SetRemove, DidRemove, DidSet, Remove, Set, Spam, User
 from aiospamc.options import Action, MessageClassOption
 
 
@@ -225,3 +225,35 @@ class TestSpam:
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
             spam = Spam.parse('invalid')
+
+class TestUser:
+    def test_instantiates(self):
+        user = User()
+        assert 'user' in locals()
+
+    def test_default_value(self):
+        import getpass
+        user = User()
+        assert user.name == getpass.getuser()
+
+    def test_user_value(self):
+        fake_user = 'fake_user_name_for_aiospamc_test'
+        user = User(fake_user)
+        assert user.name == fake_user
+
+    def test_header_field_name(self):
+        user = User()
+        assert user.header_field_name() == 'User'
+
+    def test_compose(self):
+        import getpass
+        user = User()
+        assert user.compose() == 'User: {}\r\n'.format(getpass.getuser())
+
+    def test_parse_valid(self):
+        user = User.parse('fake_user_name_for_aiospamc_test')
+        assert 'user' in locals()
+
+    def test_parse_invalid(self):
+        with pytest.raises(HeaderCantParse):
+            user = User.parse('invalid=chars+[];\'\\"')
