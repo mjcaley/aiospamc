@@ -140,8 +140,7 @@ class _SetRemove(Header):
 
         return obj
 
-    def __init__(self, header_name, action=Action(local=True, remote=False)):
-        self.header_name = header_name
+    def __init__(self, action=Action(local=True, remote=False)):
         self.action = action
 
     def compose(self):
@@ -151,15 +150,12 @@ class _SetRemove(Header):
         if self.action.remote:
             values.append('remote')
 
-        return '{}: {}\r\n'.format(self.header_name, ', '.join(values))
+        return '{}: {}\r\n'.format(self.header_field_name(), ', '.join(values))
 
     def header_field_name(self):
         raise NotImplementedError
 
 class DidRemove(_SetRemove):
-    def __init__(self, action=Action(local=False, remote=False)):
-        super().__init__(self.header_field_name(), action)
-
     def __repr__(self):
         return '{}(local={}, remote={})'.format(self.__class__.__name__,
                                                 self.action.local,
@@ -178,9 +174,6 @@ class DidSet(_SetRemove):
         return 'DidSet'
 
 class Remove(_SetRemove):
-    def __init__(self, action=Action(local=False, remote=False)):
-        super().__init__(self.header_field_name(), action)
-
     def __repr__(self):
         return '{}(local={}, remote={})'.format(self.__class__.__name__,
                                                 self.action.local,
@@ -190,9 +183,6 @@ class Remove(_SetRemove):
         return 'Remove'
 
 class Set(_SetRemove):
-    def __init__(self, action=Action(local=False, remote=False)):
-        super().__init__(self.header_field_name(), action)
-
     def __repr__(self):
         return '{}(local={}, remote={})'.format(self.__class__.__name__,
                                                 self.action.local,
