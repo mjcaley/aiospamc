@@ -4,11 +4,22 @@
 import pytest
 
 from aiospamc.exceptions import HeaderCantParse
-from aiospamc.headers import (Compress, ContentLength, MessageClass,
+from aiospamc.headers import (Header, Compress, ContentLength, MessageClass,
                               _SetRemove, DidRemove, DidSet, Remove, Set,
                               Spam, User, XHeader, header_from_string)
 from aiospamc.options import Action, MessageClassOption
 
+
+class TestHeader:
+    def test_str(self):
+        header = Header()
+        with pytest.raises(NotImplementedError):
+            str(header)
+
+    def test_header_field_name(self):
+        header = Header()
+        with pytest.raises(NotImplementedError):
+            header.header_field_name()
 
 class TestCompressHeader:
     def test_instantiates(self):
