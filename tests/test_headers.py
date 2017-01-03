@@ -4,7 +4,9 @@
 import pytest
 
 from aiospamc.exceptions import HeaderCantParse
-from aiospamc.headers import Compress, ContentLength, MessageClass, _SetRemove, DidRemove, DidSet, Remove, Set, Spam, User, XHeader
+from aiospamc.headers import (Compress, ContentLength, MessageClass,
+                              _SetRemove, DidRemove, DidSet, Remove, Set,
+                              Spam, User, XHeader, header_from_string)
 from aiospamc.options import Action, MessageClassOption
 
 
@@ -282,3 +284,48 @@ class TestXHeader:
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
             x_header = XHeader.parse('invalid = invalid')
+
+class TestHeaderFromString:
+    def test_compress(self):
+        obj = header_from_string('Compress: zlib')
+        assert isinstance(obj, Compress)
+
+    def test_content_length(self):
+        obj = header_from_string('Content-length: 42')
+        assert isinstance(obj, ContentLength)
+
+    def test_message_class(self):
+        obj = header_from_string('Message-class: spam')
+        assert isinstance(obj, MessageClass)
+
+    def test_did_remove(self):
+        obj = header_from_string('DidRemove: local, remote')
+        assert isinstance(obj, DidRemove)
+
+    def test_did_set(self):
+        obj = header_from_string('DidSet: local, remote')
+        assert isinstance(obj, DidSet)
+
+    def test_remove(self):
+        obj = header_from_string('Remove: local, remote')
+        assert isinstance(obj, Remove)
+
+    def test_set(self):
+        obj = header_from_string('Set: local, remote')
+        assert isinstance(obj, Set)
+
+    def test_spam(self):
+        obj = header_from_string('Spam: True ; 4.0 / 2.0')
+        assert isinstance(obj, Spam)
+
+    def test_user(self):
+        obj = header_from_string('User: test-user')
+        assert isinstance(obj, User)
+
+    def test_x_header(self):
+        obj = header_from_string('X-Extension: Value')
+        assert isinstance(obj, XHeader)
+
+    def test_invalid(self):
+        with pytest.raises(HeaderCantParse):
+            obj = header_from_string('Invalid Header Text')
