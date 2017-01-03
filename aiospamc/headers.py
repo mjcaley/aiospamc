@@ -127,14 +127,20 @@ class _SetRemove(Header):
 
     @classmethod
     def parse(cls, string):
-        obj = cls(
-            Action(bool(cls.local_pattern.match(string)),
-                   bool(cls.remote_pattern.match(string)))
-            )
+        local_result = bool(cls.local_pattern.match(string))
+        remote_result = bool(cls.remote_pattern.match(string))
+
+        if not local_result and not remote_result:
+            raise HeaderCantParse({'message': 'Unable to parse string',
+                                   'string': string,
+                                   'pattern': (cls.local_pattern.pattern,
+                                               cls.remote_pattern.pattern)})
+        else:
+            obj = cls(Action(local_result, remote_result))
 
         return obj
 
-    def __init__(self, header_name, action=Action(local=False, remote=False)):
+    def __init__(self, header_name, action=Action(local=True, remote=False)):
         self.header_name = header_name
         self.action = action
 
