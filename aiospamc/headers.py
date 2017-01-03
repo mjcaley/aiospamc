@@ -101,20 +101,17 @@ class XHeader(Header):
         return self.name
 
 class MessageClass(Header):
-    pattern = re.compile(r'^\s*(?P<ham>ham)\s*$|^\s*(?P<spam>spam)\s*$', flags=re.IGNORECASE)
+    pattern = re.compile(r'^\s*(?P<value>ham|spam)\s*$', flags=re.IGNORECASE)
 
     @classmethod
     def parse(cls, string):
         match = cls.pattern.match(string)
         if match:
             obj = cls()
-            if match.groupdict()['ham']:
-                obj.value = MessageClassOption.ham
-            elif match.groupdict()['spam']:
-                obj.value = MessageClassOption.spam
+            obj.value = MessageClassOption[match.groupdict()['value']]
             return obj
         else:
-            raise HeaderCantParse({'message': 'Unable to parse string', 
+            raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
                                    'pattern': cls.pattern.pattern})
 
