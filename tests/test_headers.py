@@ -4,7 +4,7 @@
 import pytest
 
 from aiospamc.exceptions import HeaderCantParse
-from aiospamc.headers import Compress, ContentLength, MessageClass, _SetRemove
+from aiospamc.headers import Compress, ContentLength, MessageClass, _SetRemove, DidRemove, DidSet, Remove, Set, Spam
 from aiospamc.options import Action, MessageClassOption
 
 
@@ -128,3 +128,71 @@ class Test_SetRemove:
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
             _set_remove = _SetRemove.parse('invalid')
+
+class TestDidRemove:
+    def test_header_field_name(self):
+        did_remove = DidRemove()
+        assert did_remove.header_field_name() == 'DidRemove'
+
+    def test_compose_local(self):
+        did_remove = DidRemove(Action(local=True, remote=False))
+        assert did_remove.compose() == 'DidRemove: local\r\n'
+
+    def test_compose_remote(self):
+        did_remove = DidRemove(Action(local=False, remote=True))
+        assert did_remove.compose() == 'DidRemove: remote\r\n'
+
+    def test_compose_local_remote(self):
+        did_remove = DidRemove(Action(local=True, remote=True))
+        assert did_remove.compose() == 'DidRemove: local, remote\r\n'
+
+class TestDidSet:
+    def test_header_field_name(self):
+        did_set = DidSet()
+        assert did_set.header_field_name() == 'DidSet'
+
+    def test_compose_local(self):
+        did_set = DidSet(Action(local=True, remote=False))
+        assert did_set.compose() == 'DidSet: local\r\n'
+
+    def test_compose_remote(self):
+        did_set = DidSet(Action(local=False, remote=True))
+        assert did_set.compose() == 'DidSet: remote\r\n'
+
+    def test_compose_local_remote(self):
+        did_set = DidSet(Action(local=True, remote=True))
+        assert did_set.compose() == 'DidSet: local, remote\r\n'
+
+class TestRemove:
+    def test_header_field_name(self):
+        remove = Remove()
+        assert remove.header_field_name() == 'Remove'
+
+    def test_compose_local(self):
+        remove = Remove(Action(local=True, remote=False))
+        assert remove.compose() == 'Remove: local\r\n'
+
+    def test_compose_remote(self):
+        remove = Remove(Action(local=False, remote=True))
+        assert remove.compose() == 'Remove: remote\r\n'
+
+    def test_compose_local_remote(self):
+        remove = Remove(Action(local=True, remote=True))
+        assert remove.compose() == 'Remove: local, remote\r\n'
+
+class TestSet:
+    def test_header_field_name(self):
+        set = Set()
+        assert set.header_field_name() == 'Set'
+
+    def test_compose_local(self):
+        set = Set(Action(local=True, remote=False))
+        assert set.compose() == 'Set: local\r\n'
+
+    def test_compose_remote(self):
+        set = Set(Action(local=False, remote=True))
+        assert set.compose() == 'Set: remote\r\n'
+
+    def test_compose_local_remote(self):
+        set = Set(Action(local=True, remote=True))
+        assert set.compose() == 'Set: local, remote\r\n'
