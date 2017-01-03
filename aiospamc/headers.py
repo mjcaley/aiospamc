@@ -31,7 +31,7 @@ class Compress(Header):
             obj = cls()
             return obj
         else:
-            raise HeaderCantParse({'message': 'Unable to parse string', 
+            raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
                                    'pattern': cls.pattern.pattern})
 
@@ -57,7 +57,7 @@ class ContentLength(Header):
             obj = cls(int(match.group()))
             return obj
         else:
-            raise HeaderCantParse({'message': 'Unable to parse string', 
+            raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
                                    'pattern': cls.pattern.pattern})
 
@@ -92,7 +92,9 @@ class XHeader(Header):
         self.value = value
 
     def __repr__(self):
-        return '{}(name=\'{}\', value=\'{}\')'.format(self.__class__.__name__, self.name, self.value)
+        return '{}(name=\'{}\', value=\'{}\')'.format(self.__class__.__name__,
+                                                      self.name,
+                                                      self.value)
 
     def compose(self):
         return '{}: {}\r\n'.format(self.header_field_name(), self.value)
@@ -235,7 +237,10 @@ class Spam(Header):
                                                              self.threshold)
 
     def compose(self):
-        return '{}: {} ; {} / {}\r\n'.format(self.header_field_name(), self.value, self.score, self.threshold)
+        return '{}: {} ; {} / {}\r\n'.format(self.header_field_name(),
+                                             self.value,
+                                             self.score,
+                                             self.threshold)
 
     def header_field_name(self):
         return 'Spam'
@@ -272,8 +277,8 @@ def header_from_string(string):
     match = HEADER_PATTERN.match(string)
     if not match:
         raise HeaderCantParse({'message': 'Unable to parse string',
-                                   'string': string,
-                                   'pattern': HEADER_PATTERN.pattern})
+                               'string': string,
+                               'pattern': HEADER_PATTERN.pattern})
 
     header = match.groupdict()['header'].strip().lower()
     value = match.groupdict()['value'].strip().lower()
