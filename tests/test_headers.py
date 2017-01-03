@@ -3,7 +3,8 @@
 import pytest
 
 from aiospamc.exceptions import HeaderCantParse
-from aiospamc.headers import Compress, ContentLength
+from aiospamc.headers import Compress, ContentLength, MessageClass
+from aiospamc.options import MessageClassOption
 
 
 class TestCompressHeader:
@@ -55,3 +56,32 @@ class TestContentLength:
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
             content_length = ContentLength.parse('invalid')
+
+class TestMessageClass:
+    def test_instantiates(self):
+        message_class = MessageClass()
+        assert message_class
+
+    def test_default_value(self):
+        message_class = MessageClass()
+        assert message_class.value == MessageClassOption.ham
+
+    def test_user_value(self):
+        message_class = MessageClass(MessageClassOption.spam)
+        assert message_class.value == MessageClassOption.spam
+
+    def test_header_field_name(self):
+        message_class = MessageClass()
+        assert message_class.header_field_name() == 'Message-class'
+
+    def test_compose(self):
+        message_class = MessageClass()
+        assert message_class.compose() == 'Message-class: ham\r\n'
+
+    def test_parse_valid(self):
+        message_class = MessageClass.parse('spam')
+        assert message_class
+
+    def test_parse_invalid(self):
+        with pytest.raises(HeaderCantParse):
+            message_class = MessageClass.parse('invalid')
