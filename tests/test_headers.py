@@ -14,7 +14,7 @@ class TestCompressHeader:
 
     def test_value(self):
         compress = Compress()
-        assert compress.zlib is not False
+        assert compress.zlib == True
 
     def test_header_field_name(self):
         compress = Compress()
@@ -37,9 +37,13 @@ class TestContentLength:
         content_length = ContentLength()
         assert content_length
 
-    def test_value(self):
+    def test_default_value(self):
         content_length = ContentLength()
-        assert content_length.length is not False
+        assert content_length.length == 0
+
+    def test_user_value(self):
+        content_length = ContentLength(42)
+        assert content_length.length == 42
 
     def test_header_field_name(self):
         content_length = ContentLength()
