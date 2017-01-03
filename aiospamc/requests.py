@@ -11,8 +11,7 @@ class SPAMCRequest(BodyHeaderManager, Outbound):
     '''SPAMC request object.'''
 
     protocol = b'SPAMC/1.5'
-    request_with_body = b'%(verb)b %(protocol)b\r\n%(headers)b\r\n%(body)b'
-    request_without_body = b'%(verb)b %(protocol)b\r\n%(headers)b\r\n'
+    request = b'%(verb)b %(protocol)b\r\n%(headers)b\r\n%(body)b'
 
     def __init__(self, verb, body = None, *headers):
         ''''''
@@ -29,36 +28,10 @@ class SPAMCRequest(BodyHeaderManager, Outbound):
     def compose(self):
         '''Composes a request based on the verb and headers that are currently set.'''
 
-        if self.body:
-            request = self.request_with_body % {b'verb': self.verb,
-                                                b'protocol': self.protocol,
-                                                b'headers': b''.join(map(bytes, self._headers.values())),
-                                                b'body' : self.body}
-        else:
-            request = self.request_without_body % {b'verb': self.verb,
-                                                b'protocol': self.protocol,
-                                                b'headers': b''.join(map(bytes, self._headers.values()))}
-#        if self.body:
-#            if self.compress:
-#                self.headers.append( Compress() )
-#                body_bytes = zlib.compress(bytes(self.body))
-#            else:
-#                body_bytes = bytes(self.body)
-#            self.headers.append( ContentLength( len(body_bytes) ) )
-#            request = self.request_with_body % { b'verb':     self.verb.encode(),
-#                                                 b'protocol': self.protocol.encode(),
-#                                                 b'headers':  b''.join(map(bytes, self.headers)),
-#                                                 b'body':     body_bytes }
-#        else:
-#            self.headers.append( ContentLength(0) )
-#            request = self.request_without_body % { b'verb':     self.verb.encode(),
-#                                                 b'protocol': self.protocol.encode(),
-#                                                 b'headers':  b''.join(map(bytes, self.headers)) }
-#
-#        if self.body:
-#            self.headers.pop() # pop Content-length header
-#        if self.compress:
-#            self.headers.pop() # pop Compress header
+        request = self.request % {b'verb': self.verb,
+                                  b'protocol': self.protocol,
+                                  b'headers': b''.join(map(bytes, self._headers.values())),
+                                  b'body' : self.body if self.body else b''}
 
         return request
 
