@@ -96,7 +96,11 @@ class TestMessageClass:
         message_class = MessageClass()
         assert message_class.value == MessageClassOption.ham
 
-    def test_user_value(self):
+    def test_user_value_ham(self):
+        message_class = MessageClass(MessageClassOption.ham)
+        assert message_class.value == MessageClassOption.ham
+
+    def test_user_value_spam(self):
         message_class = MessageClass(MessageClassOption.spam)
         assert message_class.value == MessageClassOption.spam
 
@@ -108,7 +112,11 @@ class TestMessageClass:
         message_class = MessageClass()
         assert message_class.compose() == 'Message-class: ham\r\n'
 
-    def test_parse_valid(self):
+    def test_parse_valid_ham(self):
+        message_class = MessageClass.parse('ham')
+        assert 'message_class' in locals()
+
+    def test_parse_valid_spam(self):
         message_class = MessageClass.parse('spam')
         assert 'message_class' in locals()
 
