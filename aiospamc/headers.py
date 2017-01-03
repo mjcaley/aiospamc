@@ -228,7 +228,7 @@ class Spam(Header):
         else:
             return None
 
-    def __init__(self, value=False, score='0', threshold='0'):
+    def __init__(self, value=False, score=0.0, threshold=0.0):
         self.value = value
         self.score = score
         self.threshold = threshold
