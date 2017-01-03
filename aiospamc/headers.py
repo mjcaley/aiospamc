@@ -257,7 +257,9 @@ class User(Header):
             obj = cls(match.groupdict()['user'])
             return obj
         else:
-            return None
+            raise HeaderCantParse({'message': 'Unable to parse string',
+                                   'string': string,
+                                   'pattern': cls.pattern.pattern})
 
     def __init__(self, name=getpass.getuser()):
         self.name = name
