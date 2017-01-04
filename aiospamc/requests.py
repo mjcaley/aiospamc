@@ -7,7 +7,20 @@ from aiospamc.transport import Outbound
 
 
 class SPAMCRequest(BodyHeaderManager, Outbound):
-    '''SPAMC request object.'''
+    '''SPAMC request object.
+
+    Attributes
+    ----------
+    verb : str
+        Method name of the request.
+    body : str
+        String representation of the body.  An instance of the
+        aiospamc.headers.ContentLength will be automatically added.
+    headers : tuple of aiospamc.headers.Header
+        Collection of headers to be added.  If it contains an instance of
+        aiospamc.headers.Compress then the body is automatically
+        compressed.
+    '''
 
     protocol = b'SPAMC/1.5'
     request = b'%(verb)b %(protocol)b\r\n%(headers)b\r\n%(body)b'
@@ -22,7 +35,7 @@ class SPAMCRequest(BodyHeaderManager, Outbound):
         body : str
             String representation of the body.  An instance of the
             aiospamc.headers.ContentLength will be automatically added.
-        *headers : tuple of aiospamc.headers.Header
+        headers : tuple of aiospamc.headers.Header
             Collection of headers to be added.  If it contains an instance of
             aiospamc.headers.Compress then the body is automatically
             compressed.
