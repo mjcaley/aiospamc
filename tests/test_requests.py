@@ -38,70 +38,37 @@ class TestCheck:
         check = Check('Test body\n')
         assert 'check' in locals()
 
-    def test_repr(self):
-        check = Check('Test body\n')
-        assert repr(check) == 'Check(message=\'Test body\n\', headers=(ContentLength(length=10),))'
-
 class TestHeaders:
     def test_instantiates(self):
         headers = Headers('Test body\n')
         assert 'headers' in locals()
-
-    def test_repr(self):
-        headers = Headers('Test body\n')
-        assert repr(headers) == 'Headers(message=\'Test body\n\', headers=(ContentLength(length=10),))'
 
 class TestPing:
     def test_instantiates(self):
         ping = Ping()
         assert 'ping' in locals()
 
-    def test_repr(self):
-        ping = Ping()
-        assert repr(ping) == 'Ping(headers=())'
-
 class TestProcess:
     def test_instantiates(self):
         process = Process('Test body\n')
         assert 'process' in locals()
-
-    def test_repr(self):
-        process = Process('Test body\n')
-        assert repr(process) == 'Process(message=\'Test body\n\', headers=(ContentLength(length=10),))'
 
 class TestReport:
     def test_instantiates(self):
         report = Report('Test body\n')
         assert 'report' in locals()
 
-    def test_repr(self):
-        report = Report('Test body\n')
-        assert repr(report) == 'Report(message=\'Test body\n\', headers=(ContentLength(length=10),))'
-
 class TestReportIfSpam:
     def test_instantiates(self):
         report_if_spam = ReportIfSpam('Test body\n')
         assert 'report_if_spam' in locals()
-
-    def test_repr(self):
-        report_if_spam = ReportIfSpam('Test body\n')
-        assert repr(report_if_spam) == 'ReportIfSpam(message=\'Test body\n\', headers=(ContentLength(length=10),))'
 
 class TestSymbols:
     def test_instantiates(self):
         symbols = Symbols('Test body\n')
         assert 'symbols' in locals()
 
-    def test_repr(self):
-        symbols = Symbols('Test body\n')
-        assert repr(symbols) == 'Symbols(message=\'Test body\n\', headers=(ContentLength(length=10),))'
-
 class TestTell:
     def test_instantiates(self):
         tell = Tell('Test body\n')
         assert 'tell' in locals()
-
-    def test_repr(self):
-        tell = Tell('Test body\n')
-        assert repr(tell) == 'Tell(message=\'Test body\n\', headers=(ContentLength(length=10),))'
-

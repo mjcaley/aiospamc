@@ -70,11 +70,6 @@ class Check(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('CHECK', message, *headers)
 
-    def __repr__(self):
-        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
-                                                       self.body.decode() if self.body else None,
-                                                       tuple(i for i in self._headers.values()))
-
 class Headers(SPAMCRequest):
     '''HEADERS request.  Send a message to be checked whether it's spam or not.
     Response will contain a Spam header and the body will contain the modified
@@ -84,20 +79,11 @@ class Headers(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('HEADERS', message, *headers)
 
-    def __repr__(self):
-        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
-                                                       self.body.decode() if self.body else None,
-                                                       tuple(i for i in self._headers.values()))
-
 class Ping(SPAMCRequest):
     '''PING request.  Send a request to see if the SPAMD service is alive.'''
 
     def __init__(self, *headers):
         super().__init__('PING', body=None, *headers)
-
-    def __repr__(self):
-        return '{}(headers={})'.format(self.__class__.__name__,
-                                       tuple(i for i in self._headers.values()))
 
 class Process(SPAMCRequest):
     '''PROCESS request.  Send a message to be checked whether it's spam or not.
@@ -108,11 +94,6 @@ class Process(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('PROCESS', message, *headers)
 
-    def __repr__(self):
-        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
-                                                       self.body.decode() if self.body else None,
-                                                       tuple(i for i in self._headers.values()))
-
 class Report(SPAMCRequest):
     '''REPORT request.  Send a message to be checked whether it's spam or not.
     Response will contain a Spam header and the body will contain a report.
@@ -120,11 +101,6 @@ class Report(SPAMCRequest):
 
     def __init__(self, message, *headers):
         super().__init__('REPORT', message, *headers)
-
-    def __repr__(self):
-        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
-                                                       self.body.decode() if self.body else None,
-                                                       tuple(i for i in self._headers.values()))
 
 class ReportIfSpam(SPAMCRequest):
     '''REPORT_IFSPAM request.  Send a message to be checked whether it's spam
@@ -135,11 +111,6 @@ class ReportIfSpam(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('REPORT_IFSPAM', message, *headers)
 
-    def __repr__(self):
-        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
-                                                       self.body.decode() if self.body else None,
-                                                       tuple(i for i in self._headers.values()))
-
 class Symbols(SPAMCRequest):
     '''SYMBOLS request.  Send a message to be checked whether it's spam or not.
     Response will contain a Spam header and the body will contain a comma
@@ -149,11 +120,6 @@ class Symbols(SPAMCRequest):
     def __init__(self, message, *headers):
         super().__init__('SYMBOLS', message, *headers)
 
-    def __repr__(self):
-        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
-                                                       self.body.decode() if self.body else None,
-                                                       tuple(i for i in self._headers.values()))
-
 class Tell(SPAMCRequest):
     '''TELL request.  Instruct the SPAMD service to perform an action on a
     message (learning, reporting, forgetting, and/or revoking).  The SPAMD
@@ -162,8 +128,3 @@ class Tell(SPAMCRequest):
 
     def __init__(self, message, *headers):
         super().__init__('TELL', message, *headers)
-
-    def __repr__(self):
-        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
-                                                       self.body.decode() if self.body else None,
-                                                       tuple(i for i in self._headers.values()))
