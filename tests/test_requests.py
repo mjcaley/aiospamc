@@ -4,7 +4,8 @@
 import pytest
 
 from aiospamc.headers import XHeader
-from aiospamc.requests import SPAMCRequest, Check, Headers, Ping, Process, Report, ReportIfSpam, Symbols, Tell
+from aiospamc.requests import (SPAMCRequest, Check, Headers, Ping, Process,
+                               Report, ReportIfSpam, Symbols, Tell)
 
 
 class TestSPAMCRequest:
