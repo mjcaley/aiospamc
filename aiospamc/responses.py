@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+'''Contains classes used for responses.'''
+
 import enum
 import re
 
@@ -10,6 +12,13 @@ from aiospamc.transport import Inbound
 
 
 class SPAMDStatus(enum.IntEnum):
+    '''Enumeration of status codes that the SPAMD will accompany with a
+    response.
+
+    Reference: https://svn.apache.org/repos/asf/spamassassin/trunk/spamd/spamd.raw
+    Look for the %resphash variable.
+    '''
+
     #pylint: disable=C0326
     def __new__(cls, value, description=''):
         #pylint: disable=protected-access
@@ -37,7 +46,25 @@ class SPAMDStatus(enum.IntEnum):
     EX_CONFIG       = 78, 'Configuration error'
     EX_TIMEOUT      = 79, 'Read timeout'
 
-class SPAMDResponse(Inbound):
+class SPAMDResponse(BodyHeaderManager, Inbound):
+    '''Class to encapsulate response.
+
+    Attributes
+    ----------
+    protocol_version : str
+        Protocol version given by the response.
+    status_code : aiospamc.responess.SPAMDStatus
+        Status code give by the response.
+    message : str
+        Message accompanying the status code.
+    body : str
+        Contents of the response body.
+    headers : tuple of aiospamc.headers.Header
+        Collection of headers to be added.  If it contains an instance of
+        aiospamc.headers.Compress then the body is automatically
+        compressed.
+    '''
+
     #pylint: disable=too-few-public-methods
     request_pattern = re.compile(r'^\s*'
                                  r'(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)'
@@ -45,6 +72,13 @@ class SPAMDResponse(Inbound):
                                  r'(?P<status>\d+)'
                                  r'\s+'
                                  r'(?P<message>.*)')
+    '''Regular expression pattern to match the response.  Protocol will match
+    the phrase 'SPAMD', version will match with the style '1.0', status will
+    match an integer.  The message will match all characters up until the next
+    newline.
+    '''
+    response = 'SPAMD/{version} {status} {message}\r\n{headers}\r\n{body}'
+    '''String used for composing a response.'''
 
     @classmethod
     def parse(cls, response):
@@ -69,11 +103,36 @@ class SPAMDResponse(Inbound):
                 header_list.append(header_obj)
 
         if body != []:
-            obj = cls(protocol_version, status_code, message, header_list, body[0])
+            obj = cls(protocol_version, status_code, message, body[0], *header_list)
         else:
-            obj = cls(protocol_version, status_code, message, header_list)
+            obj = cls(protocol_version, status_code, message, body=None, *header_list)
 
         return obj
+
+    def __init__(self, protocol_version, status_code, message, body=None, *headers):
+        '''SPAMDResponse constructor.
+
+        Parameters
+        ----------
+        protocol_version : str
+            Version reported by the SPAMD service response.
+        status_code : aiospamc.responses.SPAMDStatus
+            Success or error code.
+        message : str
+            Message associated with status code.
+        body : str
+            String representation of the body.  An instance of the
+            aiospamc.headers.ContentLength will be automatically added.
+        headers : tuple of aiospamc.headers.Header
+            Collection of headers to be added.  If it contains an instance of
+            aiospamc.headers.Compress then the body is automatically
+            compressed.
+        '''
+
+        self.protocol_version = protocol_version
+        self.status_code = status_code
+        self.message = message
+        super().__init__(body, *headers)
 
     def __repr__(self):
         resp_format = '{}(protocol_version={}, status_code={}, message={}, headers={}, body={})'
@@ -82,26 +141,12 @@ class SPAMDResponse(Inbound):
                                   self.protocol_version,
                                   self.status_code,
                                   self.message,
-                                  self.headers,
+                                  self._headers,
                                   self.body)
 
     def __str__(self):
-        if self.body:
-            return 'SPAMD/{} {} {}\n{}\n{}'.format(self.protocol_version,
-                                                   self.status_code,
-                                                   self.message,
-                                                   ''.join(map(str, self.headers)),
-                                                   ''.join([self.body[:80], '...\n']))
-        else:
-            return 'SPAMD/{} {} {}\n{}'.format(self.protocol_version,
-                                               self.status_code,
-                                               self.message,
-                                               ''.join(map(str, self.headers)))
-
-    def __init__(self, protocol_version, status_code, message, headers=[], body=None):
-        #pylint: disable=too-many-arguments
-        self.protocol_version = protocol_version
-        self.status_code = status_code
-        self.message = message
-        self.headers = headers
-        self.body = body
+        return self.response.format(version=self.protocol_version,
+                                    status=self.status_code,
+                                    message=self.message,
+                                    headers=''.join(map(str, self._headers)),
+                                    body=''.join([self.body[:80], '...\n']) if self.body else '')
