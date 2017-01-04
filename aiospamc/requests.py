@@ -48,10 +48,11 @@ class SPAMCRequest(BodyHeaderManager, Outbound):
         return self.compose()
 
     def __repr__(self):
-        return '{}({}, {}, {})'.format(self.__class__.__name__,
-                                       self.verb,
-                                       self._headers,
-                                       self.body)
+        request_format = '{}(verb=\'{}\', body={}, headers={})'
+        return request_format.format(self.__class__.__name__,
+                                     self.verb.decode(),
+                                     self.body.decode() if self.body else None,
+                                     tuple(i for i in self._headers.values()))
 
     def compose(self):
         request = self.request % {b'verb': self.verb,
@@ -70,9 +71,9 @@ class Check(SPAMCRequest):
         super().__init__('CHECK', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__,
-                                                   self.body,
-                                                   self._headers)
+        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
+                                                       self.body.decode() if self.body else None,
+                                                       tuple(i for i in self._headers.values()))
 
 class Headers(SPAMCRequest):
     '''HEADERS request.  Send a message to be checked whether it's spam or not.
@@ -84,9 +85,9 @@ class Headers(SPAMCRequest):
         super().__init__('HEADERS', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__,
-                                                   self.body,
-                                                   self._headers)
+        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
+                                                       self.body.decode() if self.body else None,
+                                                       tuple(i for i in self._headers.values()))
 
 class Ping(SPAMCRequest):
     '''PING request.  Send a request to see if the SPAMD service is alive.'''
@@ -95,7 +96,8 @@ class Ping(SPAMCRequest):
         super().__init__('PING', body=None, *headers)
 
     def __repr__(self):
-        return '{}(headers={})'.format(self.__class__.__name__, self._headers)
+        return '{}(headers={})'.format(self.__class__.__name__,
+                                       tuple(i for i in self._headers.values()))
 
 class Process(SPAMCRequest):
     '''PROCESS request.  Send a message to be checked whether it's spam or not.
@@ -107,9 +109,9 @@ class Process(SPAMCRequest):
         super().__init__('PROCESS', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__,
-                                                   self.body,
-                                                   self._headers)
+        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
+                                                       self.body.decode() if self.body else None,
+                                                       tuple(i for i in self._headers.values()))
 
 class Report(SPAMCRequest):
     '''REPORT request.  Send a message to be checked whether it's spam or not.
@@ -120,9 +122,9 @@ class Report(SPAMCRequest):
         super().__init__('REPORT', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__,
-                                                   self.body,
-                                                   self._headers)
+        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
+                                                       self.body.decode() if self.body else None,
+                                                       tuple(i for i in self._headers.values()))
 
 class ReportIfSpam(SPAMCRequest):
     '''REPORT_IFSPAM request.  Send a message to be checked whether it's spam
@@ -134,9 +136,9 @@ class ReportIfSpam(SPAMCRequest):
         super().__init__('REPORT_IFSPAM', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__,
-                                                   self.body,
-                                                   self._headers)
+        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
+                                                       self.body.decode() if self.body else None,
+                                                       tuple(i for i in self._headers.values()))
 
 class Symbols(SPAMCRequest):
     '''SYMBOLS request.  Send a message to be checked whether it's spam or not.
@@ -148,9 +150,9 @@ class Symbols(SPAMCRequest):
         super().__init__('SYMBOLS', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__,
-                                                   self.body,
-                                                   self._headers)
+        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
+                                                       self.body.decode() if self.body else None,
+                                                       tuple(i for i in self._headers.values()))
 
 class Tell(SPAMCRequest):
     '''TELL request.  Instruct the SPAMD service to perform an action on a
@@ -162,6 +164,6 @@ class Tell(SPAMCRequest):
         super().__init__('TELL', message, *headers)
 
     def __repr__(self):
-        return '{}(message={}, headers={})'.format(self.__class__.__name__,
-                                                   self.body,
-                                                   self._headers)
+        return '{}(message=\'{}\', headers={})'.format(self.__class__.__name__,
+                                                       self.body.decode() if self.body else None,
+                                                       tuple(i for i in self._headers.values()))
