@@ -13,29 +13,6 @@ from aiospamc.options import Action, MessageClassOption
 class Header(Inbound, Outbound):
     '''Header base class.'''
 
-    @classmethod
-    def parse(cls, string):
-        '''Class method to parse a string and return an instance of the
-        class.
-
-        Parameters
-        ----------
-        string : str
-            Text of the header from a request or response.  Only includes the
-            field name, not the value.
-
-        Returns
-        -------
-        Header
-            A subclass of Header.
-
-        Raises
-        ------
-        HeaderCantParse
-        '''
-
-        raise NotImplementedError
-
     def __str__(self):
         return self.compose()
 

@@ -21,7 +21,7 @@ class Inbound:
         Returns
         -------
         object
-            An instance of the class that inherits ParseString.
+            An instance of the class that inherits Inbound.
         '''
 
         raise NotImplementedError
