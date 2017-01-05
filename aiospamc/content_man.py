@@ -57,7 +57,7 @@ class BodyHeaderManager:
         self._body = value.encode()
         if 'Compress' in self._headers:
             self._compress_body()
-        self.add_header(ContentLength(len(self._body)))
+        self._set_content_length()
 
     @body.deleter
     def body(self):
@@ -71,9 +71,14 @@ class BodyHeaderManager:
 
     def _compress_body(self):
         self._body = zlib.compress(bytes(self._body))
+        self._set_content_length()
 
     def _decompress_body(self):
         self._body = zlib.decompress(bytes(self._body))
+        self._set_content_length()
+
+    def _set_content_length(self):
+        self.add_header(ContentLength(len(self._body)))
 
     def add_header(self, header):
         '''Adds a header to the request.  A header with the same name will be
