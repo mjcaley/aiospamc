@@ -99,7 +99,7 @@ class Client:
 
         Raises
         ------
-        BadResponse
+        aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
         OSError
@@ -128,7 +128,7 @@ class Client:
 
         Returns
         -------
-        SPAMDResponse
+        aiospamc.responses.SPAMDResponse
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -136,7 +136,7 @@ class Client:
 
         Raises
         ------
-        BadResponse
+        aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
         OSError
@@ -163,7 +163,7 @@ class Client:
 
         Raises
         ------
-        BadResponse
+        aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
         OSError
@@ -198,7 +198,7 @@ class Client:
 
         Raises
         ------
-        BadResponse
+        aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
         OSError
@@ -235,7 +235,7 @@ class Client:
 
         Raises
         ------
-        BadResponse
+        aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
         OSError
@@ -274,7 +274,7 @@ class Client:
 
         Raises
         ------
-        BadResponse
+        aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
         OSError
@@ -314,7 +314,7 @@ class Client:
 
         Raises
         ------
-        BadResponse
+        aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
         OSError
@@ -366,7 +366,7 @@ class Client:
 
         Raises
         ------
-        BadResponse
+        aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
         OSError

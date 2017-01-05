@@ -367,7 +367,7 @@ def header_from_string(string):
 
     Raises
     ------
-    HeaderCantParse
+    aiospamc.exceptions.HeaderCantParse
     '''
 
     #pylint: disable=too-many-return-statements
