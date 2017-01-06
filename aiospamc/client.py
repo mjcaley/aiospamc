@@ -376,10 +376,9 @@ class Client:
         '''
 
         request = Tell(message,
-                       [MessageClass(message_class),
-                        Set(set_action),
-                        Remove(remove_action)]
-                      )
+                       MessageClass(message_class),
+                       Set(set_action),
+                       Remove(remove_action))
         if self.compress:
             request.add_header(Compress())
         if self.user:
