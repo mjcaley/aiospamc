@@ -74,6 +74,8 @@ class Client:
 
         reader, writer = await self.connect()
         writer.write(bytes(request))
+        writer.write_eof()
+        await writer.drain()
         data = await reader.read()
         response = SPAMDResponse.parse(data.decode())
 
