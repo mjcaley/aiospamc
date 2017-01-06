@@ -10,3 +10,7 @@ class HeaderCantParse(Exception):
 class BadResponse(Exception):
     '''Response is not in the expected format.'''
     pass
+
+class SPAMDConnectionRefused(Exception):
+    '''Server refused connection.'''
+    pass

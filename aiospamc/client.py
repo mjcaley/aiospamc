@@ -4,6 +4,7 @@
 
 import asyncio
 
+from aiospamc.exceptions import SPAMDConnectionRefused
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
 from aiospamc.options import Action, MessageClassOption
 from aiospamc.requests import (Check, Headers, Ping, Process,
@@ -53,10 +54,15 @@ class Client:
         -------
         (asyncio.StreamReader, asyncio.StreamWriter)
         '''
-        reader, writer = await asyncio.open_connection(self.host,
-                                                       self.port,
-                                                       loop=self.loop,
-                                                       ssl=self.ssl)
+
+        try:
+            reader, writer = await asyncio.open_connection(self.host,
+                                                           self.port,
+                                                           loop=self.loop,
+                                                           ssl=self.ssl)
+        except (ConnectionRefusedError, OSError) as e:
+            raise SPAMDConnectionRefused(e)
+
         return reader, writer
 
     async def send(self, request):
