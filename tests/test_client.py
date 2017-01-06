@@ -56,89 +56,75 @@ class SimpleServer:
         self.writer.write(self.response.encode())
         self.writer.close()
 
-def new_server(loop, address=(HOST, PORT)):
+async def valid_response(loop, address=(HOST, PORT)):
     server = SimpleServer('SPAMD/1.5 0 EX_OK\r\nSpam: True ; 2.0 / 4.0\r\n\r\n')
-    coro = asyncio.start_server(server.run, host=address[0], port=address[1], loop=loop)
-    return server, coro
+    await asyncio.start_server(server.run, host=address[0], port=address[1], loop=loop)
+    return server
 
-def valid_response(func):
-    def inner(unused_tcp_port):
-        server = SimpleServer('SPAMD/1.5 0 EX_OK\r\nSpam: True ; 2.0 / 4.0\r\n\r\n')
-        coro = asyncio.start_server(server.run, host=address[0], port=address[1], loop=loop)
-        return server, coro
 
-def test_check_valid_response(unused_tcp_port):
-    event_loop = asyncio.get_event_loop()
-    server, server_coro = new_server(event_loop, (HOST, unused_tcp_port))
+@pytest.mark.asyncio
+async def test_check_valid_response(event_loop, unused_tcp_port):
+    server = await valid_response(event_loop, (HOST, unused_tcp_port))
     client = Client(HOST, unused_tcp_port, loop=event_loop)
-    check_coro = client.check(GTUBE)
-    response, server_result = event_loop.run_until_complete(asyncio.gather(check_coro, server_coro))
+    response = await client.check(GTUBE)
 
     assert isinstance(response, SPAMDResponse)
 
-def test_headers_valid_response(unused_tcp_port):
-    event_loop = asyncio.get_event_loop()
-    server, server_coro = new_server(event_loop, (HOST, unused_tcp_port))
+@pytest.mark.asyncio
+async def test_headers_valid_response(event_loop, unused_tcp_port):
+    server = await valid_response(event_loop, (HOST, unused_tcp_port))
     client = Client(HOST, unused_tcp_port, loop=event_loop)
-    headers_coro = client.headers(GTUBE)
-    response, server_result = event_loop.run_until_complete(asyncio.gather(headers_coro, server_coro))
+    response = await client.headers(GTUBE)
 
     assert isinstance(response, SPAMDResponse)
 
-def test_ping_valid_response(unused_tcp_port):
-    event_loop = asyncio.get_event_loop()
-    server, server_coro = new_server(event_loop, (HOST, unused_tcp_port))
+@pytest.mark.asyncio
+async def test_ping_valid_response(event_loop, unused_tcp_port):
+    server = await valid_response(event_loop, (HOST, unused_tcp_port))
     client = Client(HOST, unused_tcp_port, loop=event_loop)
-    ping_coro = client.ping()
-    response, server_result = event_loop.run_until_complete(asyncio.gather(ping_coro, server_coro))
+    response = await client.ping()
+    
+    assert isinstance(response, SPAMDResponse)
+
+@pytest.mark.asyncio
+async def test_process_valid_response(event_loop, unused_tcp_port):
+    server = await valid_response(event_loop, (HOST, unused_tcp_port))
+    client = Client(HOST, unused_tcp_port, loop=event_loop)
+    response = await client.process(GTUBE)
 
     assert isinstance(response, SPAMDResponse)
 
-def test_process_valid_response(unused_tcp_port):
-    event_loop = asyncio.get_event_loop()
-    server, server_coro = new_server(event_loop, (HOST, unused_tcp_port))
+@pytest.mark.asyncio
+async def test_report_valid_response(event_loop, unused_tcp_port):
+    server = await valid_response(event_loop, (HOST, unused_tcp_port))
     client = Client(HOST, unused_tcp_port, loop=event_loop)
-    process_coro = client.process(GTUBE)
-    response, server_result = event_loop.run_until_complete(asyncio.gather(process_coro, server_coro))
+    response = await client.report(GTUBE)
 
     assert isinstance(response, SPAMDResponse)
 
-def test_report_valid_response(unused_tcp_port):
-    event_loop = asyncio.get_event_loop()
-    server, server_coro = new_server(event_loop, (HOST, unused_tcp_port))
+@pytest.mark.asyncio
+async def test_report_if_spam_valid_response(event_loop, unused_tcp_port):
+    server = await valid_response(event_loop, (HOST, unused_tcp_port))
     client = Client(HOST, unused_tcp_port, loop=event_loop)
-    report_coro = client.report(GTUBE)
-    response, server_result = event_loop.run_until_complete(asyncio.gather(report_coro, server_coro))
+    response = await client.report_if_spam(GTUBE)
 
     assert isinstance(response, SPAMDResponse)
 
-def test_report_if_spam_valid_response(unused_tcp_port):
-    event_loop = asyncio.get_event_loop()
-    server, server_coro = new_server(event_loop, (HOST, unused_tcp_port))
+@pytest.mark.asyncio
+async def test_symbols_valid_response(event_loop, unused_tcp_port):
+    server = await valid_response(event_loop, (HOST, unused_tcp_port))
     client = Client(HOST, unused_tcp_port, loop=event_loop)
-    report_if_spam_coro = client.report_if_spam(GTUBE)
-    response, server_result = event_loop.run_until_complete(asyncio.gather(report_if_spam_coro, server_coro))
+    response = await client.symbols(GTUBE)
 
     assert isinstance(response, SPAMDResponse)
 
-def test_symbols_valid_response(unused_tcp_port):
-    event_loop = asyncio.get_event_loop()
-    server, server_coro = new_server(event_loop, (HOST, unused_tcp_port))
+@pytest.mark.asyncio
+async def test_tell_valid_response(event_loop, unused_tcp_port):
+    server = await valid_response(event_loop, (HOST, unused_tcp_port))
     client = Client(HOST, unused_tcp_port, loop=event_loop)
-    symbols_coro = client.symbols(GTUBE)
-    response, server_result = event_loop.run_until_complete(asyncio.gather(symbols_coro, server_coro))
-
-    assert isinstance(response, SPAMDResponse)
-
-def test_tell_valid_response(unused_tcp_port):
-    event_loop = asyncio.get_event_loop()
-    server, server_coro = new_server(event_loop, (HOST, unused_tcp_port))
-    client = Client(HOST, unused_tcp_port, loop=event_loop)
-    tell_coro = client.tell(MessageClassOption.spam,
+    response = await client.tell(MessageClassOption.spam,
                             GTUBE,
                             set_action=Action(local=True, remote=True),
-                            remove_action=Action(local=False, remote=False),
-                           )
-    response, server_result = event_loop.run_until_complete(asyncio.gather(tell_coro, server_coro))
+                            remove_action=Action(local=False, remote=False))
 
     assert isinstance(response, SPAMDResponse)
