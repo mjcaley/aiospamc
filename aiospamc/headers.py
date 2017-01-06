@@ -190,6 +190,11 @@ class _SetRemove(Header):
         self.action = action
 
     def compose(self):
+        if not self.action.local and not self.action.remote:
+            # if nothing is set, then return a blank string so the request
+            # doesn't get tainted
+            return ''
+
         values = []
         if self.action.local:
             values.append('local')
