@@ -10,6 +10,7 @@ matrix:
     - python: "nightly"
 before_install:
   - pip install pytest --upgrade  # Workaround Python 3.5 not having updated PyTest package
+  - pip install codecov
 install:
   - pip install .
 script: python setup.py test
