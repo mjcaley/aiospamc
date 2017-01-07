@@ -14,8 +14,8 @@ setup(
     name='aiospamc',
     version='0.1.0',
 
-    description='A Python library to communicate with SpamAssassin\'s SPAMD'
-                'service implemented with asyncio.',
+    description='An asyncio-based library to communicate with SpamAssassin\'s '
+                'SPAMD service.',
     long_description=long_description,
 
     url='https://github.com/mjcaley/aiospamc',
@@ -26,7 +26,7 @@ setup(
     license='MIT',
 
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
 
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',

@@ -9,13 +9,7 @@ Python asyncio-based library that implements the SPAMC/SPAMD client protocol use
 ------------
 Requirements
 ------------
-* Python 3.5
-
------
-To Do
------
-* Add exception handling for socket problems and bad responses
-* Documentation of library and SPAMC/SPAMD protocol
+* Python 3.5 or higher
 
 -------
 Example

@@ -70,12 +70,12 @@ class Client:
 
         Parameters
         ----------
-        request : SPAMCRequest
+        request : aiospamc.requests.SPAMCRequest
             Request object to send.
 
         Returns
         -------
-        SPAMDResponse
+        aiospamc.responses.SPAMDResponse
         '''
 
         reader, writer = await self.connect()
@@ -103,15 +103,17 @@ class Client:
 
         Returns
         -------
-        SPAMDResponse
+        aiospamc.responses.SPAMDResponse
+            The response will contain a 'Spam' header if the message is marked
+            as spam as well as the score and threshold.
 
         Raises
         ------
         aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        OSError
-        ConnectionRefusedError
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         request = Check(message)
@@ -147,8 +149,8 @@ class Client:
         aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        OSError
-        ConnectionRefusedError
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         request = Headers(message)
@@ -166,7 +168,7 @@ class Client:
 
         Returns
         -------
-        SPAMDResponse
+        aiospamc.responses.SPAMDResponse
             Response message will contain 'PONG' if successful.
 
         Raises
@@ -174,8 +176,8 @@ class Client:
         aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        OSError
-        ConnectionRefusedError
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         request = Ping()
@@ -198,7 +200,7 @@ class Client:
 
         Returns
         -------
-        SPAMDResponse
+        aiospamc.responses.SPAMDResponse
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -209,8 +211,8 @@ class Client:
         aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        OSError
-        ConnectionRefusedError
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         request = Process(message)
@@ -235,7 +237,7 @@ class Client:
 
         Returns
         -------
-        SPAMDResponse
+        aiospamc.responses.SPAMDResponse
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -246,8 +248,8 @@ class Client:
         aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        OSError
-        ConnectionRefusedError
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         request = Report(message)
@@ -273,7 +275,7 @@ class Client:
 
         Returns
         -------
-        SPAMDResponse
+        aiospamc.responses.SPAMDResponse
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -285,8 +287,8 @@ class Client:
         aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        OSError
-        ConnectionRefusedError
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         request = ReportIfSpam(message)
@@ -314,7 +316,7 @@ class Client:
 
         Returns
         -------
-        SPAMDResponse
+        aiospamc.responses.SPAMDResponse
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
@@ -325,8 +327,8 @@ class Client:
         aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        OSError
-        ConnectionRefusedError
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         request = Symbols(message)
@@ -365,7 +367,7 @@ class Client:
 
         Returns
         -------
-        SPAMDResponse
+        aiospamc.responses.SPAMDResponse
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
@@ -377,8 +379,8 @@ class Client:
         aiospamc.exceptions.BadResponse
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        OSError
-        ConnectionRefusedError
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         request = Tell(message,
