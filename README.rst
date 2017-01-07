@@ -1,6 +1,12 @@
 ========
 aiospamc
 ========
+
+.. image:: https://travis-ci.org/mjcaley/aiospamc.svg?branch=master
+    :target: https://travis-ci.org/mjcaley/aiospamc
+.. image:: https://codecov.io/gh/mjcaley/aiospamc/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/mjcaley/aiospamc
+    
 -----------
 Description
 -----------
