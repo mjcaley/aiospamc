@@ -140,7 +140,7 @@ class Client:
 
     def _supplement_request(self, request):
         '''Adds User and Compress headers to the request if the client is
-        configured to do so.
+        configured to do so.  Object is modified in place.
 
         Returns
         -------
@@ -156,8 +156,6 @@ class Client:
                               self.user,
                               id(request))
             request.add_header(User(self.user))
-
-        return request
 
     async def check(self, message):
         '''Request the SPAMD service to check a message with a CHECK request.
