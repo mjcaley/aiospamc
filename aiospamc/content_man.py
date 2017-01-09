@@ -41,7 +41,10 @@ class BodyHeaderManager:
             Contents of the body.  If the aiospamc.headers.Compress header is
             present then the value of body will be compressed.'''
 
-        return self._body
+        if 'Compress' in self._headers:
+            return zlib.decompress(self._body)
+        else:
+            return self._body
 
     @body.setter
     def body(self, value):
