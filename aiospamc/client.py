@@ -3,8 +3,9 @@
 '''Contains the Client class that is used to interact with SPAMD.'''
 
 import asyncio
+import logging
 
-from aiospamc.exceptions import SPAMDConnectionRefused
+from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
 from aiospamc.options import Action, MessageClassOption
 from aiospamc.requests import (Check, Headers, Ping, Process,
@@ -13,7 +14,25 @@ from aiospamc.responses import SPAMDResponse
 
 
 class Client:
-    '''Client object for interacting with SPAMD.'''
+    '''Client object for interacting with SPAMD.
+
+    Attributes
+    ----------
+    host : :obj:`str`, optional
+        Hostname or IP address of the SPAMD service, defaults to localhost.
+    port : :obj:`int`, optional
+        Port number for the SPAMD service, defaults to 783.
+    user : :obj:`str`, optional
+        Name of the user that SPAMD will run the checks under.
+    compress : :obj:`bool`, optional
+        If true, the request body will be compressed.
+    ssl : :obj:`bool`, optional
+        If true, will enable SSL/TLS for the connection.
+    loop : asyncio.AbstractEventLoop
+        The asyncio event loop.
+    logger : logging.Logger
+        Logging instance, logs to 'aiospamc.client'
+    '''
 
     def __init__(self,
                  host='localhost',
@@ -47,6 +66,23 @@ class Client:
         self.ssl = ssl
         self.loop = loop or asyncio.get_event_loop()
 
+        self.logger = logging.getLogger(__name__)
+        self.logger.debug('Created instance of %r', self)
+
+    def __repr__(self):
+        client_fmt = ('{}(host=\'{}\', '
+                      'port={}, '
+                      'user=\'{}\', '
+                      'compress={}, '
+                      'ssl={})')
+        return client_fmt.format(self.__class__.__name__,
+                                 self.host,
+                                 self.port,
+                                 self.user,
+                                 self.compress,
+                                 self.ssl,
+                                 self.loop)
+
     async def connect(self):
         '''Opens a socket connection to the SPAMD service.
 
@@ -55,13 +91,18 @@ class Client:
         (asyncio.StreamReader, asyncio.StreamWriter)
         '''
 
+        self.logger.debug('Connecting to %s:%s', self.host, self.port)
         try:
             reader, writer = await asyncio.open_connection(self.host,
                                                            self.port,
                                                            loop=self.loop,
                                                            ssl=self.ssl)
-        except (ConnectionRefusedError, OSError) as e:
-            raise SPAMDConnectionRefused(e)
+        except (ConnectionRefusedError, OSError) as error:
+            raised = SPAMDConnectionRefused(error)
+            self.logger.exception('Exception occurred when connecting: %s', raised)
+            raise raised
+
+        self.logger.debug('Connected to %s:%i', self.host, self.port)
 
         return reader, writer
 
@@ -79,13 +120,45 @@ class Client:
         '''
 
         reader, writer = await self.connect()
+
+        self.logger.debug('Sending request (%s)', id(request))
         writer.write(bytes(request))
         writer.write_eof()
         await writer.drain()
+        self.logger.debug('Request (%s) successfully sent', id(request))
+
         data = await reader.read()
-        response = SPAMDResponse.parse(data.decode())
+        try:
+            response = SPAMDResponse.parse(data.decode())
+        except BadResponse as error:
+            self.logger.exception('Exception when composing response: %s', error)
+            raise error
+        self.logger.debug('Received repsonse (%s) for request (%s)',
+                          id(response),
+                          id(request))
 
         return response
+
+    def _supplement_request(self, request):
+        '''Adds User and Compress headers to the request if the client is
+        configured to do so.
+
+        Returns
+        -------
+        aiospamc.requests.SPAMCRequest
+            The modified request.
+        '''
+
+        if self.compress and request.body:
+            self.logger.debug('Added Compress header to request (%s)', id(request))
+            request.add_header(Compress())
+        if self.user:
+            self.logger.debug('Added user header for \'%s\' to request (%s)',
+                              self.user,
+                              id(request))
+            request.add_header(User(self.user))
+
+        return request
 
     async def check(self, message):
         '''Request the SPAMD service to check a message with a CHECK request.
@@ -117,10 +190,8 @@ class Client:
         '''
 
         request = Check(message)
-        if self.compress:
-            request.add_header(Compress())
-        if self.user:
-            request.add_header(User(self.user))
+        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -154,10 +225,8 @@ class Client:
         '''
 
         request = Headers(message)
-        if self.compress:
-            request.add_header(Compress())
-        if self.user:
-            request.add_header(User(self.user))
+        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -181,8 +250,8 @@ class Client:
         '''
 
         request = Ping()
-        if self.user:
-            request.add_header(User(self.user))
+        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -216,10 +285,8 @@ class Client:
         '''
 
         request = Process(message)
-        if self.compress:
-            request.add_header(Compress())
-        if self.user:
-            request.add_header(User(self.user))
+        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -253,10 +320,8 @@ class Client:
         '''
 
         request = Report(message)
-        if self.compress:
-            request.add_header(Compress())
-        if self.user:
-            request.add_header(User(self.user))
+        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -292,10 +357,8 @@ class Client:
         '''
 
         request = ReportIfSpam(message)
-        if self.compress:
-            request.add_header(Compress())
-        if self.user:
-            request.add_header(User(self.user))
+        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -332,10 +395,8 @@ class Client:
         '''
 
         request = Symbols(message)
-        if self.compress:
-            request.add_header(Compress())
-        if self.user:
-            request.add_header(User(self.user))
+        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -387,10 +448,8 @@ class Client:
                        MessageClass(message_class),
                        Set(set_action),
                        Remove(remove_action))
-        if self.compress:
-            request.add_header(Compress())
-        if self.user:
-            request.add_header(User(self.user))
+        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self._supplement_request(request)
         response = await self.send(request)
 
         return response
