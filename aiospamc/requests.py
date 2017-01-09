@@ -2,8 +2,6 @@
 
 '''Contains all requests that can be made to the SPAMD service.'''
 
-import logging
-
 from aiospamc.content_man import BodyHeaderManager
 from aiospamc.transport import Outbound
 
@@ -45,7 +43,6 @@ class SPAMCRequest(BodyHeaderManager, Outbound):
 
         self.verb = verb.encode()
         super().__init__(body, *headers)
-        self.logger = logging.getLogger(__name__)
 
     def __bytes__(self):
         return self.compose()
