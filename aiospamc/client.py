@@ -88,6 +88,11 @@ class Client:
         Returns
         -------
         (asyncio.StreamReader, asyncio.StreamWriter)
+
+        Raises
+        ------
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         self.logger.debug('Connecting to %s:%s', self.host, self.port)
@@ -116,6 +121,14 @@ class Client:
         Returns
         -------
         aiospamc.responses.SPAMDResponse
+
+        Raises
+        ------
+        aiospamc.exceptions.BadResponse
+            If the response from SPAMD is ill-formed this exception will be
+            raised.
+        aiospamc.exceptions.SPAMDConnectionRefused
+            Raised if an error occurred when trying to connect.
         '''
 
         reader, writer = await self.connect()
