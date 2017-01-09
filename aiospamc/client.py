@@ -8,8 +8,7 @@ import logging
 from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
 from aiospamc.options import Action, MessageClassOption
-from aiospamc.requests import (Check, Headers, Ping, Process,
-                               Report, ReportIfSpam, Symbols, Tell)
+from aiospamc.requests import SPAMCRequest
 from aiospamc.responses import SPAMDResponse
 
 
@@ -189,7 +188,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = Check(message)
+        request = SPAMCRequest('CHECK', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -224,7 +223,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = Headers(message)
+        request = SPAMCRequest('HEADERS', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -249,7 +248,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = Ping()
+        request = SPAMCRequest('PING')
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -284,7 +283,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = Process(message)
+        request = SPAMCRequest('PROCESS', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -319,7 +318,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = Report(message)
+        request = SPAMCRequest('REPORT', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -356,7 +355,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = ReportIfSpam(message)
+        request = SPAMCRequest('REPORT_IFSPAM', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -394,7 +393,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = Symbols(message)
+        request = SPAMCRequest('SYMBOLS', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -444,10 +443,11 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = Tell(message,
-                       MessageClass(message_class),
-                       Set(set_action),
-                       Remove(remove_action))
+        request = SPAMCRequest('TELL',
+                               message,
+                               MessageClass(message_class),
+                               Set(set_action),
+                               Remove(remove_action))
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
