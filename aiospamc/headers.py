@@ -266,7 +266,7 @@ class Spam(Header):
     '''
 
     pattern = re.compile(r'\s*'
-                         r'(?P<value>true|false)'
+                         r'(?P<value>true|yes|false|no)'
                          r'\s*;\s*'
                          r'(?P<score>\d+(\.\d+)?)'
                          r'\s*/\s*'
@@ -281,7 +281,7 @@ class Spam(Header):
         match = cls.pattern.match(string)
         if match:
             obj = cls()
-            obj.value = bool(match.groupdict()['value'])
+            obj.value = match.groupdict()['value'].lower() in ['true', 'yes']
             obj.score = float(match.groupdict()['score'])
             obj.threshold = float(match.groupdict()['threshold'])
 

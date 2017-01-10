@@ -271,8 +271,14 @@ class TestSpam:
         spam = Spam()
         assert spam.compose() == 'Spam: False ; 0.0 / 0.0\r\n'
 
-    def test_parse_valid(self):
-        spam = Spam.parse('True ; 4.0 / 2.0')
+    @pytest.mark.parametrize('test_input', [
+        'True ; 4.0 / 2.0',
+        'Yes ; 4.0 / 2.0',
+        'False ; 4.0 / 2.0',
+        'No ; 4.0 / 2.0',
+    ])
+    def test_parse_valid(self, test_input):
+        spam = Spam.parse(test_input)
         assert 'spam' in locals()
 
     def test_parse_invalid(self):
