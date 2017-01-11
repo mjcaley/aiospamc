@@ -11,7 +11,7 @@ from aiospamc.headers import header_from_string
 from aiospamc.transport import Inbound
 
 
-class SPAMDStatus(enum.IntEnum):
+class Status(enum.IntEnum):
     '''Enumeration of status codes that the SPAMD will accompany with a
     response.
 
@@ -46,14 +46,14 @@ class SPAMDStatus(enum.IntEnum):
     EX_CONFIG       = 78, 'Configuration error'
     EX_TIMEOUT      = 79, 'Read timeout'
 
-class SPAMDResponse(BodyHeaderManager, Inbound):
+class Response(BodyHeaderManager, Inbound):
     '''Class to encapsulate response.
 
     Attributes
     ----------
     protocol_version : str
         Protocol version given by the response.
-    status_code : aiospamc.responess.SPAMDStatus
+    status_code : aiospamc.responess.Status
         Status code give by the response.
     message : str
         Message accompanying the status code.
@@ -94,7 +94,7 @@ class SPAMDResponse(BodyHeaderManager, Inbound):
             raise BadResponse
 
         protocol_version = response_match['version'].strip()
-        status_code = SPAMDStatus(int(response_match['status']))
+        status_code = Status(int(response_match['status']))
         message = response_match['message'].strip()
 
         header_tuple = cls._parse_headers(headers)
@@ -112,13 +112,13 @@ class SPAMDResponse(BodyHeaderManager, Inbound):
         return tuple(header_from_string(header) for header in headers)
 
     def __init__(self, protocol_version, status_code, message, body=None, *headers):
-        '''SPAMDResponse constructor.
+        '''Response constructor.
 
         Parameters
         ----------
         protocol_version : str
             Version reported by the SPAMD service response.
-        status_code : aiospamc.responses.SPAMDStatus
+        status_code : aiospamc.responses.Status
             Success or error code.
         message : str
             Message associated with status code.

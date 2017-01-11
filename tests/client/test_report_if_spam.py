@@ -8,7 +8,7 @@ from servers import *
 
 from aiospamc import Client
 from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
-from aiospamc.responses import SPAMDResponse
+from aiospamc.responses import Response
 
 
 @pytest.mark.asyncio
@@ -23,7 +23,7 @@ async def test_report_if_spam_valid_response(event_loop, unused_tcp_port):
     client = Client(HOST, unused_tcp_port, loop=event_loop)
     response = await client.report_if_spam(GTUBE)
 
-    assert isinstance(response, SPAMDResponse)
+    assert isinstance(response, Response)
 
 @pytest.mark.asyncio
 async def test_report_if_spam_invalid_response(event_loop, unused_tcp_port):

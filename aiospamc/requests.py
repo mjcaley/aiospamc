@@ -6,7 +6,7 @@ from aiospamc.content_man import BodyHeaderManager
 from aiospamc.transport import Outbound
 
 
-class SPAMCRequest(BodyHeaderManager, Outbound):
+class Request(BodyHeaderManager, Outbound):
     '''SPAMC request object.
 
     Attributes
@@ -26,7 +26,7 @@ class SPAMCRequest(BodyHeaderManager, Outbound):
     request = b'%(verb)b %(protocol)b\r\n%(headers)b\r\n%(body)b'
 
     def __init__(self, verb, body=None, *headers):
-        '''SPAMCRequest constructor.
+        '''Request constructor.
 
         Parameters
         ----------

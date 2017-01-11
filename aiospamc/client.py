@@ -8,8 +8,8 @@ import logging
 from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
 from aiospamc.options import Action, MessageClassOption
-from aiospamc.requests import SPAMCRequest
-from aiospamc.responses import SPAMDResponse
+from aiospamc.requests import Request
+from aiospamc.responses import Response
 
 
 class Client:
@@ -115,12 +115,12 @@ class Client:
 
         Parameters
         ----------
-        request : aiospamc.requests.SPAMCRequest
+        request : aiospamc.requests.Request
             Request object to send.
 
         Returns
         -------
-        aiospamc.responses.SPAMDResponse
+        aiospamc.responses.Response
 
         Raises
         ------
@@ -141,7 +141,7 @@ class Client:
 
         data = await reader.read()
         try:
-            response = SPAMDResponse.parse(data.decode())
+            response = Response.parse(data.decode())
         except BadResponse as error:
             self.logger.exception('Exception when composing response: %s', error)
             raise error
@@ -157,7 +157,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.requests.SPAMCRequest
+        aiospamc.requests.Request
             The modified request.
         '''
 
@@ -186,7 +186,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.SPAMDResponse
+        aiospamc.responses.Response
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -199,7 +199,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = SPAMCRequest('CHECK', body=message)
+        request = Request('CHECK', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -219,7 +219,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.SPAMDResponse
+        aiospamc.responses.Response
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -234,7 +234,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = SPAMCRequest('HEADERS', body=message)
+        request = Request('HEADERS', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -247,7 +247,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.SPAMDResponse
+        aiospamc.responses.Response
             Response message will contain 'PONG' if successful.
 
         Raises
@@ -259,7 +259,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = SPAMCRequest('PING')
+        request = Request('PING')
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -279,7 +279,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.SPAMDResponse
+        aiospamc.responses.Response
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -294,7 +294,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = SPAMCRequest('PROCESS', body=message)
+        request = Request('PROCESS', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -314,7 +314,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.SPAMDResponse
+        aiospamc.responses.Response
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -329,7 +329,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = SPAMCRequest('REPORT', body=message)
+        request = Request('REPORT', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -350,7 +350,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.SPAMDResponse
+        aiospamc.responses.Response
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -366,7 +366,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = SPAMCRequest('REPORT_IFSPAM', body=message)
+        request = Request('REPORT_IFSPAM', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -389,7 +389,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.SPAMDResponse
+        aiospamc.responses.Response
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
@@ -404,7 +404,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = SPAMCRequest('SYMBOLS', body=message)
+        request = Request('SYMBOLS', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
@@ -438,7 +438,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.SPAMDResponse
+        aiospamc.responses.Response
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
@@ -454,7 +454,7 @@ class Client:
             Raised if an error occurred when trying to connect.
         '''
 
-        request = SPAMCRequest('TELL',
+        request = Request('TELL',
                                message,
                                MessageClass(message_class),
                                Set(set_action),

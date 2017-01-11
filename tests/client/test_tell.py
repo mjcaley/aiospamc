@@ -9,7 +9,7 @@ from servers import *
 from aiospamc import Client
 from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
 from aiospamc.options import Action, MessageClassOption
-from aiospamc.responses import SPAMDResponse
+from aiospamc.responses import Response
 
 
 @pytest.mark.asyncio
@@ -30,7 +30,7 @@ async def test_tell_valid_response(event_loop, unused_tcp_port):
                                  set_action=Action(local=True, remote=True),
                                  remove_action=Action(local=False, remote=False))
 
-    assert isinstance(response, SPAMDResponse)
+    assert isinstance(response, Response)
 
 @pytest.mark.asyncio
 async def test_tell_invalid_response(event_loop, unused_tcp_port):
