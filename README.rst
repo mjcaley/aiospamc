@@ -10,16 +10,25 @@ aiospamc
 -----------
 Description
 -----------
+
 Python asyncio-based library that implements the SPAMC/SPAMD client protocol used by SpamAssassin.
+
+-------------
+Documentation
+-------------
+
+Documentation can be found at: https://pythonhosted.org/aiospamc/
 
 ------------
 Requirements
 ------------
+
 * Python 3.5 or higher
 
 -------
 Example
 -------
+
 .. code:: python
 
     import asyncio
