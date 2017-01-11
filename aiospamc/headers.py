@@ -31,19 +31,19 @@ class Compress(Header):
     'zlib' is supported.
     '''
 
-    pattern = re.compile(r'\s*zlib\s*')
+    _pattern = re.compile(r'\s*zlib\s*')
     '''Regular expression pattern to match 'zlib'.'''
 
     @classmethod
     def parse(cls, string):
-        match = cls.pattern.match(string)
+        match = cls._pattern.match(string)
         if match:
             obj = cls()
             return obj
         else:
             raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
-                                   'pattern': cls.pattern.pattern})
+                                   'pattern': cls._pattern.pattern})
 
     def __init__(self):
         self.zlib = True
@@ -60,19 +60,19 @@ class Compress(Header):
 class ContentLength(Header):
     '''ContentLength header.  Indicates the length of the body in bytes.'''
 
-    pattern = re.compile(r'\s*\d+\s*')
+    _pattern = re.compile(r'\s*\d+\s*')
     '''Regular expression pattern to match one or more digits.'''
 
     @classmethod
     def parse(cls, string):
-        match = cls.pattern.match(string)
+        match = cls._pattern.match(string)
         if match:
             obj = cls(int(match.group()))
             return obj
         else:
             raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
-                                   'pattern': cls.pattern.pattern})
+                                   'pattern': cls._pattern.pattern})
 
     def __init__(self, length=0):
         self.length = length
@@ -91,21 +91,21 @@ class XHeader(Header):
     natively by the SPAMD service.
     '''
 
-    pattern = re.compile(r'\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
+    _pattern = re.compile(r'\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
     '''Regular expresison pattern to match entire contents of a header
     string.
     '''
 
     @classmethod
     def parse(cls, string):
-        match = cls.pattern.match(string)
+        match = cls._pattern.match(string)
         if match:
             obj = cls(match.groupdict()['name'], match.groupdict()['value'])
             return obj
         else:
             raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
-                                   'pattern': cls.pattern.pattern})
+                                   'pattern': cls._pattern.pattern})
 
     def __init__(self, name, value):
         '''XHeader constructor.
@@ -136,12 +136,12 @@ class MessageClass(Header):
     '''MessageClass header.  Used to specify whether a message is 'spam' or
     'ham.\''''
 
-    pattern = re.compile(r'^\s*(?P<value>ham|spam)\s*$', flags=re.IGNORECASE)
+    _pattern = re.compile(r'^\s*(?P<value>ham|spam)\s*$', flags=re.IGNORECASE)
     '''Regular expression pattern to match either 'spam' or 'ham.\''''
 
     @classmethod
     def parse(cls, string):
-        match = cls.pattern.match(string)
+        match = cls._pattern.match(string)
         if match:
             obj = cls()
             obj.value = MessageClassOption[match.groupdict()['value']]
@@ -149,7 +149,7 @@ class MessageClass(Header):
         else:
             raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
-                                   'pattern': cls.pattern.pattern})
+                                   'pattern': cls._pattern.pattern})
 
     def __init__(self, value=MessageClassOption.ham):
         self.value = value
@@ -166,21 +166,21 @@ class MessageClass(Header):
 class _SetRemove(Header):
     '''Base class for headers that implement "local" and "remote" rules.'''
 
-    local_pattern = re.compile(r'.*local.*', flags=re.IGNORECASE)
+    _local_pattern = re.compile(r'.*local.*', flags=re.IGNORECASE)
     '''Regular expression string to match 'local.\''''
-    remote_pattern = re.compile(r'.*remote.*', flags=re.IGNORECASE)
+    _remote_pattern = re.compile(r'.*remote.*', flags=re.IGNORECASE)
     '''Regular expression string to match 'remote.\''''
 
     @classmethod
     def parse(cls, string):
-        local_result = bool(cls.local_pattern.match(string))
-        remote_result = bool(cls.remote_pattern.match(string))
+        local_result = bool(cls._local_pattern.match(string))
+        remote_result = bool(cls._remote_pattern.match(string))
 
         if not local_result and not remote_result:
             raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
-                                   'pattern': (cls.local_pattern.pattern,
-                                               cls.remote_pattern.pattern)})
+                                   'pattern': (cls._local_pattern.pattern,
+                                               cls._remote_pattern.pattern)})
         else:
             obj = cls(Action(local_result, remote_result))
 
@@ -265,20 +265,20 @@ class Spam(Header):
     message was spam and the score/threshold that it used.
     '''
 
-    pattern = re.compile(r'\s*'
-                         r'(?P<value>true|yes|false|no)'
-                         r'\s*;\s*'
-                         r'(?P<score>\d+(\.\d+)?)'
-                         r'\s*/\s*'
-                         r'(?P<threshold>\d+(\.\d+)?)'
-                         r'\s*', flags=re.IGNORECASE)
+    _pattern = re.compile(r'\s*'
+                          r'(?P<value>true|yes|false|no)'
+                          r'\s*;\s*'
+                          r'(?P<score>\d+(\.\d+)?)'
+                          r'\s*/\s*'
+                          r'(?P<threshold>\d+(\.\d+)?)'
+                          r'\s*', flags=re.IGNORECASE)
     '''Regular expression pattern to match the 'true' or 'false' result, the
     score, and the threshold of the submitted message.
     '''
 
     @classmethod
     def parse(cls, string):
-        match = cls.pattern.match(string)
+        match = cls._pattern.match(string)
         if match:
             obj = cls()
             obj.value = match.groupdict()['value'].lower() in ['true', 'yes']
@@ -289,7 +289,7 @@ class Spam(Header):
         else:
             raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
-                                   'pattern': cls.pattern.pattern})
+                                   'pattern': cls._pattern.pattern})
 
     def __init__(self, value=False, score=0.0, threshold=0.0):
         '''Spam header constructor.
@@ -328,19 +328,19 @@ class User(Header):
     when loading configuration files.
     '''
 
-    pattern = re.compile(r'^\s*(?P<user>[a-zA-Z0-9_-]+)\s*$')
+    _pattern = re.compile(r'^\s*(?P<user>[a-zA-Z0-9_-]+)\s*$')
     '''Regular expression pattern to match the username.'''
 
     @classmethod
     def parse(cls, string):
-        match = cls.pattern.match(string)
+        match = cls._pattern.match(string)
         if match:
             obj = cls(match.groupdict()['user'])
             return obj
         else:
             raise HeaderCantParse({'message': 'Unable to parse string',
                                    'string': string,
-                                   'pattern': cls.pattern.pattern})
+                                   'pattern': cls._pattern.pattern})
 
     def __init__(self, name=getpass.getuser()):
         self.name = name
@@ -354,7 +354,7 @@ class User(Header):
     def header_field_name(self):
         return 'User'
 
-HEADER_PATTERN = re.compile(r'(?P<header>\S+)\s*:\s*(?P<value>.+)(\r\n)?')
+_HEADER_PATTERN = re.compile(r'(?P<header>\S+)\s*:\s*(?P<value>.+)(\r\n)?')
 '''Regular expression pattern to match the header name and value.'''
 
 def header_from_string(string):
@@ -376,11 +376,11 @@ def header_from_string(string):
     '''
 
     #pylint: disable=too-many-return-statements
-    match = HEADER_PATTERN.match(string)
+    match = _HEADER_PATTERN.match(string)
     if not match:
         raise HeaderCantParse({'message': 'Unable to parse string',
                                'string': string,
-                               'pattern': HEADER_PATTERN.pattern})
+                               'pattern': _HEADER_PATTERN.pattern})
 
     header = match.groupdict()['header'].strip().lower()
     value = match.groupdict()['value'].strip().lower()

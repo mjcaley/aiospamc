@@ -66,18 +66,18 @@ class Response(BodyHeaderManager, Inbound):
     '''
 
     #pylint: disable=too-few-public-methods
-    response_pattern = re.compile(r'^\s*'
-                                  r'(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)'
-                                  r'\s+'
-                                  r'(?P<status>\d+)'
-                                  r'\s+'
-                                  r'(?P<message>.*)')
+    _response_pattern = re.compile(r'^\s*'
+                                   r'(?P<protocol>SPAMD)/(?P<version>\d+\.\d+)'
+                                   r'\s+'
+                                   r'(?P<status>\d+)'
+                                   r'\s+'
+                                   r'(?P<message>.*)')
     '''Regular expression pattern to match the response.  Protocol will match
     the phrase 'SPAMD', version will match with the style '1.0', status will
     match an integer.  The message will match all characters up until the next
     newline.
     '''
-    response_string = 'SPAMD/{version} {status} {message}\r\n{headers}\r\n{body}'
+    _response_string = 'SPAMD/{version} {status} {message}\r\n{headers}\r\n{body}'
     '''String used for composing a response.'''
 
     @classmethod
@@ -86,7 +86,7 @@ class Response(BodyHeaderManager, Inbound):
         request, *headers = request.split('\r\n')
 
         # Process request
-        match = cls.response_pattern.match(request)
+        match = cls._response_pattern.match(request)
         if match:
             response_match = match.groupdict()
         else:
@@ -151,8 +151,8 @@ class Response(BodyHeaderManager, Inbound):
                                   self.body)
 
     def __str__(self):
-        return self.response_string.format(version=self.protocol_version,
-                                           status=self.status_code,
-                                           message=self.message,
-                                           headers=''.join(map(str, self._headers)),
-                                           body=''.join([self.body[:80], '...\n']) if self.body else '')
+        return self._response_string.format(version=self.protocol_version,
+                                            status=self.status_code,
+                                            message=self.message,
+                                            headers=''.join(map(str, self._headers)),
+                                            body=''.join([self.body[:80], '...\n']) if self.body else '')

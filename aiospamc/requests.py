@@ -22,8 +22,8 @@ class Request(BodyHeaderManager, Outbound):
         compressed.
     '''
 
-    protocol = b'SPAMC/1.5'
-    request = b'%(verb)b %(protocol)b\r\n%(headers)b\r\n%(body)b'
+    _protocol = b'SPAMC/1.5'
+    _request = b'%(verb)b %(protocol)b\r\n%(headers)b\r\n%(body)b'
 
     def __init__(self, verb, body=None, *headers):
         '''Request constructor.
@@ -55,9 +55,9 @@ class Request(BodyHeaderManager, Outbound):
                                      tuple(i for i in self._headers.values()))
 
     def compose(self):
-        request = self.request % {b'verb': self.verb,
-                                  b'protocol': self.protocol,
-                                  b'headers': b''.join(map(bytes, self._headers.values())),
-                                  b'body' : self.body if self.body else b''}
+        request = self._request % {b'verb': self.verb,
+                                   b'protocol': self._protocol,
+                                   b'headers': b''.join(map(bytes, self._headers.values())),
+                                   b'body' : self.body if self.body else b''}
 
         return request
