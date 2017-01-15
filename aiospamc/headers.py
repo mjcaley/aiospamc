@@ -7,7 +7,7 @@ import re
 
 from aiospamc.exceptions import HeaderCantParse
 from aiospamc.transport import Inbound, Outbound
-from aiospamc.options import Action, MessageClassOption
+from aiospamc.options import _Action, MessageClassOption, RemoveOption, SetOption
 
 
 class Header(Inbound, Outbound):
@@ -163,7 +163,7 @@ class MessageClass(Header):
     def header_field_name(self):
         return 'Message-class'
 
-class _SetRemove(Header):
+class _SetRemoveBase(Header):
     '''Base class for headers that implement "local" and "remote" rules.'''
 
     _local_pattern = re.compile(r'.*local.*', flags=re.IGNORECASE)
@@ -182,11 +182,11 @@ class _SetRemove(Header):
                                    'pattern': (cls._local_pattern.pattern,
                                                cls._remote_pattern.pattern)})
         else:
-            obj = cls(Action(local_result, remote_result))
+            obj = cls(_Action(local_result, remote_result))
 
         return obj
 
-    def __init__(self, action=Action(local=True, remote=False)):
+    def __init__(self, action=_Action(local=False, remote=False)):
         self.action = action
 
     def compose(self):
@@ -206,56 +206,82 @@ class _SetRemove(Header):
     def header_field_name(self):
         raise NotImplementedError
 
-class DidRemove(_SetRemove):
+class _RemoveBase(_SetRemoveBase):
+    '''Base class for all remove-style headers.'''
+
+    @classmethod
+    def parse(cls, string):
+        obj = super().parse(string)
+        obj.action = RemoveOption(local=obj.action.local,
+                                  remote=obj.action.remote)
+
+        return obj
+
+    def __init__(self, action=RemoveOption(local=False, remote=False)):
+        super().__init__(action)
+
+    def __repr__(self):
+        return '{}(action={}(local={}, remote={}))'.format(self.__class__.__name__,
+                                                           self.action.__class__.__name__,
+                                                           self.action.local,
+                                                           self.action.remote)
+
+    def header_field_name(self):
+        raise NotImplementedError
+
+class _SetBase(_SetRemoveBase):
+    '''Base class for all set-style headers.'''
+
+    @classmethod
+    def parse(cls, string):
+        obj = super().parse(string)
+        obj.action = SetOption(local=obj.action.local,
+                               remote=obj.action.remote)
+
+        return obj
+
+    def __init__(self, action=SetOption(local=False, remote=False)):
+        super().__init__(action)
+
+    def __repr__(self):
+        return '{}(action={}(local={}, remote={}))'.format(self.__class__.__name__,
+                                                           self.action.__class__.__name__,
+                                                           self.action.local,
+                                                           self.action.remote)
+
+    def header_field_name(self):
+        raise NotImplementedError
+
+class DidRemove(_RemoveBase):
     '''DidRemove header.  Used by SPAMD to indicate if a message was removed
     from either a local or remote database in response to a TELL request.
     '''
 
-    def __repr__(self):
-        return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
-                                                               self.action.local,
-                                                               self.action.remote)
-
     def header_field_name(self):
         return 'DidRemove'
 
-class DidSet(_SetRemove):
+class DidSet(_SetBase):
     '''DidRemove header.  Used by SPAMD to indicate if a message was added to
     either a local or remote database in response to a TELL request.
     '''
 
-    def __repr__(self):
-        return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
-                                                               self.action.local,
-                                                               self.action.remote)
-
     def header_field_name(self):
         return 'DidSet'
 
-class Remove(_SetRemove):
+class Remove(_RemoveBase):
     '''Remove header.  Used in a TELL request to ask the SPAMD service remove
     a message from a local or remote database.  The SPAMD service must have the
     --allow-tells switch in order for this to do anything.
     '''
 
-    def __repr__(self):
-        return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
-                                                               self.action.local,
-                                                               self.action.remote)
-
     def header_field_name(self):
         return 'Remove'
 
-class Set(_SetRemove):
+class Set(_SetBase):
     '''Set header.  Used in a TELL request to ask the SPAMD service add a
     message from a local or remote database.  The SPAMD service must have the
     --allow-tells switch in order for this to do anything.
     '''
-
-    def __repr__(self):
-        return '{}(action=Action(local={}, remote={}))'.format(self.__class__.__name__,
-                                                               self.action.local,
-                                                               self.action.remote)
 
     def header_field_name(self):
         return 'Set'

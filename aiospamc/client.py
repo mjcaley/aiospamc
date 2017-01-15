@@ -8,7 +8,7 @@ import logging
 from aiospamc.exceptions import (BadResponse, SPAMDConnectionRefused,
                                  ResponseException, ExTempFail)
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
-from aiospamc.options import Action, MessageClassOption
+from aiospamc.options import MessageClassOption, RemoveOption, SetOption
 from aiospamc.requests import Request
 from aiospamc.responses import Response
 
@@ -428,10 +428,9 @@ class Client:
         return response
 
     async def tell(self,
-                   message_class: MessageClassOption,
+                   message_class,
                    message,
-                   set_action=Action(local=False, remote=False),
-                   remove_action=Action(local=False, remote=False)
+                   action
                   ):
         '''Instruct the SPAMD service to to mark the message
 
@@ -439,18 +438,14 @@ class Client:
         ----------
         message_class : MessageClassOption
             An enumeration to classify the message as 'spam' or 'ham.'
-
         message
             An object that can be convertable to a bytes object.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
-
-        set_action : Action
-            Contains 'local' and 'remote' options.
-
-        remove_action : Action
-            Contains 'local' and 'remote' options.
+        action : Union[aiospamc.options.RemoveOption, aiospamc.options.SetOption]
+            Contains 'local' and 'remote' options.  Depending on which type
+            is passed with determine what headers are added to the request.
 
         Returns
         -------
@@ -472,9 +467,11 @@ class Client:
 
         request = Request('TELL',
                           message,
-                          MessageClass(message_class),
-                          Set(set_action),
-                          Remove(remove_action))
+                          MessageClass(message_class))
+        if isinstance(action, RemoveOption):
+            request.add_header(Remove(action))
+        elif isinstance(action, SetOption):
+            request.add_header(Set(action))
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)

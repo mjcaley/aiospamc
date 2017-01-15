@@ -5,9 +5,10 @@ import pytest
 
 from aiospamc.exceptions import HeaderCantParse
 from aiospamc.headers import (Header, Compress, ContentLength, MessageClass,
-                              _SetRemove, DidRemove, DidSet, Remove, Set,
+                              _SetRemoveBase, _RemoveBase, _SetBase,
+                              DidRemove, DidSet, Remove, Set,
                               Spam, User, XHeader, header_from_string)
-from aiospamc.options import Action, MessageClassOption
+from aiospamc.options import _Action, MessageClassOption, RemoveOption, SetOption
 
 
 class TestHeader:
@@ -124,21 +125,21 @@ class TestMessageClass:
         with pytest.raises(HeaderCantParse):
             message_class = MessageClass.parse('invalid')
 
-class Test_SetRemove:
+class Test_SetRemoveBase:
     def test_instantiates(self):
-        _set_remove = _SetRemove()
+        _set_remove = _SetRemoveBase()
         assert '_set_remove' in locals()
 
     def test_default_value(self):
-        _set_remove = _SetRemove()
-        assert _set_remove.action == Action(True, False)
+        _set_remove = _SetRemoveBase()
+        assert _set_remove.action == _Action(False, False)
 
     def test_user_value(self):
-        _set_remove = _SetRemove(Action(True, True))
-        assert _set_remove.action == Action(True, True)
+        _set_remove = _SetRemoveBase(_Action(True, True))
+        assert _set_remove.action == _Action(True, True)
 
     def test_header_field_name(self):
-        _set_remove = _SetRemove()
+        _set_remove = _SetRemoveBase()
         with pytest.raises(NotImplementedError):
             _set_remove.header_field_name()
 
@@ -149,12 +150,32 @@ class Test_SetRemove:
         'remote, local',
     ])
     def test_parse_valid(self, test_input):
-        _set_remove = _SetRemove.parse(test_input)
+        _set_remove = _SetRemoveBase.parse(test_input)
         assert '_set_remove' in locals()
 
     def test_parse_invalid(self):
         with pytest.raises(HeaderCantParse):
-            _set_remove = _SetRemove.parse('invalid')
+            _set_remove = _SetRemoveBase.parse('invalid')
+
+class Test_RemoveBase:
+    def test_repr(self):
+        _remove_base = _RemoveBase()
+        assert repr(_remove_base) == '_RemoveBase(action=RemoveOption(local=False, remote=False))'
+
+    def test_header_field_name(self):
+        _remove_base = _RemoveBase()
+        with pytest.raises(NotImplementedError):
+            _remove_base.header_field_name()
+
+class Test_SetBase:
+    def test_repr(self):
+        _set_base = _SetBase()
+        assert repr(_set_base) == '_SetBase(action=SetOption(local=False, remote=False))'
+
+    def test_header_field_name(self):
+        _set_base = _SetBase()
+        with pytest.raises(NotImplementedError):
+            _set_base.header_field_name()
 
 class TestDidRemove:
     def test_header_field_name(self):
@@ -162,14 +183,14 @@ class TestDidRemove:
         assert did_remove.header_field_name() == 'DidRemove'
 
     def test_repr(self):
-        did_remove = DidRemove(Action(local=True, remote=True))
-        assert repr(did_remove) == 'DidRemove(action=Action(local=True, remote=True))'
+        did_remove = DidRemove(RemoveOption(local=True, remote=True))
+        assert repr(did_remove) == 'DidRemove(action=RemoveOption(local=True, remote=True))'
 
     @pytest.mark.parametrize('test_input,expected', [
-        (Action(local=True, remote=False), 'DidRemove: local\r\n'),
-        (Action(local=False, remote=True), 'DidRemove: remote\r\n'),
-        (Action(local=True, remote=True), 'DidRemove: local, remote\r\n'),
-        (Action(local=False, remote=False), ''),
+        (RemoveOption(local=True, remote=False), 'DidRemove: local\r\n'),
+        (RemoveOption(local=False, remote=True), 'DidRemove: remote\r\n'),
+        (RemoveOption(local=True, remote=True), 'DidRemove: local, remote\r\n'),
+        (RemoveOption(local=False, remote=False), ''),
     ])
     def test_compose(self, test_input, expected):
         did_remove = DidRemove(test_input)
@@ -181,14 +202,14 @@ class TestDidSet:
         assert did_set.header_field_name() == 'DidSet'
 
     def test_repr(self):
-        did_set = DidSet(Action(local=True, remote=True))
-        assert repr(did_set) == 'DidSet(action=Action(local=True, remote=True))'
+        did_set = DidSet(SetOption(local=True, remote=True))
+        assert repr(did_set) == 'DidSet(action=SetOption(local=True, remote=True))'
 
     @pytest.mark.parametrize('test_input,expected', [
-        (Action(local=True, remote=False), 'DidSet: local\r\n'),
-        (Action(local=False, remote=True), 'DidSet: remote\r\n'),
-        (Action(local=True, remote=True), 'DidSet: local, remote\r\n'),
-        (Action(local=False, remote=False), ''),
+        (SetOption(local=True, remote=False), 'DidSet: local\r\n'),
+        (SetOption(local=False, remote=True), 'DidSet: remote\r\n'),
+        (SetOption(local=True, remote=True), 'DidSet: local, remote\r\n'),
+        (SetOption(local=False, remote=False), ''),
     ])
     def test_compose(self, test_input, expected):
         did_set = DidSet(test_input)
@@ -200,14 +221,14 @@ class TestRemove:
         assert remove.header_field_name() == 'Remove'
 
     def test_repr(self):
-        remove = Remove(Action(local=True, remote=True))
-        assert repr(remove) == 'Remove(action=Action(local=True, remote=True))'
+        remove = Remove(SetOption(local=True, remote=True))
+        assert repr(remove) == 'Remove(action=SetOption(local=True, remote=True))'
 
     @pytest.mark.parametrize('test_input,expected', [
-        (Action(local=True, remote=False), 'Remove: local\r\n'),
-        (Action(local=False, remote=True), 'Remove: remote\r\n'),
-        (Action(local=True, remote=True), 'Remove: local, remote\r\n'),
-        (Action(local=False, remote=False), ''),
+        (SetOption(local=True, remote=False), 'Remove: local\r\n'),
+        (SetOption(local=False, remote=True), 'Remove: remote\r\n'),
+        (SetOption(local=True, remote=True), 'Remove: local, remote\r\n'),
+        (SetOption(local=False, remote=False), ''),
     ])
     def test_compose(self, test_input, expected):
         remove = Remove(test_input)
@@ -219,14 +240,14 @@ class TestSet:
         assert set.header_field_name() == 'Set'
 
     def test_repr(self):
-        set_ = Set(Action(local=True, remote=True))
-        assert repr(set_) == 'Set(action=Action(local=True, remote=True))'
+        set_ = Set(SetOption(local=True, remote=True))
+        assert repr(set_) == 'Set(action=SetOption(local=True, remote=True))'
 
     @pytest.mark.parametrize('test_input,expected', [
-        (Action(local=True, remote=False), 'Set: local\r\n'),
-        (Action(local=False, remote=True), 'Set: remote\r\n'),
-        (Action(local=True, remote=True), 'Set: local, remote\r\n'),
-        (Action(local=False, remote=False), ''),
+        (SetOption(local=True, remote=False), 'Set: local\r\n'),
+        (SetOption(local=False, remote=True), 'Set: remote\r\n'),
+        (SetOption(local=True, remote=True), 'Set: local, remote\r\n'),
+        (SetOption(local=False, remote=False), ''),
     ])
     def test_compose(self, test_input, expected):
         set = Set(test_input)
