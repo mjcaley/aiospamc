@@ -23,7 +23,11 @@ async def test_tell_connection_refused(event_loop, unused_tcp_port):
 
 @pytest.mark.asyncio
 async def test_tell_valid_response(event_loop, unused_tcp_port):
-    server = await valid_response(event_loop, (HOST, unused_tcp_port))
+    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
+    server = await asyncio.start_server(mock.handle_connection,
+                                        host=HOST,
+                                        port=unused_tcp_port,
+                                        loop=event_loop)
     client = Client(HOST, unused_tcp_port, loop=event_loop)
     response = await client.tell(MessageClassOption.spam,
                                  GTUBE,
@@ -34,7 +38,11 @@ async def test_tell_valid_response(event_loop, unused_tcp_port):
 
 @pytest.mark.asyncio
 async def test_tell_invalid_response(event_loop, unused_tcp_port):
-    server = await invalid_response(event_loop, (HOST, unused_tcp_port))
+    mock = MockServer(b'Invalid')
+    server = await asyncio.start_server(mock.handle_connection,
+                                        host=HOST,
+                                        port=unused_tcp_port,
+                                        loop=event_loop)
     client = Client(HOST, unused_tcp_port, loop=event_loop)
     with pytest.raises(BadResponse):
         response = await client.tell(MessageClassOption.spam,
@@ -44,7 +52,11 @@ async def test_tell_invalid_response(event_loop, unused_tcp_port):
 
 @pytest.mark.asyncio
 async def test_tell_valid_request(event_loop, unused_tcp_port):
-    server = await valid_response(event_loop, (HOST, unused_tcp_port))
+    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
+    server = await asyncio.start_server(mock.handle_connection,
+                                        host=HOST,
+                                        port=unused_tcp_port,
+                                        loop=event_loop)
     client = Client(HOST, unused_tcp_port, loop=event_loop)
     response = await client.tell(MessageClassOption.spam,
                                  GTUBE,
@@ -52,30 +64,38 @@ async def test_tell_valid_request(event_loop, unused_tcp_port):
                                  remove_action=Action(local=False, remote=False))
 
     # We can't guarantee the order of the headers, so we have to break things up
-    assert ((server.request.decode().startswith('TELL SPAMC/1.5')) and
-            ('Set: local, remote' in server.request.decode()) and
-            ('Message-class: spam' in server.request.decode()) and
-            ('Content-length: {}'.format(len(GTUBE.encode())) in server.request.decode()) and
-            (server.request.decode().endswith(GTUBE)))
+    assert ((mock.requests[0].decode().startswith('TELL SPAMC/1.5')) and
+            ('Set: local, remote' in mock.requests[0].decode()) and
+            ('Message-class: spam' in mock.requests[0].decode()) and
+            ('Content-length: {}'.format(len(GTUBE.encode())) in mock.requests[0].decode()) and
+            (mock.requests[0].decode().endswith(GTUBE)))
 
 @pytest.mark.asyncio
 async def test_tell_compress_header_request(event_loop, unused_tcp_port):
-    server = await valid_response(event_loop, (HOST, unused_tcp_port))
+    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
+    server = await asyncio.start_server(mock.handle_connection,
+                                        host=HOST,
+                                        port=unused_tcp_port,
+                                        loop=event_loop)
     client = Client(HOST, unused_tcp_port, compress=True, loop=event_loop)
     response = await client.tell(MessageClassOption.spam,
                                  GTUBE,
                                  set_action=Action(local=True, remote=True),
                                  remove_action=Action(local=False, remote=False))
 
-    assert b'Compress:' in server.request
+    assert b'Compress:' in mock.requests[0]
 
 @pytest.mark.asyncio
 async def test_tell_user_header_request(event_loop, unused_tcp_port):
-    server = await valid_response(event_loop, (HOST, unused_tcp_port))
+    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
+    server = await asyncio.start_server(mock.handle_connection,
+                                        host=HOST,
+                                        port=unused_tcp_port,
+                                        loop=event_loop)
     client = Client(HOST, unused_tcp_port, user='TestUser', loop=event_loop)
     response = await client.tell(MessageClassOption.spam,
                                  GTUBE,
                                  set_action=Action(local=True, remote=True),
                                  remove_action=Action(local=False, remote=False))
 
-    assert b'User: TestUser' in server.request
+    assert b'User: TestUser' in mock.requests[0]

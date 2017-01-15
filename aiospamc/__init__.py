@@ -6,6 +6,7 @@ An asyncio-based library to communicate with SpamAssassin's SPAMD service.'''
 
 from aiospamc.client import Client
 
+__all__ = ('Client',)
 
 __author__ = 'Michael Caley'
 __copyright__ = 'Copyright 2016, 2017 Michael Caley'

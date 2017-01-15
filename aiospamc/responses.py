@@ -6,7 +6,11 @@ import enum
 import re
 
 from aiospamc.content_man import BodyHeaderManager
-from aiospamc.exceptions import BadResponse
+from aiospamc.exceptions import (BadResponse,
+                                 ExUsage, ExDataErr, ExNoInput, ExNoUser,
+                                 ExNoHost, ExUnavailable, ExSoftware, ExOSErr,
+                                 ExOSFile, ExCantCreat, ExIOErr, ExTempFail,
+                                 ExProtocol, ExNoPerm, ExConfig, ExTimeout)
 from aiospamc.headers import header_from_string
 from aiospamc.transport import Inbound
 
@@ -20,31 +24,32 @@ class Status(enum.IntEnum):
     '''
 
     #pylint: disable=C0326
-    def __new__(cls, value, description=''):
+    def __new__(cls, value, exception=None, description=''):
         #pylint: disable=protected-access
         obj = int.__new__(cls, value)
         obj._value_ = value
+        obj.exception = exception
         obj.description = description
 
         return obj
 
-    EX_OK           = 0,  'No problems'
-    EX_USAGE        = 64, 'Command line usage error'
-    EX_DATAERR      = 65, 'Data format error'
-    EX_NOINPUT      = 66, 'Cannot open input'
-    EX_NOUSER       = 67, 'Addressee unknown'
-    EX_NOHOST       = 68, 'Host name unknown'
-    EX_UNAVAILABLE  = 69, 'Service unavailable'
-    EX_SOFTWARE     = 70, 'Internal software error'
-    EX_OSERR        = 71, 'System error (e.g., can\'t fork)'
-    EX_OSFILE       = 72, 'Critical OS file missing'
-    EX_CANTCREAT    = 73, 'Can\'t create (user) output file'
-    EX_IOERR        = 74, 'Input/output error'
-    EX_TEMPFAIL     = 75, 'Temp failure; user is invited to retry'
-    EX_PROTOCOL     = 76, 'Remote error in protocol'
-    EX_NOPERM       = 77, 'Permission denied'
-    EX_CONFIG       = 78, 'Configuration error'
-    EX_TIMEOUT      = 79, 'Read timeout'
+    EX_OK           = 0,    None,          'No problems'
+    EX_USAGE        = 64,   ExUsage,       'Command line usage error'
+    EX_DATAERR      = 65,   ExDataErr,     'Data format error'
+    EX_NOINPUT      = 66,   ExNoInput,     'Cannot open input'
+    EX_NOUSER       = 67,   ExNoUser,      'Addressee unknown'
+    EX_NOHOST       = 68,   ExNoHost,      'Host name unknown'
+    EX_UNAVAILABLE  = 69,   ExUnavailable, 'Service unavailable'
+    EX_SOFTWARE     = 70,   ExSoftware,    'Internal software error'
+    EX_OSERR        = 71,   ExOSErr,       'System error (e.g., can\'t fork)'
+    EX_OSFILE       = 72,   ExOSFile,      'Critical OS file missing'
+    EX_CANTCREAT    = 73,   ExCantCreat,   'Can\'t create (user) output file'
+    EX_IOERR        = 74,   ExIOErr,       'Input/output error'
+    EX_TEMPFAIL     = 75,   ExTempFail,    'Temp failure; user is invited to retry'
+    EX_PROTOCOL     = 76,   ExProtocol,    'Remote error in protocol'
+    EX_NOPERM       = 77,   ExNoPerm,      'Permission denied'
+    EX_CONFIG       = 78,   ExConfig,      'Configuration error'
+    EX_TIMEOUT      = 79,   ExTimeout,     'Read timeout'
 
 class Response(BodyHeaderManager, Inbound):
     '''Class to encapsulate response.
@@ -96,6 +101,9 @@ class Response(BodyHeaderManager, Inbound):
         protocol_version = response_match['version'].strip()
         status_code = Status(int(response_match['status']))
         message = response_match['message'].strip()
+
+        if status_code.exception:
+            raise status_code.exception(message)
 
         header_tuple = cls._parse_headers(headers)
 

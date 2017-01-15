@@ -32,30 +32,21 @@ GTUBE = ('Subject: Test spam mail (GTUBE)\n'
 HOST = 'localhost'
 PORT = 7830
 
-class SimpleServer:
-    def __init__(self, response):
-        self.response = response
+class MockServer:
+    def __init__(self, *responses):
+        self.responses = self.yield_response(responses)
+        self.requests = []
 
-    async def run(self, reader, writer):
-        self.reader = reader
-        self.writer = writer
-        await self.read_request()
+    async def handle_connection(self, reader, writer):
+        request = await reader.read()
+        self.requests.append(request)
+        response = next(self.responses)
+        writer.write(response)
+        writer.write_eof()
+        await writer.drain()
 
-    async def read_request(self):
-        data = await self.reader.read()
-        self.request = data
-        await self.send_response()
-
-    async def send_response(self):
-        self.writer.write(self.response.encode())
-        self.writer.close()
-
-async def valid_response(loop, address=(HOST, PORT)):
-    server = SimpleServer('SPAMD/1.5 0 EX_OK\r\nSpam: True ; 2.0 / 4.0\r\n\r\n')
-    await asyncio.start_server(server.run, host=address[0], port=address[1], loop=loop)
-    return server
-
-async def invalid_response(loop, address=(HOST, PORT)):
-    server = SimpleServer('Invalid data\r\n\r\n')
-    await asyncio.start_server(server.run, host=address[0], port=address[1], loop=loop)
-    return server
+    def yield_response(self, responses):
+        for response in responses:
+            yield response
+        while True:
+            yield responses[-1]

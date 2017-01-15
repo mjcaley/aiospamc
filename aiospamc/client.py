@@ -5,7 +5,8 @@
 import asyncio
 import logging
 
-from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
+from aiospamc.exceptions import (BadResponse, SPAMDConnectionRefused,
+                                 ResponseException, ExTempFail)
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
 from aiospamc.options import Action, MessageClassOption
 from aiospamc.requests import Request
@@ -27,6 +28,10 @@ class Client:
         If true, the request body will be compressed.
     ssl : :obj:`bool`, optional
         If true, will enable SSL/TLS for the connection.
+    sleep_len : float
+        Length of time to wait to retry a connection in seconds.
+    retry_attempts : float
+        Number of times to retry a connection.
     loop : asyncio.AbstractEventLoop
         The asyncio event loop.
     logger : logging.Logger
@@ -65,6 +70,8 @@ class Client:
         self.ssl = ssl
         self.loop = loop or asyncio.get_event_loop()
 
+        self.sleep_len = 3
+        self.retry_attempts = 4
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Created instance of %r', self)
 
@@ -102,9 +109,9 @@ class Client:
                                                            loop=self.loop,
                                                            ssl=self.ssl)
         except (ConnectionRefusedError, OSError) as error:
-            raised = SPAMDConnectionRefused(error)
-            self.logger.exception('Exception occurred when connecting: %s', raised)
-            raise raised
+            connection_err = SPAMDConnectionRefused(error)
+            self.logger.exception('Exception occurred when connecting: %s', connection_err)
+            raise connection_err from error
 
         self.logger.debug('Connected to %s:%i', self.host, self.port)
 
@@ -133,18 +140,27 @@ class Client:
 
         reader, writer = await self.connect()
 
-        self.logger.debug('Sending request (%s)', id(request))
-        writer.write(bytes(request))
-        writer.write_eof()
-        await writer.drain()
-        self.logger.debug('Request (%s) successfully sent', id(request))
+        for attempt in range(1, self.retry_attempts):  # Allow three attempts
+            self.logger.debug('Sending request (%s) attempt #%s', id(request), attempt)
+            writer.write(bytes(request))
+            writer.write_eof()
+            await writer.drain()
+            self.logger.debug('Request (%s) successfully sent', id(request))
 
-        data = await reader.read()
-        try:
-            response = Response.parse(data.decode())
-        except BadResponse as error:
-            self.logger.exception('Exception when composing response: %s', error)
-            raise error
+            data = await reader.read()
+            try:
+                response = Response.parse(data.decode())
+            except ExTempFail as error:
+                self.logger.exception('Exception reporting temporary failure, retying in 3 seconds')
+                await asyncio.sleep(self.sleep_len)
+                reader, writer = await self.connect()
+            except (BadResponse, ResponseException) as error:
+                self.logger.exception('Exception when composing response: %s', error)
+                raise
+            else:
+                # Success! return the response
+                break
+
         self.logger.debug('Received repsonse (%s) for request (%s)',
                           id(response),
                           id(request))
@@ -455,10 +471,10 @@ class Client:
         '''
 
         request = Request('TELL',
-                               message,
-                               MessageClass(message_class),
-                               Set(set_action),
-                               Remove(remove_action))
+                          message,
+                          MessageClass(message_class),
+                          Set(set_action),
+                          Remove(remove_action))
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
         self._supplement_request(request)
         response = await self.send(request)
