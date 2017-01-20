@@ -139,6 +139,7 @@ class Client:
         '''
 
         reader, writer = await self.connect()
+        self._supplement_request(request)
 
         for attempt in range(1, self.retry_attempts):  # Allow three attempts
             self.logger.debug('Sending request (%s) attempt #%s', id(request), attempt)
@@ -217,7 +218,6 @@ class Client:
 
         request = Request('CHECK', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
-        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -252,7 +252,6 @@ class Client:
 
         request = Request('HEADERS', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
-        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -277,7 +276,6 @@ class Client:
 
         request = Request('PING')
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
-        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -312,7 +310,6 @@ class Client:
 
         request = Request('PROCESS', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
-        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -347,7 +344,6 @@ class Client:
 
         request = Request('REPORT', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
-        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -384,7 +380,6 @@ class Client:
 
         request = Request('REPORT_IFSPAM', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
-        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -422,7 +417,6 @@ class Client:
 
         request = Request('SYMBOLS', body=message)
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
-        self._supplement_request(request)
         response = await self.send(request)
 
         return response
@@ -473,7 +467,6 @@ class Client:
         elif isinstance(action, SetOption):
             request.add_header(Set(action))
         self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
-        self._supplement_request(request)
         response = await self.send(request)
 
         return response
