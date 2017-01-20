@@ -44,5 +44,5 @@ setup(
     packages=find_packages(exclude=['tests']),
 
     setup_requires=['pytest-runner', 'Sphinx', 'sphinxcontrib-asyncio'],
-    tests_require=['pytest-asyncio', 'pytest-cov', 'pytest-mock', 'pytest'],
+    tests_require=['pytest-asyncio', 'pytest-cov', 'pytest'],
 )

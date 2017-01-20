@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
+from fixtures import *
 
 from aiospamc.exceptions import (BadResponse,
                                  ExUsage, ExDataErr, ExNoInput, ExNoUser,
@@ -19,46 +20,46 @@ class TestResponse:
         response = Response('1.5', Status.EX_OK, 'EX_OK')
         assert repr(response) == 'Response(protocol_version=\'1.5\', status_code=Status.EX_OK, message=\'EX_OK\', headers=(), body=None)'
 
-    def test_str(self):
+    def test_str(self, response_ok):
         response = Response('1.5', Status.EX_OK, 'EX_OK')
-        assert str(response) == 'SPAMD/1.5 0 EX_OK\r\n\r\n'
+        assert str(response) == response_ok.decode()
 
-    def test_parse_valid(self):
-        response = Response.parse('SPAMD/1.5 0 EX_OK\r\n\r\n')
+    def test_parse_valid(self, response_ok):
+        response = Response.parse(response_ok.decode())
         assert 'response' in locals()
 
     @pytest.mark.parametrize('test_input', [
-        'SPAMD/1.5 0 EX_OK\r\nContent-length: 10\r\n\r\nTest body\n',
-        'SPAMD/1.5 0 EX_OK\r\nContent-length: 0\r\n' # Lacking a newline
+        response_with_body(),
+        response_empty_body()
     ])
     def test_parse_has_content_length(self, test_input):
-        response = Response.parse(test_input)
+        response = Response.parse(test_input.decode())
         assert response._headers['Content-length']
 
-    def test_parse_valid_with_body(self):
-        response = Response.parse('SPAMD/1.5 0 EX_OK\r\nContent-length: 10\r\n\r\nTest body\n')
+    def test_parse_valid_with_body(self, response_with_body):
+        response = Response.parse(response_with_body.decode())
         assert hasattr(response, 'body')
 
-    def test_parse_invalid(self):
+    def test_parse_invalid(self, response_invalid):
         with pytest.raises(BadResponse):
-            response = Response.parse('Invalid response')
+            response = Response.parse(response_invalid.decode())
 
     @pytest.mark.parametrize('test_input,expected', [
-        ('SPAMD/1.5 66 EX_NOINPUT', ExNoInput),
-        ('SPAMD/1.5 67 EX_NOUSER', ExNoUser),
-        ('SPAMD/1.5 68 EX_NOHOST', ExNoHost),
-        ('SPAMD/1.5 69 EX_UNAVAILABLE', ExUnavailable),
-        ('SPAMD/1.5 70 EX_SOFTWARE', ExSoftware),
-        ('SPAMD/1.5 71 EX_OSERR', ExOSErr),
-        ('SPAMD/1.5 72 EX_OSFILE', ExOSFile),
-        ('SPAMD/1.5 73 EX_CANTCREAT', ExCantCreat),
-        ('SPAMD/1.5 74 EX_IOERR', ExIOErr),
-        ('SPAMD/1.5 75 EX_TEMPFAIL', ExTempFail),
-        ('SPAMD/1.5 76 EX_PROTOCOL', ExProtocol),
-        ('SPAMD/1.5 77 EX_NOPERM', ExNoPerm),
-        ('SPAMD/1.5 78 EX_CONFIG', ExConfig),
-        ('SPAMD/1.5 79 EX_TIMEOUT', ExTimeout),
+        (ex_no_input(), ExNoInput),
+        (ex_no_user(), ExNoUser),
+        (ex_no_host(), ExNoHost),
+        (ex_unavailable(), ExUnavailable),
+        (ex_software(), ExSoftware),
+        (ex_os_err(), ExOSErr),
+        (ex_os_file(), ExOSFile),
+        (ex_cant_create(), ExCantCreat),
+        (ex_io_err(), ExIOErr),
+        (ex_temp_fail(), ExTempFail),
+        (ex_protocol(), ExProtocol),
+        (ex_no_perm(), ExNoPerm),
+        (ex_config(), ExConfig),
+        (ex_timeout(), ExTimeout),
     ])
     def test_response_exceptions(self, test_input, expected):
         with pytest.raises(expected):
-            response = Response.parse(test_input)
+            response = Response.parse(test_input.decode())

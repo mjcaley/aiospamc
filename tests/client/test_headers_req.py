@@ -3,8 +3,7 @@
 import asyncio
 
 import pytest
-
-from servers import *
+from fixtures import *
 
 from aiospamc import Client
 from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
@@ -12,66 +11,59 @@ from aiospamc.responses import Response
 
 
 @pytest.mark.asyncio
-async def test_headers_req_connection_refused(event_loop, unused_tcp_port):
-    client = Client(HOST, unused_tcp_port, loop=event_loop)
+async def test_headers_req_connection_refused(event_loop, unused_tcp_port, spam):
+    client = Client('localhost', unused_tcp_port, loop=event_loop)
     with pytest.raises(SPAMDConnectionRefused):
-        response = await client.headers(GTUBE)
+        response = await client.headers(spam)
 
 @pytest.mark.asyncio
-async def test_headers_req_valid_response(event_loop, unused_tcp_port):
-    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
-    server = await asyncio.start_server(mock.handle_connection,
-                                        host=HOST,
-                                        port=unused_tcp_port,
-                                        loop=event_loop)
-    client = Client(HOST, unused_tcp_port, loop=event_loop)
-    response = await client.headers(GTUBE)
+@pytest.mark.usefixtures('mock_stream')
+async def test_headers_req_valid_response(spam):
+    client = Client()
+    response = await client.headers(spam)
 
     assert isinstance(response, Response)
 
 @pytest.mark.asyncio
-async def test_headers_req_invalid_response(event_loop, unused_tcp_port):
-    mock = MockServer(b'Invalid')
-    server = await asyncio.start_server(mock.handle_connection,
-                                        host=HOST,
-                                        port=unused_tcp_port,
-                                        loop=event_loop)
-    client = Client(HOST, unused_tcp_port, loop=event_loop)
+@pytest.mark.usefixtures('mock_stream')
+@pytest.mark.responses(response_invalid())
+async def test_headers_req_invalid_response(spam):
+    client = Client()
     with pytest.raises(BadResponse):
-        response = await client.headers(GTUBE)
+        response = await client.headers(spam)
 
 @pytest.mark.asyncio
-async def test_headers_req_valid_request(event_loop, unused_tcp_port):
-    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
-    server = await asyncio.start_server(mock.handle_connection,
-                                        host=HOST,
-                                        port=unused_tcp_port,
-                                        loop=event_loop)
-    client = Client(HOST, unused_tcp_port, loop=event_loop)
-    response = await client.headers(GTUBE)
+@pytest.mark.usefixtures('mock_stream')
+async def test_headers_verb_at_start(reader, writer, spam):
+    client = Client()
+    response = await client.headers(spam)
 
-    assert mock.requests[0].decode() == 'HEADERS SPAMC/1.5\r\nContent-length: {}\r\n\r\n{}'.format(len(GTUBE.encode()), GTUBE)
+    args = writer.write.call_args
+    assert args[0][0].startswith(b'HEADERS')
 
 @pytest.mark.asyncio
-async def test_headers_req_compress_header_request(event_loop, unused_tcp_port):
-    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
-    server = await asyncio.start_server(mock.handle_connection,
-                                        host=HOST,
-                                        port=unused_tcp_port,
-                                        loop=event_loop)
-    client = Client(HOST, unused_tcp_port, compress=True, loop=event_loop)
-    response = await client.headers(GTUBE)
+@pytest.mark.usefixtures('mock_stream')
+async def test_headers_req_valid_request(reader, writer, spam):
+    client = Client()
+    response = await client.headers(spam)
 
-    assert b'Compress:' in mock.requests[0]
+    args = writer.write.call_args
+    assert args[0][0].decode() == 'HEADERS SPAMC/1.5\r\nContent-length: {}\r\n\r\n{}'.format(len(spam.encode()), spam)
 
 @pytest.mark.asyncio
-async def test_headers_req_user_header_request(event_loop, unused_tcp_port):
-    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
-    server = await asyncio.start_server(mock.handle_connection,
-                                        host=HOST,
-                                        port=unused_tcp_port,
-                                        loop=event_loop)
-    client = Client(HOST, unused_tcp_port, user='TestUser', loop=event_loop)
-    response = await client.headers(GTUBE)
+@pytest.mark.usefixtures('mock_stream')
+async def test_headers_req_compress_header_request(reader, writer, spam):
+    client = Client(compress=True)
+    response = await client.headers(spam)
 
-    assert b'User: TestUser' in mock.requests[0]
+    args = writer.write.call_args
+    assert b'Compress:' in args[0][0]
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures('mock_stream')
+async def test_headers_req_user_header_request(reader, writer, spam):
+    client = Client(user='TestUser')
+    response = await client.headers(spam)
+
+    args = writer.write.call_args
+    assert b'User: TestUser' in args[0][0]

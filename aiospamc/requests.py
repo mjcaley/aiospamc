@@ -44,11 +44,6 @@ class Request(BodyHeaderManager, Outbound):
         self.verb = verb.encode()
         super().__init__(body, *headers)
 
-    def __eq__(self, other):
-        return (self.verb == other.verb and
-                self.body == other.body and
-                sorted(self._headers) == sorted(other._headers))
-
     def __bytes__(self):
         return self.compose()
 

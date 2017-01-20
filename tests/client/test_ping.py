@@ -3,8 +3,7 @@
 import asyncio
 
 import pytest
-
-from servers import *
+from fixtures import *
 
 from aiospamc import Client
 from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
@@ -13,53 +12,49 @@ from aiospamc.responses import Response
 
 @pytest.mark.asyncio
 async def test_ping_connection_refused(event_loop, unused_tcp_port):
-    client = Client(HOST, unused_tcp_port, loop=event_loop)
+    client = Client('localhost', unused_tcp_port, loop=event_loop)
     with pytest.raises(SPAMDConnectionRefused):
         response = await client.ping()
 
 @pytest.mark.asyncio
-async def test_ping_valid_response(event_loop, unused_tcp_port):
-    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
-    server = await asyncio.start_server(mock.handle_connection,
-                                        host=HOST,
-                                        port=unused_tcp_port,
-                                        loop=event_loop)
-    client = Client(HOST, unused_tcp_port, loop=event_loop)
+@pytest.mark.usefixtures('mock_stream')
+async def test_ping_valid_response():
+    client = Client()
     response = await client.ping()
 
     assert isinstance(response, Response)
 
 @pytest.mark.asyncio
-async def test_ping_invalid_response(event_loop, unused_tcp_port):
-    mock = MockServer(b'Invalid')
-    server = await asyncio.start_server(mock.handle_connection,
-                                        host=HOST,
-                                        port=unused_tcp_port,
-                                        loop=event_loop)
-    client = Client(HOST, unused_tcp_port, loop=event_loop)
+@pytest.mark.usefixtures('mock_stream')
+@pytest.mark.responses(response_invalid())
+async def test_ping_invalid_response():
+    client = Client()
     with pytest.raises(BadResponse):
         response = await client.ping()
 
 @pytest.mark.asyncio
-async def test_ping_valid_request(event_loop, unused_tcp_port):
-    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
-    server = await asyncio.start_server(mock.handle_connection,
-                                        host=HOST,
-                                        port=unused_tcp_port,
-                                        loop=event_loop)
-    client = Client(HOST, unused_tcp_port, loop=event_loop)
+@pytest.mark.usefixtures('mock_stream')
+async def test_ping_verb_at_start(reader, writer):
+    client = Client()
     response = await client.ping()
 
-    assert mock.requests[0].decode() == 'PING SPAMC/1.5\r\n\r\n'
+    args = writer.write.call_args
+    assert args[0][0].startswith(b'PING')
 
 @pytest.mark.asyncio
-async def test_ping_user_header_request(event_loop, unused_tcp_port):
-    mock = MockServer(b'SPAMD/1.5 0 EX_OK\r\n')
-    server = await asyncio.start_server(mock.handle_connection,
-                                        host=HOST,
-                                        port=unused_tcp_port,
-                                        loop=event_loop)
-    client = Client(HOST, unused_tcp_port, user='TestUser', loop=event_loop)
+@pytest.mark.usefixtures('mock_stream')
+async def test_ping_valid_request(reader, writer, request_ping):
+    client = Client()
     response = await client.ping()
 
-    assert b'User: TestUser' in mock.requests[0]
+    args = writer.write.call_args
+    assert args[0][0] == request_ping
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures('mock_stream')
+async def test_ping_user_header_request(reader, writer):
+    client = Client(user='TestUser')
+    response = await client.ping()
+
+    args = writer.write.call_args
+    assert b'User: TestUser' in args[0][0]
