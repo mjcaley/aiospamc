@@ -150,7 +150,7 @@ class Client:
 
             data = await reader.read()
             try:
-                response = Response.parse(data.decode())
+                response = Response.parse(data)
             except ExTempFail as error:
                 self.logger.exception('Exception reporting temporary failure, retying in 3 seconds')
                 await asyncio.sleep(self.sleep_len)
@@ -217,7 +217,7 @@ class Client:
         '''
 
         request = Request('CHECK', body=message)
-        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
         return response
@@ -251,7 +251,7 @@ class Client:
         '''
 
         request = Request('HEADERS', body=message)
-        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
         return response
@@ -275,7 +275,7 @@ class Client:
         '''
 
         request = Request('PING')
-        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
         return response
@@ -309,7 +309,7 @@ class Client:
         '''
 
         request = Request('PROCESS', body=message)
-        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
         return response
@@ -343,7 +343,7 @@ class Client:
         '''
 
         request = Request('REPORT', body=message)
-        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
         return response
@@ -379,7 +379,7 @@ class Client:
         '''
 
         request = Request('REPORT_IFSPAM', body=message)
-        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
         return response
@@ -416,7 +416,7 @@ class Client:
         '''
 
         request = Request('SYMBOLS', body=message)
-        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
         return response
@@ -466,7 +466,7 @@ class Client:
             request.add_header(Remove(action))
         elif isinstance(action, SetOption):
             request.add_header(Set(action))
-        self.logger.debug('Composed %s request (%s)', request.verb.decode(), id(request))
+        self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
         return response

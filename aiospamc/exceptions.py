@@ -11,6 +11,10 @@ class HeaderCantParse(ClientException):
     '''Header is unable to parse the given string.'''
     pass
 
+class BadRequest(ClientException):
+    '''Request is not in the expected format.'''
+    pass
+
 class BadResponse(ClientException):
     '''Response is not in the expected format.'''
     pass

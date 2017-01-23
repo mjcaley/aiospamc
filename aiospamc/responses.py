@@ -5,14 +5,13 @@
 import enum
 import re
 
-from aiospamc.content_man import BodyHeaderManager
+#from aiospamc.content_man import BodyHeaderManager
+from aiospamc.common import RequestResponseBase
 from aiospamc.exceptions import (BadResponse,
                                  ExUsage, ExDataErr, ExNoInput, ExNoUser,
                                  ExNoHost, ExUnavailable, ExSoftware, ExOSErr,
                                  ExOSFile, ExCantCreat, ExIOErr, ExTempFail,
                                  ExProtocol, ExNoPerm, ExConfig, ExTimeout)
-from aiospamc.headers import header_from_string
-from aiospamc.transport import Inbound
 
 
 class Status(enum.IntEnum):
@@ -51,7 +50,7 @@ class Status(enum.IntEnum):
     EX_CONFIG       = 78,   ExConfig,      'Configuration error'
     EX_TIMEOUT      = 79,   ExTimeout,     'Read timeout'
 
-class Response(BodyHeaderManager, Inbound):
+class Response(RequestResponseBase):
     '''Class to encapsulate response.
 
     Attributes
@@ -87,11 +86,13 @@ class Response(BodyHeaderManager, Inbound):
 
     @classmethod
     def parse(cls, response):
-        request, *body = response.split('\r\n\r\n', 1)
-        request, *headers = request.split('\r\n')
+        response, *body = response.split(b'\r\n\r\n', 1)
+        response, *headers = response.split(b'\r\n')
 
-        # Process request
-        match = cls._response_pattern.match(request)
+        response = response.decode()
+
+        # Process response
+        match = cls._response_pattern.match(response)
         if match:
             response_match = match.groupdict()
         else:
@@ -105,19 +106,16 @@ class Response(BodyHeaderManager, Inbound):
         if status_code.exception:
             raise status_code.exception(message)
 
-        header_tuple = cls._parse_headers(headers)
+        parsed_headers = cls._parse_headers(headers)
+        parsed_body = cls._parse_body(body[0] if body else None, parsed_headers)
 
-        obj = cls(protocol_version, status_code, message, body[0] if body else None, *header_tuple)
+        obj = cls(protocol_version,
+                  status_code,
+                  message,
+                  parsed_body,
+                  *parsed_headers)
 
         return obj
-
-    @staticmethod
-    def _parse_headers(headers):
-        if not headers:
-            return ()
-        if headers[-1] == '':
-            headers.pop()
-        return tuple(header_from_string(header) for header in headers)
 
     def __init__(self, protocol_version, status_code, message, body=None, *headers):
         '''Response constructor.
@@ -144,6 +142,24 @@ class Response(BodyHeaderManager, Inbound):
         self.message = message
         super().__init__(body, *headers)
 
+    def __bytes__(self):
+        if self._compressed_body:
+            body = self._compressed_body
+        elif self.body:
+            body = self.body.encode()
+        else:
+            body = b''
+
+        return (b'SPAMD/%(version)b '
+                b'%(status)d '
+                b'%(message)b\r\n'
+                b'%(headers)b\r\n'
+                b'%(body)b') % {b'version': b'1.5',
+                                b'status': self.status_code.value,
+                                b'message': self.message.encode(),
+                                b'headers': b''.join(map(bytes, self._headers.values())),
+                                b'body': body}
+
     def __repr__(self):
         resp_format = ('{}(protocol_version=\'{}\', '
                        'status_code={}, '
@@ -156,11 +172,4 @@ class Response(BodyHeaderManager, Inbound):
                                   str(self.status_code),
                                   self.message,
                                   tuple(self._headers.values()),
-                                  self.body)
-
-    def __str__(self):
-        return self._response_string.format(version=self.protocol_version,
-                                            status=self.status_code,
-                                            message=self.message,
-                                            headers=''.join(map(str, self._headers)),
-                                            body=''.join([self.body[:80], '...\n']) if self.body else '')
+                                  repr(self.body) if self.body else 'None')

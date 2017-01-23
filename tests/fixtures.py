@@ -74,6 +74,16 @@ def response_invalid():
 
 # Response exceptions
 @pytest.fixture
+def ex_usage():
+    '''Command line usage error.'''
+    return b'SPAMD/1.5 64 EX_USAGE\r\n'
+
+@pytest.fixture
+def ex_data_err():
+    '''Data format error.'''
+    return b'SPAMD/1.5 65 EX_DATAERR\r\n'
+
+@pytest.fixture
 def ex_no_input():
     '''No input response in bytes.'''
     return b'SPAMD/1.5 66 EX_NOINPUT\r\n'

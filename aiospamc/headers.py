@@ -6,15 +6,34 @@ import getpass
 import re
 
 from aiospamc.exceptions import HeaderCantParse
-from aiospamc.transport import Inbound, Outbound
 from aiospamc.options import _Action, MessageClassOption, RemoveOption, SetOption
 
 
-class Header(Inbound, Outbound):
+class Header:
     '''Header base class.'''
 
-    def __str__(self):
-        return self.compose()
+    @classmethod
+    def parse(self, bytes_string):
+        '''Parses a bytes string.
+
+        Parameters
+        ----------
+        bytes_string : bytes
+            Bytes string of the header contents.
+
+        Returns
+        -------
+        aiospamc.headers.Header
+            Instance or subclass of Header.
+        '''
+
+        raise NotImplementedError
+
+    def __bytes__(self):
+        raise NotImplementedError
+
+    def __len__(self):
+        return len(bytes(self))
 
     def header_field_name(self):
         '''Returns the the field name for the header.
@@ -34,8 +53,12 @@ class Compress(Header):
     _pattern = re.compile(r'\s*zlib\s*')
     '''Regular expression pattern to match 'zlib'.'''
 
+    def __init__(self):
+        self.zlib = True
+
     @classmethod
-    def parse(cls, string):
+    def parse(cls, bytes_string):
+        string = bytes_string.decode()
         match = cls._pattern.match(string)
         if match:
             obj = cls()
@@ -45,14 +68,11 @@ class Compress(Header):
                                    'string': string,
                                    'pattern': cls._pattern.pattern})
 
-    def __init__(self):
-        self.zlib = True
-
     def __repr__(self):
         return '{}()'.format(self.__class__.__name__)
 
-    def compose(self):
-        return '{}: zlib\r\n'.format(self.header_field_name())
+    def __bytes__(self):
+        return b'%b: zlib\r\n'% (self.header_field_name().encode())
 
     def header_field_name(self):
         return 'Compress'
@@ -63,8 +83,12 @@ class ContentLength(Header):
     _pattern = re.compile(r'\s*\d+\s*')
     '''Regular expression pattern to match one or more digits.'''
 
+    def __init__(self, length=0):
+        self.length = length
+
     @classmethod
-    def parse(cls, string):
+    def parse(cls, bytes_string):
+        string = bytes_string.decode()
         match = cls._pattern.match(string)
         if match:
             obj = cls(int(match.group()))
@@ -74,63 +98,15 @@ class ContentLength(Header):
                                    'string': string,
                                    'pattern': cls._pattern.pattern})
 
-    def __init__(self, length=0):
-        self.length = length
+    def __bytes__(self):
+        return b'%b: %d\r\n' % (self.header_field_name().encode(),
+                                self.length)
 
     def __repr__(self):
         return '{}(length={})'.format(self.__class__.__name__, self.length)
 
-    def compose(self):
-        return '{}: {}\r\n'.format(self.header_field_name(), self.length)
-
     def header_field_name(self):
         return 'Content-length'
-
-class XHeader(Header):
-    '''Extension header.  Used to specify a header that's not supported
-    natively by the SPAMD service.
-    '''
-
-    _pattern = re.compile(r'\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
-    '''Regular expresison pattern to match entire contents of a header
-    string.
-    '''
-
-    @classmethod
-    def parse(cls, string):
-        match = cls._pattern.match(string)
-        if match:
-            obj = cls(match.groupdict()['name'], match.groupdict()['value'])
-            return obj
-        else:
-            raise HeaderCantParse({'message': 'Unable to parse string',
-                                   'string': string,
-                                   'pattern': cls._pattern.pattern})
-
-    def __init__(self, name, value):
-        '''XHeader constructor.
-
-        Parameters
-        ----------
-        name : str
-            Name of the header.
-        value : str
-            Contents of the value.
-        '''
-
-        self.name = name
-        self.value = value
-
-    def __repr__(self):
-        return '{}(name=\'{}\', value=\'{}\')'.format(self.__class__.__name__,
-                                                      self.name,
-                                                      self.value)
-
-    def compose(self):
-        return '{}: {}\r\n'.format(self.header_field_name(), self.value)
-
-    def header_field_name(self):
-        return self.name
 
 class MessageClass(Header):
     '''MessageClass header.  Used to specify whether a message is 'spam' or
@@ -139,8 +115,12 @@ class MessageClass(Header):
     _pattern = re.compile(r'^\s*(?P<value>ham|spam)\s*$', flags=re.IGNORECASE)
     '''Regular expression pattern to match either 'spam' or 'ham.\''''
 
+    def __init__(self, value=MessageClassOption.ham):
+        self.value = value
+
     @classmethod
-    def parse(cls, string):
+    def parse(cls, bytes_string):
+        string = bytes_string.decode()
         match = cls._pattern.match(string)
         if match:
             obj = cls()
@@ -151,14 +131,12 @@ class MessageClass(Header):
                                    'string': string,
                                    'pattern': cls._pattern.pattern})
 
-    def __init__(self, value=MessageClassOption.ham):
-        self.value = value
+    def __bytes__(self):
+        return b'%b: %b\r\n' % (self.header_field_name().encode(),
+                                self.value.name.encode())
 
     def __repr__(self):
         return '{}(value={})'.format(self.__class__.__name__, str(self.value))
-
-    def compose(self):
-        return '{}: {}\r\n'.format(self.header_field_name(), self.value.name)
 
     def header_field_name(self):
         return 'Message-class'
@@ -171,8 +149,12 @@ class _SetRemoveBase(Header):
     _remote_pattern = re.compile(r'.*remote.*', flags=re.IGNORECASE)
     '''Regular expression string to match 'remote.\''''
 
+    def __init__(self, action=_Action(local=False, remote=False)):
+        self.action = action
+
     @classmethod
-    def parse(cls, string):
+    def parse(cls, bytes_string):
+        string = bytes_string.decode()
         local_result = bool(cls._local_pattern.match(string))
         remote_result = bool(cls._remote_pattern.match(string))
 
@@ -186,71 +168,60 @@ class _SetRemoveBase(Header):
 
         return obj
 
-    def __init__(self, action=_Action(local=False, remote=False)):
-        self.action = action
-
-    def compose(self):
+    def __bytes__(self):
         if not self.action.local and not self.action.remote:
             # if nothing is set, then return a blank string so the request
             # doesn't get tainted
-            return ''
+            return b''
 
         values = []
         if self.action.local:
-            values.append('local')
+            values.append(b'local')
         if self.action.remote:
-            values.append('remote')
+            values.append(b'remote')
 
-        return '{}: {}\r\n'.format(self.header_field_name(), ', '.join(values))
-
-    def header_field_name(self):
-        raise NotImplementedError
+        return b'%b: %b\r\n' % (self.header_field_name().encode(),
+                                b', '.join(values))
 
 class _RemoveBase(_SetRemoveBase):
     '''Base class for all remove-style headers.'''
 
+    def __init__(self, action=RemoveOption(local=False, remote=False)):
+        super().__init__(action)
+
     @classmethod
-    def parse(cls, string):
-        obj = super().parse(string)
+    def parse(cls, bytes_string):
+        obj = super().parse(bytes_string)
         obj.action = RemoveOption(local=obj.action.local,
                                   remote=obj.action.remote)
 
         return obj
 
-    def __init__(self, action=RemoveOption(local=False, remote=False)):
-        super().__init__(action)
-
     def __repr__(self):
         return '{}(action={}(local={}, remote={}))'.format(self.__class__.__name__,
                                                            self.action.__class__.__name__,
                                                            self.action.local,
                                                            self.action.remote)
 
-    def header_field_name(self):
-        raise NotImplementedError
-
 class _SetBase(_SetRemoveBase):
     '''Base class for all set-style headers.'''
 
+    def __init__(self, action=SetOption(local=False, remote=False)):
+        super().__init__(action)
+
     @classmethod
-    def parse(cls, string):
-        obj = super().parse(string)
+    def parse(cls, bytes_string):
+        obj = super().parse(bytes_string)
         obj.action = SetOption(local=obj.action.local,
                                remote=obj.action.remote)
 
         return obj
 
-    def __init__(self, action=SetOption(local=False, remote=False)):
-        super().__init__(action)
-
     def __repr__(self):
         return '{}(action={}(local={}, remote={}))'.format(self.__class__.__name__,
                                                            self.action.__class__.__name__,
                                                            self.action.local,
                                                            self.action.remote)
-
-    def header_field_name(self):
-        raise NotImplementedError
 
 class DidRemove(_RemoveBase):
     '''DidRemove header.  Used by SPAMD to indicate if a message was removed
@@ -302,21 +273,6 @@ class Spam(Header):
     score, and the threshold of the submitted message.
     '''
 
-    @classmethod
-    def parse(cls, string):
-        match = cls._pattern.match(string)
-        if match:
-            obj = cls()
-            obj.value = match.groupdict()['value'].lower() in ['true', 'yes']
-            obj.score = float(match.groupdict()['score'])
-            obj.threshold = float(match.groupdict()['threshold'])
-
-            return obj
-        else:
-            raise HeaderCantParse({'message': 'Unable to parse string',
-                                   'string': string,
-                                   'pattern': cls._pattern.pattern})
-
     def __init__(self, value=False, score=0.0, threshold=0.0):
         '''Spam header constructor.
 
@@ -334,17 +290,33 @@ class Spam(Header):
         self.score = score
         self.threshold = threshold
 
+    @classmethod
+    def parse(cls, bytes_string):
+        string = bytes_string.decode()
+        match = cls._pattern.match(string)
+        if match:
+            obj = cls()
+            obj.value = match.groupdict()['value'].lower() in ['true', 'yes']
+            obj.score = float(match.groupdict()['score'])
+            obj.threshold = float(match.groupdict()['threshold'])
+
+            return obj
+        else:
+            raise HeaderCantParse({'message': 'Unable to parse string',
+                                   'string': string,
+                                   'pattern': cls._pattern.pattern})
+
+    def __bytes__(self):
+        return b'%b: %b ; %.1f / %.1f\r\n' % (self.header_field_name().encode(),
+                                              str(self.value).encode(),
+                                              self.score,
+                                              self.threshold)
+
     def __repr__(self):
         return '{}(value={}, score={}, threshold={})'.format(self.__class__.__name__,
                                                              self.value,
                                                              self.score,
                                                              self.threshold)
-
-    def compose(self):
-        return '{}: {} ; {} / {}\r\n'.format(self.header_field_name(),
-                                             self.value,
-                                             self.score,
-                                             self.threshold)
 
     def header_field_name(self):
         return 'Spam'
@@ -357,8 +329,12 @@ class User(Header):
     _pattern = re.compile(r'^\s*(?P<user>[a-zA-Z0-9_-]+)\s*$')
     '''Regular expression pattern to match the username.'''
 
+    def __init__(self, name=getpass.getuser()):
+        self.name = name
+
     @classmethod
-    def parse(cls, string):
+    def parse(cls, bytes_string):
+        string = bytes_string.decode()
         match = cls._pattern.match(string)
         if match:
             obj = cls(match.groupdict()['user'])
@@ -368,27 +344,70 @@ class User(Header):
                                    'string': string,
                                    'pattern': cls._pattern.pattern})
 
-    def __init__(self, name=getpass.getuser()):
-        self.name = name
+    def __bytes__(self):
+        return b'%b: %b\r\n' % (self.header_field_name().encode(),
+                                self.name.encode())
 
     def __repr__(self):
         return '{}(name=\'{}\')'.format(self.__class__.__name__, self.name)
 
-    def compose(self):
-        return '{}: {}\r\n'.format(self.header_field_name(), self.name)
-
     def header_field_name(self):
         return 'User'
 
-_HEADER_PATTERN = re.compile(r'(?P<header>\S+)\s*:\s*(?P<value>.+)(\r\n)?')
-'''Regular expression pattern to match the header name and value.'''
+class XHeader(Header):
+    '''Extension header.  Used to specify a header that's not supported
+    natively by the SPAMD service.
+    '''
 
-def header_from_string(string):
-    '''Instantiate a Header object from a string.
+    _pattern = re.compile(r'\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
+    '''Regular expresison pattern to match entire contents of a header
+    string.
+    '''
+
+    def __init__(self, name, value):
+        '''XHeader constructor.
+
+        Parameters
+        ----------
+        name : str
+            Name of the header.
+        value : str
+            Contents of the value.
+        '''
+
+        self.name = name
+        self.value = value
+
+    @classmethod
+    def parse(cls, bytes_string):
+        string = bytes_string.decode()
+        match = cls._pattern.match(string)
+        if match:
+            obj = cls(match.groupdict()['name'], match.groupdict()['value'])
+            return obj
+        else:
+            raise HeaderCantParse({'message': 'Unable to parse string',
+                                   'string': string,
+                                   'pattern': cls._pattern.pattern})
+
+    def __bytes__(self):
+        return b'%b: %b\r\n' % (self.header_field_name().encode(),
+                               self.value.encode())
+
+    def __repr__(self):
+        return '{}(name=\'{}\', value=\'{}\')'.format(self.__class__.__name__,
+                                                      self.name,
+                                                      self.value)
+
+    def header_field_name(self):
+        return self.name
+
+def header_from_bytes(bytes_string):
+    '''Instantiate a Header object from a bytes object.
 
     Parameters
     ----------
-    string : str
+    bytes_string : bytes
         Text of a single header from a request or response.
 
     Returns
@@ -401,33 +420,30 @@ def header_from_string(string):
     aiospamc.exceptions.HeaderCantParse
     '''
 
-    #pylint: disable=too-many-return-statements
-    match = _HEADER_PATTERN.match(string)
-    if not match:
+    try:
+        header, value = bytes_string.split(b':')
+        header = header.lower()
+    except ValueError:
         raise HeaderCantParse({'message': 'Unable to parse string',
-                               'string': string,
-                               'pattern': _HEADER_PATTERN.pattern})
+                               'string': bytes_string})
 
-    header = match.groupdict()['header'].strip().lower()
-    value = match.groupdict()['value'].strip().lower()
-
-    if header == 'compress':
+    if header == b'compress':
         return Compress.parse(value)
-    elif header == 'content-length':
+    elif header == b'content-length':
         return ContentLength.parse(value)
-    elif header == 'message-class':
+    elif header == b'message-class':
         return MessageClass.parse(value)
-    elif header == 'didremove':
+    elif header == b'didremove':
         return DidRemove.parse(value)
-    elif header == 'didset':
+    elif header == b'didset':
         return DidSet.parse(value)
-    elif header == 'remove':
+    elif header == b'remove':
         return Remove.parse(value)
-    elif header == 'set':
+    elif header == b'set':
         return Set.parse(value)
-    elif header == 'spam':
+    elif header == b'spam':
         return Spam.parse(value)
-    elif header == 'user':
+    elif header == b'user':
         return User.parse(value)
     else:
         return XHeader(header, value)
