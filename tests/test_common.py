@@ -33,7 +33,6 @@ def test_common_parse():
     ([b'Content-length: 10'], (ContentLength,)),
     ([b'Content-length: 10', b''], (ContentLength,)),
     ([b'Content-length: 10', b'Compress: zlib'], (ContentLength, Compress)),
-    
 ])
 def test_common_parse_headers(test_input, expected):
     headers = RequestResponseBase._parse_headers(test_input)
@@ -66,7 +65,7 @@ def test_common_decompress_when_header_removed():
     req_resp_base = RequestResponseBase('Test body\n', Compress())
     req_resp_base.delete_header('Compress')
 
-    assert req_resp_base._compressed_body == None
+    assert req_resp_base._compressed_body is None
 
 def test_common_delete_body_deleted_content_length():
     req_resp_base = RequestResponseBase(body='Test body\n')

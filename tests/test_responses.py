@@ -41,7 +41,11 @@ def test_response_bytes(version, status, message, body, headers):
 def test_response_repr():
     response = Response('1.5', Status.EX_OK, 'EX_OK')
 
-    assert repr(response) == 'Response(protocol_version=\'1.5\', status_code=Status.EX_OK, message=\'EX_OK\', headers=(), body=None)'
+    assert repr(response) == ('Response(protocol_version=\'1.5\', '
+                              'status_code=Status.EX_OK, '
+                              'message=\'EX_OK\', '
+                              'headers=(), '
+                              'body=None)')
 
 def test_response_parse_valid(response_ok):
     response = Response.parse(response_ok)
