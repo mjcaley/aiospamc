@@ -35,7 +35,7 @@ class Header:
     def __len__(self):
         return len(bytes(self))
 
-    def header_field_name(self):
+    def field_name(self):
         '''Returns the the field name for the header.
 
         Returns
@@ -77,9 +77,9 @@ class Compress(Header):
         return '{}()'.format(self.__class__.__name__)
 
     def __bytes__(self):
-        return b'%b: zlib\r\n'% (self.header_field_name().encode())
+        return b'%b: zlib\r\n'% (self.field_name().encode())
 
-    def header_field_name(self):
+    def field_name(self):
         return 'Compress'
 
 class ContentLength(Header):
@@ -117,13 +117,13 @@ class ContentLength(Header):
                                    'pattern': cls._pattern.pattern})
 
     def __bytes__(self):
-        return b'%b: %d\r\n' % (self.header_field_name().encode(),
+        return b'%b: %d\r\n' % (self.field_name().encode(),
                                 self.length)
 
     def __repr__(self):
         return '{}(length={})'.format(self.__class__.__name__, self.length)
 
-    def header_field_name(self):
+    def field_name(self):
         return 'Content-length'
 
 class MessageClass(Header):
@@ -164,13 +164,13 @@ class MessageClass(Header):
                                    'pattern': cls._pattern.pattern})
 
     def __bytes__(self):
-        return b'%b: %b\r\n' % (self.header_field_name().encode(),
+        return b'%b: %b\r\n' % (self.field_name().encode(),
                                 self.value.name.encode())
 
     def __repr__(self):
         return '{}(value={})'.format(self.__class__.__name__, str(self.value))
 
-    def header_field_name(self):
+    def field_name(self):
         return 'Message-class'
 
 class _SetRemoveBase(Header):
@@ -226,7 +226,7 @@ class _SetRemoveBase(Header):
         if self.action.remote:
             values.append(b'remote')
 
-        return b'%b: %b\r\n' % (self.header_field_name().encode(),
+        return b'%b: %b\r\n' % (self.field_name().encode(),
                                 b', '.join(values))
 
 class _RemoveBase(_SetRemoveBase):
@@ -295,7 +295,7 @@ class DidRemove(_RemoveBase):
         Actions to be done on local or remote.
     '''
 
-    def header_field_name(self):
+    def field_name(self):
         return 'DidRemove'
 
 class DidSet(_SetBase):
@@ -308,7 +308,7 @@ class DidSet(_SetBase):
         Actions to be done on local or remote.
     '''
 
-    def header_field_name(self):
+    def field_name(self):
         return 'DidSet'
 
 class Remove(_RemoveBase):
@@ -322,7 +322,7 @@ class Remove(_RemoveBase):
         Actions to be done on local or remote.
     '''
 
-    def header_field_name(self):
+    def field_name(self):
         return 'Remove'
 
 class Set(_SetBase):
@@ -336,7 +336,7 @@ class Set(_SetBase):
         Actions to be done on local or remote.
     '''
 
-    def header_field_name(self):
+    def field_name(self):
         return 'Set'
 
 class Spam(Header):
@@ -398,7 +398,7 @@ class Spam(Header):
                                    'pattern': cls._pattern.pattern})
 
     def __bytes__(self):
-        return b'%b: %b ; %.1f / %.1f\r\n' % (self.header_field_name().encode(),
+        return b'%b: %b ; %.1f / %.1f\r\n' % (self.field_name().encode(),
                                               str(self.value).encode(),
                                               self.score,
                                               self.threshold)
@@ -409,7 +409,7 @@ class Spam(Header):
                                                              self.score,
                                                              self.threshold)
 
-    def header_field_name(self):
+    def field_name(self):
         return 'Spam'
 
 class User(Header):
@@ -449,13 +449,13 @@ class User(Header):
                                    'pattern': cls._pattern.pattern})
 
     def __bytes__(self):
-        return b'%b: %b\r\n' % (self.header_field_name().encode(),
+        return b'%b: %b\r\n' % (self.field_name().encode(),
                                 self.name.encode())
 
     def __repr__(self):
         return '{}(name=\'{}\')'.format(self.__class__.__name__, self.name)
 
-    def header_field_name(self):
+    def field_name(self):
         return 'User'
 
 class XHeader(Header):
@@ -502,7 +502,7 @@ class XHeader(Header):
                                    'pattern': cls._pattern.pattern})
 
     def __bytes__(self):
-        return b'%b: %b\r\n' % (self.header_field_name().encode(),
+        return b'%b: %b\r\n' % (self.field_name().encode(),
                                 self.value.encode())
 
     def __repr__(self):
@@ -510,7 +510,7 @@ class XHeader(Header):
                                                       self.name,
                                                       self.value)
 
-    def header_field_name(self):
+    def field_name(self):
         return self.name
 
 def header_from_bytes(bytes_string):

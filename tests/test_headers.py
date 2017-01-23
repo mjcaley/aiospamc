@@ -20,10 +20,10 @@ class TestHeader:
         with pytest.raises(NotImplementedError):
             Header.parse(b'')
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         header = Header()
         with pytest.raises(NotImplementedError):
-            header.header_field_name()
+            header.field_name()
 
 class TestCompressHeader:
     def test_instantiates(self):
@@ -46,10 +46,10 @@ class TestCompressHeader:
 
         assert compress.zlib == True
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         compress = Compress()
 
-        assert compress.header_field_name() == 'Compress'
+        assert compress.field_name() == 'Compress'
 
     def test_parse_valid(self):
         compress = Compress()
@@ -86,10 +86,10 @@ class TestContentLength:
 
         assert content_length.length == 42
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         content_length = ContentLength()
 
-        assert content_length.header_field_name() == 'Content-length'
+        assert content_length.field_name() == 'Content-length'
 
     def test_parse_valid(self):
         content_length = ContentLength.parse(b'42')
@@ -131,10 +131,10 @@ class TestMessageClass:
 
         assert message_class.value == MessageClassOption.spam
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         message_class = MessageClass()
 
-        assert message_class.header_field_name() == 'Message-class'
+        assert message_class.field_name() == 'Message-class'
 
     @pytest.mark.parametrize('test_input', [
         b'ham',
@@ -165,10 +165,10 @@ class Test_SetRemoveBase:
 
         assert _set_remove.action == _Action(True, True)
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         _set_remove = _SetRemoveBase()
         with pytest.raises(NotImplementedError):
-            _set_remove.header_field_name()
+            _set_remove.field_name()
 
     @pytest.mark.parametrize('test_input', [
         b'local',
@@ -191,10 +191,10 @@ class Test_RemoveBase:
 
         assert repr(_remove_base) == '_RemoveBase(action=RemoveOption(local=False, remote=False))'
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         _remove_base = _RemoveBase()
         with pytest.raises(NotImplementedError):
-            _remove_base.header_field_name()
+            _remove_base.field_name()
 
 class Test_SetBase:
     def test_repr(self):
@@ -202,16 +202,16 @@ class Test_SetBase:
 
         assert repr(_set_base) == '_SetBase(action=SetOption(local=False, remote=False))'
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         _set_base = _SetBase()
         with pytest.raises(NotImplementedError):
-            _set_base.header_field_name()
+            _set_base.field_name()
 
 class TestDidRemove:
-    def test_header_field_name(self):
+    def test_field_name(self):
         did_remove = DidRemove()
 
-        assert did_remove.header_field_name() == 'DidRemove'
+        assert did_remove.field_name() == 'DidRemove'
 
     def test_repr(self):
         did_remove = DidRemove(RemoveOption(local=True, remote=True))
@@ -230,10 +230,10 @@ class TestDidRemove:
         assert bytes(did_remove) == expected
 
 class TestDidSet:
-    def test_header_field_name(self):
+    def test_field_name(self):
         did_set = DidSet()
 
-        assert did_set.header_field_name() == 'DidSet'
+        assert did_set.field_name() == 'DidSet'
 
     def test_repr(self):
         did_set = DidSet(SetOption(local=True, remote=True))
@@ -252,10 +252,10 @@ class TestDidSet:
         assert bytes(did_set) == expected
 
 class TestRemove:
-    def test_header_field_name(self):
+    def test_field_name(self):
         remove = Remove()
 
-        assert remove.header_field_name() == 'Remove'
+        assert remove.field_name() == 'Remove'
 
     def test_repr(self):
         remove = Remove(SetOption(local=True, remote=True))
@@ -274,10 +274,10 @@ class TestRemove:
         assert bytes(remove) == expected
 
 class TestSet:
-    def test_header_field_name(self):
+    def test_field_name(self):
         set = Set()
 
-        assert set.header_field_name() == 'Set'
+        assert set.field_name() == 'Set'
 
     def test_repr(self):
         set_ = Set(SetOption(local=True, remote=True))
@@ -318,9 +318,9 @@ class TestSpam:
         spam = Spam(value=True, score=4.0, threshold=2.0)
         assert spam.value == True and spam.score == 4.0 and spam.threshold == 2.0
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         spam = Spam()
-        assert spam.header_field_name() == 'Spam'
+        assert spam.field_name() == 'Spam'
 
     @pytest.mark.parametrize('test_input', [
         b'True ; 4.0 / 2.0',
@@ -365,10 +365,10 @@ class TestUser:
 
         assert user.name == fake_user
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         user = User()
 
-        assert user.header_field_name() == 'User'
+        assert user.field_name() == 'User'
 
     def test_parse_valid(self):
         user = User.parse(b'fake_user_name_for_aiospamc_test')
@@ -397,9 +397,9 @@ class TestXHeader:
         x_header = XHeader('head-name', 'head-value')
         assert x_header.name == 'head-name' and x_header.value == 'head-value'
 
-    def test_header_field_name(self):
+    def test_field_name(self):
         x_header = XHeader('head-name', 'head-value')
-        assert x_header.header_field_name() == 'head-name'
+        assert x_header.field_name() == 'head-name'
 
     def test_parse_valid(self):
         x_header = XHeader.parse(b'head-name : head-value')

@@ -23,7 +23,7 @@ class RequestResponseBase:
             compressed.
         '''
 
-        self._headers = {item.header_field_name() : item for item in headers}
+        self._headers = {item.field_name() : item for item in headers}
         self._body = ''
         self._compressed_body = None
         if body:
@@ -82,7 +82,7 @@ class RequestResponseBase:
         print(headers)
         if not body:
             return None
-        elif any(header.header_field_name() == 'Compress' for header in headers):
+        elif any(header.field_name() == 'Compress' for header in headers):
             return zlib.decompress(body).decode()
         else:
             return body.decode()
@@ -136,9 +136,9 @@ class RequestResponseBase:
             A header object to be added.
         '''
 
-        if header.header_field_name() == 'Compress' and self.body:
+        if header.field_name() == 'Compress' and self.body:
             self._compress_body()
-        self._headers[header.header_field_name()] = header
+        self._headers[header.field_name()] = header
 
     def get_header(self, header_name):
         '''Gets the header matching the name.
