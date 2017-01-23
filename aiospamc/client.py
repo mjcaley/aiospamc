@@ -18,15 +18,15 @@ class Client:
 
     Attributes
     ----------
-    host : :obj:`str`, optional
+    host : str
         Hostname or IP address of the SPAMD service, defaults to localhost.
-    port : :obj:`int`, optional
+    port : int
         Port number for the SPAMD service, defaults to 783.
-    user : :obj:`str`, optional
+    user : str
         Name of the user that SPAMD will run the checks under.
-    compress : :obj:`bool`, optional
+    compress : bool
         If true, the request body will be compressed.
-    ssl : :obj:`bool`, optional
+    ssl : bool
         If true, will enable SSL/TLS for the connection.
     sleep_len : float
         Length of time to wait to retry a connection in seconds.
@@ -59,7 +59,7 @@ class Client:
             If true, the request body will be compressed.
         ssl : :obj:`bool`, optional
             If true, will enable SSL/TLS for the connection.
-        loop : asyncio.AbstractEventLoop
+        loop : :obj:`asyncio.AbstractEventLoop`
             The asyncio event loop.
         '''
 
@@ -120,6 +120,8 @@ class Client:
     async def send(self, request):
         '''Sends a request to the SPAMD service.
 
+        If the SPAMD service gives a temporary failure response, then
+
         Parameters
         ----------
         request : aiospamc.requests.Request
@@ -136,6 +138,23 @@ class Client:
             raised.
         aiospamc.exceptions.SPAMDConnectionRefused
             Raised if an error occurred when trying to connect.
+        aiospamc.exceptions.ExUsage
+        aiospamc.exceptions.ExDataErr
+        aiospamc.exceptions.ExNoInput
+        aiospamc.exceptions.ExNoUser
+        aiospamc.exceptions.ExNoHost
+        aiospamc.exceptions.ExUnavailable
+        aiospamc.exceptions.ExSoftware
+        aiospamc.exceptions.ExOSErr
+        aiospamc.exceptions.ExOSFile
+        aiospamc.exceptions.ExCantCreat
+        aiospamc.exceptions.ExIOErr
+        aiospamc.exceptions.ExTempFail
+        aiospamc.exceptions.ExProtocol
+        aiospamc.exceptions.ExNoPerm
+        aiospamc.exceptions.ExConfig
+        aiospamc.exceptions.ExTimeout
+            Exception raised from the SPAMD service.
         '''
 
         reader, writer = await self.connect()
@@ -198,8 +217,11 @@ class Client:
 
         Parameters
         ----------
-        message
-            An object that can be convertable to a bytes object.
+        message : str
+            A string containing the contents of the message to be scanned.
+
+            SPAMD will perform a scan on the included message.  SPAMD expects an
+            RFC 822 or RFC 2822 formatted email.
 
         Returns
         -------
@@ -214,6 +236,23 @@ class Client:
             raised.
         aiospamc.exceptions.SPAMDConnectionRefused
             Raised if an error occurred when trying to connect.
+        aiospamc.exceptions.ExUsage
+        aiospamc.exceptions.ExDataErr
+        aiospamc.exceptions.ExNoInput
+        aiospamc.exceptions.ExNoUser
+        aiospamc.exceptions.ExNoHost
+        aiospamc.exceptions.ExUnavailable
+        aiospamc.exceptions.ExSoftware
+        aiospamc.exceptions.ExOSErr
+        aiospamc.exceptions.ExOSFile
+        aiospamc.exceptions.ExCantCreat
+        aiospamc.exceptions.ExIOErr
+        aiospamc.exceptions.ExTempFail
+        aiospamc.exceptions.ExProtocol
+        aiospamc.exceptions.ExNoPerm
+        aiospamc.exceptions.ExConfig
+        aiospamc.exceptions.ExTimeout
+            Exception raised from the SPAMD service.
         '''
 
         request = Request('CHECK', body=message)
@@ -227,8 +266,8 @@ class Client:
 
         Parameters
         ----------
-        message
-            An object that can be convertable to a bytes object.
+        message : str
+            A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -248,6 +287,23 @@ class Client:
             raised.
         aiospamc.exceptions.SPAMDConnectionRefused
             Raised if an error occurred when trying to connect.
+        aiospamc.exceptions.ExUsage
+        aiospamc.exceptions.ExDataErr
+        aiospamc.exceptions.ExNoInput
+        aiospamc.exceptions.ExNoUser
+        aiospamc.exceptions.ExNoHost
+        aiospamc.exceptions.ExUnavailable
+        aiospamc.exceptions.ExSoftware
+        aiospamc.exceptions.ExOSErr
+        aiospamc.exceptions.ExOSFile
+        aiospamc.exceptions.ExCantCreat
+        aiospamc.exceptions.ExIOErr
+        aiospamc.exceptions.ExTempFail
+        aiospamc.exceptions.ExProtocol
+        aiospamc.exceptions.ExNoPerm
+        aiospamc.exceptions.ExConfig
+        aiospamc.exceptions.ExTimeout
+            Exception raised from the SPAMD service.
         '''
 
         request = Request('HEADERS', body=message)
@@ -272,6 +328,23 @@ class Client:
             raised.
         aiospamc.exceptions.SPAMDConnectionRefused
             Raised if an error occurred when trying to connect.
+        aiospamc.exceptions.ExUsage
+        aiospamc.exceptions.ExDataErr
+        aiospamc.exceptions.ExNoInput
+        aiospamc.exceptions.ExNoUser
+        aiospamc.exceptions.ExNoHost
+        aiospamc.exceptions.ExUnavailable
+        aiospamc.exceptions.ExSoftware
+        aiospamc.exceptions.ExOSErr
+        aiospamc.exceptions.ExOSFile
+        aiospamc.exceptions.ExCantCreat
+        aiospamc.exceptions.ExIOErr
+        aiospamc.exceptions.ExTempFail
+        aiospamc.exceptions.ExProtocol
+        aiospamc.exceptions.ExNoPerm
+        aiospamc.exceptions.ExConfig
+        aiospamc.exceptions.ExTimeout
+            Exception raised from the SPAMD service.
         '''
 
         request = Request('PING')
@@ -285,8 +358,8 @@ class Client:
 
         Parameters
         ----------
-        message
-            An object that can be convertable to a bytes object.
+        message : str
+            A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -306,6 +379,23 @@ class Client:
             raised.
         aiospamc.exceptions.SPAMDConnectionRefused
             Raised if an error occurred when trying to connect.
+        aiospamc.exceptions.ExUsage
+        aiospamc.exceptions.ExDataErr
+        aiospamc.exceptions.ExNoInput
+        aiospamc.exceptions.ExNoUser
+        aiospamc.exceptions.ExNoHost
+        aiospamc.exceptions.ExUnavailable
+        aiospamc.exceptions.ExSoftware
+        aiospamc.exceptions.ExOSErr
+        aiospamc.exceptions.ExOSFile
+        aiospamc.exceptions.ExCantCreat
+        aiospamc.exceptions.ExIOErr
+        aiospamc.exceptions.ExTempFail
+        aiospamc.exceptions.ExProtocol
+        aiospamc.exceptions.ExNoPerm
+        aiospamc.exceptions.ExConfig
+        aiospamc.exceptions.ExTimeout
+            Exception raised from the SPAMD service.
         '''
 
         request = Request('PROCESS', body=message)
@@ -319,8 +409,8 @@ class Client:
 
         Parameters
         ----------
-        message
-            An object that can be convertable to a bytes object.
+        message : str
+            A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -340,6 +430,23 @@ class Client:
             raised.
         aiospamc.exceptions.SPAMDConnectionRefused
             Raised if an error occurred when trying to connect.
+        aiospamc.exceptions.ExUsage
+        aiospamc.exceptions.ExDataErr
+        aiospamc.exceptions.ExNoInput
+        aiospamc.exceptions.ExNoUser
+        aiospamc.exceptions.ExNoHost
+        aiospamc.exceptions.ExUnavailable
+        aiospamc.exceptions.ExSoftware
+        aiospamc.exceptions.ExOSErr
+        aiospamc.exceptions.ExOSFile
+        aiospamc.exceptions.ExCantCreat
+        aiospamc.exceptions.ExIOErr
+        aiospamc.exceptions.ExTempFail
+        aiospamc.exceptions.ExProtocol
+        aiospamc.exceptions.ExNoPerm
+        aiospamc.exceptions.ExConfig
+        aiospamc.exceptions.ExTimeout
+            Exception raised from the SPAMD service.
         '''
 
         request = Request('REPORT', body=message)
@@ -354,8 +461,8 @@ class Client:
 
         Parameters
         ----------
-        message
-            An object that can be convertable to a bytes object.
+        message : str
+            A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -376,6 +483,23 @@ class Client:
             raised.
         aiospamc.exceptions.SPAMDConnectionRefused
             Raised if an error occurred when trying to connect.
+        aiospamc.exceptions.ExUsage
+        aiospamc.exceptions.ExDataErr
+        aiospamc.exceptions.ExNoInput
+        aiospamc.exceptions.ExNoUser
+        aiospamc.exceptions.ExNoHost
+        aiospamc.exceptions.ExUnavailable
+        aiospamc.exceptions.ExSoftware
+        aiospamc.exceptions.ExOSErr
+        aiospamc.exceptions.ExOSFile
+        aiospamc.exceptions.ExCantCreat
+        aiospamc.exceptions.ExIOErr
+        aiospamc.exceptions.ExTempFail
+        aiospamc.exceptions.ExProtocol
+        aiospamc.exceptions.ExNoPerm
+        aiospamc.exceptions.ExConfig
+        aiospamc.exceptions.ExTimeout
+            Exception raised from the SPAMD service.
         '''
 
         request = Request('REPORT_IFSPAM', body=message)
@@ -392,8 +516,8 @@ class Client:
 
         Parameters
         ----------
-        message
-            An object that can be convertable to a bytes object.
+        message : str
+            A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -413,6 +537,23 @@ class Client:
             raised.
         aiospamc.exceptions.SPAMDConnectionRefused
             Raised if an error occurred when trying to connect.
+        aiospamc.exceptions.ExUsage
+        aiospamc.exceptions.ExDataErr
+        aiospamc.exceptions.ExNoInput
+        aiospamc.exceptions.ExNoUser
+        aiospamc.exceptions.ExNoHost
+        aiospamc.exceptions.ExUnavailable
+        aiospamc.exceptions.ExSoftware
+        aiospamc.exceptions.ExOSErr
+        aiospamc.exceptions.ExOSFile
+        aiospamc.exceptions.ExCantCreat
+        aiospamc.exceptions.ExIOErr
+        aiospamc.exceptions.ExTempFail
+        aiospamc.exceptions.ExProtocol
+        aiospamc.exceptions.ExNoPerm
+        aiospamc.exceptions.ExConfig
+        aiospamc.exceptions.ExTimeout
+            Exception raised from the SPAMD service.
         '''
 
         request = Request('SYMBOLS', body=message)
@@ -430,10 +571,10 @@ class Client:
 
         Parameters
         ----------
-        message_class : MessageClassOption
+        message_class : aiospamc.options.MessageClassOption
             An enumeration to classify the message as 'spam' or 'ham.'
-        message
-            An object that can be convertable to a bytes object.
+        message : str
+            A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -457,6 +598,23 @@ class Client:
             raised.
         aiospamc.exceptions.SPAMDConnectionRefused
             Raised if an error occurred when trying to connect.
+        aiospamc.exceptions.ExUsage
+        aiospamc.exceptions.ExDataErr
+        aiospamc.exceptions.ExNoInput
+        aiospamc.exceptions.ExNoUser
+        aiospamc.exceptions.ExNoHost
+        aiospamc.exceptions.ExUnavailable
+        aiospamc.exceptions.ExSoftware
+        aiospamc.exceptions.ExOSErr
+        aiospamc.exceptions.ExOSFile
+        aiospamc.exceptions.ExCantCreat
+        aiospamc.exceptions.ExIOErr
+        aiospamc.exceptions.ExTempFail
+        aiospamc.exceptions.ExProtocol
+        aiospamc.exceptions.ExNoPerm
+        aiospamc.exceptions.ExConfig
+        aiospamc.exceptions.ExTimeout
+            Exception raised from the SPAMD service.
         '''
 
         request = Request('TELL',

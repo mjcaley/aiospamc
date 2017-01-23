@@ -15,7 +15,7 @@ class Request(RequestResponseBase):
     ----------
     verb : str
         Method name of the request.
-    version : str
+    protocol_version : str
         Protocol version.
     body : str
         String representation of the body.  An instance of the
@@ -44,7 +44,7 @@ class Request(RequestResponseBase):
         '''
 
         self.verb = verb
-        self.version = '1.5'
+        self.protocol_version = '1.5'
         super().__init__(body, *headers)
 
     @classmethod
@@ -84,6 +84,7 @@ class Request(RequestResponseBase):
         obj = cls(verb,
                   parsed_body,
                   *parsed_headers)
+        obj.protocol_version = protocol_version
 
         return obj
 
@@ -102,7 +103,7 @@ class Request(RequestResponseBase):
                    b'%(body)b')
 
         return request % {b'verb': self.verb.encode(),
-                          b'version': self.version.encode(),
+                          b'version': self.protocol_version.encode(),
                           b'headers': b''.join(map(bytes, self._headers.values())),
                           b'body': body}
 
@@ -110,6 +111,6 @@ class Request(RequestResponseBase):
         request_format = '{}(verb=\'{}\', version=\'{}\', body={}, headers={})'
         return request_format.format(self.__class__.__name__,
                                      self.verb,
-                                     self.version,
+                                     self.protocol_version,
                                      repr(self.body) if self.body else 'None',
                                      [i for i in self._headers.values()])

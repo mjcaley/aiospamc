@@ -1,7 +1,8 @@
-aiospamc.content_man module
+aiospamc.common module
 ===========================
 
-.. automodule:: aiospamc.content_man
+.. automodule:: aiospamc.common
     :members:
+    :inherited-members:
     :undoc-members:
     :show-inheritance:

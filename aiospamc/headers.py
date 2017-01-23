@@ -13,7 +13,7 @@ class Header:
     '''Header base class.'''
 
     @classmethod
-    def parse(self, bytes_string):
+    def parse(cls, bytes_string):
         '''Parses a bytes string.
 
         Parameters
@@ -48,6 +48,11 @@ class Header:
 class Compress(Header):
     '''Compress header.  Specifies what encryption scheme to use.  So far only
     'zlib' is supported.
+
+    Attributes
+    ----------
+    zlib : bool
+        True if the zlib compression algorithm is used.
     '''
 
     _pattern = re.compile(r'\s*zlib\s*')
@@ -78,12 +83,25 @@ class Compress(Header):
         return 'Compress'
 
 class ContentLength(Header):
-    '''ContentLength header.  Indicates the length of the body in bytes.'''
+    '''ContentLength header.  Indicates the length of the body in bytes.
+
+    Attributes
+    ----------
+    length : int
+        Length of the body.
+    '''
 
     _pattern = re.compile(r'\s*\d+\s*')
     '''Regular expression pattern to match one or more digits.'''
 
     def __init__(self, length=0):
+        '''ContentLength constructor.
+
+        Parameters
+        ----------
+        length : :obj:`int`, optional
+            Length of the body.
+        '''
         self.length = length
 
     @classmethod
@@ -110,12 +128,26 @@ class ContentLength(Header):
 
 class MessageClass(Header):
     '''MessageClass header.  Used to specify whether a message is 'spam' or
-    'ham.\''''
+    'ham.'
+
+    Attributes
+    ----------
+    value : aiospamc.options.MessageClassOption
+        Specifies the classification of the message.
+    '''
 
     _pattern = re.compile(r'^\s*(?P<value>ham|spam)\s*$', flags=re.IGNORECASE)
     '''Regular expression pattern to match either 'spam' or 'ham.\''''
 
     def __init__(self, value=MessageClassOption.ham):
+        '''MessageClass constructor.
+
+        Parameters
+        ----------
+        value : :obj:`aiospamc.options.MessageClassOption`, optional
+            Specifies the classification of the message.
+        '''
+
         self.value = value
 
     @classmethod
@@ -142,7 +174,13 @@ class MessageClass(Header):
         return 'Message-class'
 
 class _SetRemoveBase(Header):
-    '''Base class for headers that implement "local" and "remote" rules.'''
+    '''Base class for headers that implement "local" and "remote" rules.
+
+    Attributes
+    ----------
+    action : aiospamc.options._Action
+        Actions to be done on local or remote.
+    '''
 
     _local_pattern = re.compile(r'.*local.*', flags=re.IGNORECASE)
     '''Regular expression string to match 'local.\''''
@@ -150,6 +188,14 @@ class _SetRemoveBase(Header):
     '''Regular expression string to match 'remote.\''''
 
     def __init__(self, action=_Action(local=False, remote=False)):
+        '''_SetRemoveBase constructor.
+
+        Parameters
+        ----------
+        action : :obj:`aiospamc.options._Action`, optional
+            Actions to be done on local or remote.
+        '''
+
         self.action = action
 
     @classmethod
@@ -187,6 +233,14 @@ class _RemoveBase(_SetRemoveBase):
     '''Base class for all remove-style headers.'''
 
     def __init__(self, action=RemoveOption(local=False, remote=False)):
+        '''_RemoveBase constructor.
+
+        Parameters
+        ----------
+        action : :obj:`aiospamc.options.RemoveAction`, optional
+            Actions to be done on local or remote.
+        '''
+
         super().__init__(action)
 
     @classmethod
@@ -207,6 +261,14 @@ class _SetBase(_SetRemoveBase):
     '''Base class for all set-style headers.'''
 
     def __init__(self, action=SetOption(local=False, remote=False)):
+        '''_SetBase constructor.
+
+        Parameters
+        ----------
+        action : :obj:`aiospamc.options.SetAction`, optional
+            Actions to be done on local or remote.
+        '''
+
         super().__init__(action)
 
     @classmethod
@@ -226,6 +288,11 @@ class _SetBase(_SetRemoveBase):
 class DidRemove(_RemoveBase):
     '''DidRemove header.  Used by SPAMD to indicate if a message was removed
     from either a local or remote database in response to a TELL request.
+
+    Attributes
+    ----------
+    action : aiospamc.options.RemoveAction
+        Actions to be done on local or remote.
     '''
 
     def header_field_name(self):
@@ -234,6 +301,11 @@ class DidRemove(_RemoveBase):
 class DidSet(_SetBase):
     '''DidRemove header.  Used by SPAMD to indicate if a message was added to
     either a local or remote database in response to a TELL request.
+
+    Attributes
+    ----------
+    action : :obj:`aiospamc.options.SetAction`
+        Actions to be done on local or remote.
     '''
 
     def header_field_name(self):
@@ -243,6 +315,11 @@ class Remove(_RemoveBase):
     '''Remove header.  Used in a TELL request to ask the SPAMD service remove
     a message from a local or remote database.  The SPAMD service must have the
     --allow-tells switch in order for this to do anything.
+
+    Attributes
+    ----------
+    action : aiospamc.options.RemoveAction
+        Actions to be done on local or remote.
     '''
 
     def header_field_name(self):
@@ -252,6 +329,11 @@ class Set(_SetBase):
     '''Set header.  Used in a TELL request to ask the SPAMD service add a
     message from a local or remote database.  The SPAMD service must have the
     --allow-tells switch in order for this to do anything.
+
+    Attributes
+    ----------
+    action : aiospamc.options.SetAction
+        Actions to be done on local or remote.
     '''
 
     def header_field_name(self):
@@ -260,6 +342,15 @@ class Set(_SetBase):
 class Spam(Header):
     '''Spam header.  Used by the SPAMD service to report on if the submitted
     message was spam and the score/threshold that it used.
+
+    Attributes
+    ----------
+    value : bool
+            True if the message is spam, False if not.
+    score : float
+        Score of the message after being scanned.
+    threshold : float
+        Threshold of which the message would have been marked as spam.
     '''
 
     _pattern = re.compile(r'\s*'
@@ -278,11 +369,11 @@ class Spam(Header):
 
         Parameters
         ----------
-        value : bool
+        value : :obj:`bool`, optional
             True if the message is spam, False if not.
-        score : float
+        score : :obj:`float`, optional
             Score of the message after being scanned.
-        threshold : float
+        threshold : :obj:`float`, optional
             Threshold of which the message would have been marked as spam.
         '''
 
@@ -324,12 +415,25 @@ class Spam(Header):
 class User(Header):
     '''User header.  Used to specify which user the SPAMD service should use
     when loading configuration files.
+
+    Attributes
+    ----------
+    name : str
+        Name of the user account.
     '''
 
     _pattern = re.compile(r'^\s*(?P<user>[a-zA-Z0-9_-]+)\s*$')
     '''Regular expression pattern to match the username.'''
 
     def __init__(self, name=getpass.getuser()):
+        '''User constructor.
+
+        Parameters
+        ----------
+        name : :obj:`str`, optional
+            Name of the user account.
+        '''
+
         self.name = name
 
     @classmethod
@@ -357,6 +461,13 @@ class User(Header):
 class XHeader(Header):
     '''Extension header.  Used to specify a header that's not supported
     natively by the SPAMD service.
+
+    Attributes
+    ----------
+    name : str
+        Name of the header.
+    value : str
+        Contents of the value.
     '''
 
     _pattern = re.compile(r'\s*(?P<name>\S+)\s*:\s*(?P<value>\S+)\s*')
@@ -392,7 +503,7 @@ class XHeader(Header):
 
     def __bytes__(self):
         return b'%b: %b\r\n' % (self.header_field_name().encode(),
-                               self.value.encode())
+                                self.value.encode())
 
     def __repr__(self):
         return '{}(name=\'{}\', value=\'{}\')'.format(self.__class__.__name__,

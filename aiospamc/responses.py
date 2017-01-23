@@ -63,10 +63,6 @@ class Response(RequestResponseBase):
         Message accompanying the status code.
     body : str
         Contents of the response body.
-    headers : tuple of aiospamc.headers.Header
-        Collection of headers to be added.  If it contains an instance of
-        aiospamc.headers.Compress then the body is automatically
-        compressed.
     '''
 
     #pylint: disable=too-few-public-methods
@@ -128,10 +124,10 @@ class Response(RequestResponseBase):
             Success or error code.
         message : str
             Message associated with status code.
-        body : str
+        body : :obj:`str`, optional
             String representation of the body.  An instance of the
             aiospamc.headers.ContentLength will be automatically added.
-        headers : tuple of aiospamc.headers.Header
+        *headers : :obj:`aiospamc.headers.Header`, optional
             Collection of headers to be added.  If it contains an instance of
             aiospamc.headers.Compress then the body is automatically
             compressed.

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+'''Common classes for the project.'''
+
 import zlib
 
 from aiospamc.headers import ContentLength, header_from_bytes
@@ -12,10 +14,10 @@ class RequestResponseBase:
         '''
         Parameters
         ----------
-        body : str
+        body : :obj:`str`, optional
             String representation of the body.  An instance of the
             aiospamc.headers.ContentLength will be automatically added.
-        *headers : list of aiospamc.headers.Header
+        *headers : :obj:`aiospamc.headers.Header`, optional
             Collection of headers to be added.  If it contains an instance of
             aiospamc.headers.Compress then the body is automatically
             compressed.
@@ -29,6 +31,14 @@ class RequestResponseBase:
 
     @classmethod
     def parse(cls, bytes_string):
+        '''Parses a byte string and returns an instance of the class.
+
+        Parameters
+        ----------
+        bytes_string : bytes
+            Byte encoded string.
+        '''
+
         raise NotImplementedError
 
     @staticmethod
@@ -42,7 +52,7 @@ class RequestResponseBase:
 
         Returns
         -------
-        headers : :obj:`list` of aiospamce.headers.Header
+        headers : :obj:`list` of :obj:`aiospamce.headers.Header`
             Collection of Header objects.
         '''
 
@@ -60,8 +70,8 @@ class RequestResponseBase:
         ----------
         body : bytes
             Bytes representation of body.
-        headers : :obj:`tuple` or :obj:`list` of aiospamc.headers.Header
-            Collection of headers
+        headers : :obj:`tuple` or :obj:`list` of :obj:`aiospamc.headers.Header`
+            Collection of headers.
 
         Returns
         -------
@@ -81,25 +91,19 @@ class RequestResponseBase:
     def body(self):
         '''Contains the contents of the body.
 
-        Returns
-        -------
-        str
-            Contents of the body.
+        The getter will return a bytes object.
+
+        The setter expects a string.  If the :class:`aiospamc.headers.Compress`
+        header is present then the value of body will be compressed.
+
+        The deleter will automatically remove the
+        :class:`aiospamc.headers.ContentLength` header.
         '''
 
         return self._body
 
     @body.setter
     def body(self, value):
-        '''Sets the contents of the body.
-
-        Parameters
-        ----------
-        value : str
-            The contents to be added.  If the aiospamc.headers.Compress header is
-            present then the value of body will be compressed.
-        '''
-
         self._body = value
         if 'Compress' in self._headers:
             self._compress_body()
@@ -107,12 +111,6 @@ class RequestResponseBase:
 
     @body.deleter
     def body(self):
-        '''Deletes the body.
-
-        The aiospamc.headers.ContentLength header will be automatically
-        deleted.
-        '''
-
         self._body = ''
         self._compressed_body = None
         self.delete_header('Content-length')

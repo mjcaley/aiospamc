@@ -32,13 +32,13 @@ With GIT
 How to use aiospamc
 *******************
 
-Instantiating the :py:class:`aiospamc.client.Client` class will be the primary way to interact with aiospamc.
+Instantiating the :class:`aiospamc.client.Client` class will be the primary way to interact with aiospamc.
 
 Parameters are available to specify how to connect to the SpamAssassin SPAMD service including host, port, and whether SSL is enabled.  They default to ``localhost``, ``783``, and SSL being disabled.  Additional optional parameters are the username that requests will be sent as (no user by default) and whether to compress the request body (disabled by default).
 
 A coroutine method is available for each type of request that can be sent to SpamAssassin.
 
-An example using the :py:meth:`aiospamc.client.Client.check` method:
+An example using the :meth:`aiospamc.client.Client.check` method:
 
 .. code:: python
 
@@ -59,7 +59,7 @@ An example using the :py:meth:`aiospamc.client.Client.check` method:
     response = loop.run_until_complete(client.check(example_message))
     print(response)
 
-Other requests can be seen in the :py:class:`aiospamc.client.Client` class.
+Other requests can be seen in the :class:`aiospamc.client.Client` class.
 
 ************************
 Making your own requests
@@ -67,15 +67,15 @@ Making your own requests
 
 If a request that isn't built into aiospamc is needed a new request can be created and sent.
 
-A new request can be made by instantiating the :py:class:`aiospamc.requests.Request` class.  The :py:attr:`aiospamc.requests.Request.verb` defines the method/verb of the request.
+A new request can be made by instantiating the :class:`aiospamc.requests.Request` class.  The :attr:`aiospamc.requests.Request.verb` defines the method/verb of the request.
 
-Standard headers or the :py:class:`aiospamc.headers.XHeader` extension header is available in the :py:mod:`aiospamc.headers` module. Headers are managed on the request object with the methods:
+Standard headers or the :class:`aiospamc.headers.XHeader` extension header is available in the :mod:`aiospamc.headers` module. Headers are managed on the request object with the methods:
 
-* :py:meth:`aiospamc.content_man.BodyHeaderManager.add_header`
-* :py:meth:`aiospamc.content_man.BodyHeaderManager.get_header`
-* :py:meth:`aiospamc.content_man.BodyHeaderManager.delete_header`
+* :meth:`aiospamc.content_man.BodyHeaderManager.add_header`
+* :meth:`aiospamc.content_man.BodyHeaderManager.get_header`
+* :meth:`aiospamc.content_man.BodyHeaderManager.delete_header`
 
-Once a request is composed, it can be sent through the :py:meth:`aiospamc.client.Client.send` method as-is.  The method will automatically add the :py:class:`aiospamc.headers.User` and :py:class:`aiospamc.headers.Compress` headers if required.
+Once a request is composed, it can be sent through the :meth:`aiospamc.client.Client.send` method as-is.  The method will automatically add the :class:`aiospamc.headers.User` and :class:`aiospamc.headers.Compress` headers if required.
 
 For example:
 
@@ -110,4 +110,4 @@ For example:
 Interpreting results
 ********************
 
-Responses are encapsulated in the :py:class:`aiospamc.responses.Response` class.  Any data will need to be additionally parsed by the user.
+Responses are encapsulated in the :class:`aiospamc.responses.Response` class.  Any data will need to be additionally parsed by the user.
