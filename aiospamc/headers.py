@@ -139,7 +139,7 @@ class MessageClass(Header):
     _pattern = re.compile(r'^\s*(?P<value>ham|spam)\s*$', flags=re.IGNORECASE)
     '''Regular expression pattern to match either 'spam' or 'ham.\''''
 
-    def __init__(self, value=MessageClassOption.ham):
+    def __init__(self, value=None):
         '''MessageClass constructor.
 
         Parameters
@@ -148,7 +148,7 @@ class MessageClass(Header):
             Specifies the classification of the message.
         '''
 
-        self.value = value
+        self.value = value or MessageClassOption.ham
 
     @classmethod
     def parse(cls, bytes_string):
@@ -187,7 +187,7 @@ class _SetRemoveBase(Header):
     _remote_pattern = re.compile(r'.*remote.*', flags=re.IGNORECASE)
     '''Regular expression string to match 'remote.\''''
 
-    def __init__(self, action=_Action(local=False, remote=False)):
+    def __init__(self, action=None):
         '''_SetRemoveBase constructor.
 
         Parameters
@@ -196,7 +196,7 @@ class _SetRemoveBase(Header):
             Actions to be done on local or remote.
         '''
 
-        self.action = action
+        self.action = action or _Action(local=False, remote=False)
 
     @classmethod
     def parse(cls, bytes_string):
@@ -232,7 +232,7 @@ class _SetRemoveBase(Header):
 class _RemoveBase(_SetRemoveBase):
     '''Base class for all remove-style headers.'''
 
-    def __init__(self, action=RemoveOption(local=False, remote=False)):
+    def __init__(self, action=None):
         '''_RemoveBase constructor.
 
         Parameters
@@ -241,7 +241,7 @@ class _RemoveBase(_SetRemoveBase):
             Actions to be done on local or remote.
         '''
 
-        super().__init__(action)
+        super().__init__(action or RemoveOption(local=False, remote=False))
 
     @classmethod
     def parse(cls, bytes_string):
@@ -260,7 +260,7 @@ class _RemoveBase(_SetRemoveBase):
 class _SetBase(_SetRemoveBase):
     '''Base class for all set-style headers.'''
 
-    def __init__(self, action=SetOption(local=False, remote=False)):
+    def __init__(self, action=None):
         '''_SetBase constructor.
 
         Parameters
@@ -269,7 +269,7 @@ class _SetBase(_SetRemoveBase):
             Actions to be done on local or remote.
         '''
 
-        super().__init__(action)
+        super().__init__(action or SetOption(local=False, remote=False))
 
     @classmethod
     def parse(cls, bytes_string):
@@ -425,7 +425,7 @@ class User(Header):
     _pattern = re.compile(r'^\s*(?P<user>[a-zA-Z0-9_-]+)\s*$')
     '''Regular expression pattern to match the username.'''
 
-    def __init__(self, name=getpass.getuser()):
+    def __init__(self, name=None):
         '''User constructor.
 
         Parameters
@@ -434,7 +434,7 @@ class User(Header):
             Name of the user account.
         '''
 
-        self.name = name
+        self.name = name or getpass.getuser()
 
     @classmethod
     def parse(cls, bytes_string):
