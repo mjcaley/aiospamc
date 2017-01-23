@@ -8,7 +8,7 @@ import logging
 from aiospamc.exceptions import (BadResponse, SPAMDConnectionRefused,
                                  ResponseException, ExTempFail)
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
-from aiospamc.options import MessageClassOption, RemoveOption, SetOption
+from aiospamc.options import RemoveOption, SetOption
 from aiospamc.requests import Request
 from aiospamc.responses import Response
 
