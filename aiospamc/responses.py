@@ -5,7 +5,6 @@
 import enum
 import re
 
-#from aiospamc.content_man import BodyHeaderManager
 from aiospamc.common import RequestResponseBase
 from aiospamc.exceptions import (BadResponse,
                                  ExUsage, ExDataErr, ExNoInput, ExNoUser,
