@@ -156,15 +156,15 @@ class Response(RequestResponseBase):
                                 b'body': body}
 
     def __repr__(self):
-        resp_format = ('{}(protocol_version=\'{}\', '
+        resp_format = ('{}(protocol_version={}, '
                        'status_code={}, '
-                       'message=\'{}\', '
+                       'message={}, '
                        'headers={}, '
                        'body={})')
 
         return resp_format.format(self.__class__.__name__,
-                                  self.protocol_version,
+                                  repr(self.protocol_version),
                                   str(self.status_code),
-                                  self.message,
+                                  repr(self.message),
                                   tuple(self._headers.values()),
                                   repr(self.body) if self.body else 'None')

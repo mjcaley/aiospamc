@@ -3,7 +3,6 @@
 import zlib
 
 import pytest
-from fixtures import *
 
 from aiospamc.common import RequestResponseBase
 from aiospamc.headers import Compress, ContentLength

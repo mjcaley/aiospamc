@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
-import asyncio
-
 import pytest
-from fixtures import *
+from asynctest import patch
 
 from aiospamc import Client
-from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
+from aiospamc.exceptions import BadResponse, AIOSpamcConnectionFailed
 from aiospamc.headers import ContentLength, MessageClass, Remove, Set
 from aiospamc.options import MessageClassOption, RemoveOption, SetOption
 from aiospamc.responses import Response
@@ -14,68 +12,55 @@ from aiospamc.requests import Request
 
 
 @pytest.mark.asyncio
-async def test_tell_connection_refused(event_loop, unused_tcp_port, spam):
-    client = Client('localhost', unused_tcp_port, loop=event_loop)
-    with pytest.raises(SPAMDConnectionRefused):
+@pytest.mark.usefixtures('connection_refused')
+async def test_tell_connection_refused(spam):
+    client = Client()
+    with pytest.raises(AIOSpamcConnectionFailed):
         response = await client.tell(MessageClassOption.spam,
                                      spam,
                                      SetOption(local=True, remote=True))
 
+
 @pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-@pytest.mark.parametrized('test_input,expected', [
-    (RemoveOption(local=True, remote=False), 'Remove: local\r\n'),
-    (RemoveOption(local=False, remote=True), 'Remove: remote\r\n'),
-    (RemoveOption(local=True, remote=True), 'Remove: local, remote\r\n'),
-    (SetOption(local=True, remote=False), 'Set: local\r\n'),
-    (SetOption(local=False, remote=True), 'Set: remote\r\n'),
-    (SetOption(local=True, remote=True), 'Set: local, remote\r\n'),
+@pytest.mark.parametrize('set_remove_name,set_remove,message_class', [
+    ('Remove', RemoveOption(local=True, remote=False), MessageClassOption.spam),
+    ('Remove', RemoveOption(local=False, remote=True), MessageClassOption.spam),
+    ('Remove', RemoveOption(local=True, remote=True), MessageClassOption.spam),
+    ('Set', SetOption(local=True, remote=False), MessageClassOption.spam),
+    ('Set', SetOption(local=False, remote=True), MessageClassOption.spam),
+    ('Set', SetOption(local=True, remote=True), MessageClassOption.spam),
+
+    ('Remove', RemoveOption(local=True, remote=False), MessageClassOption.ham),
+    ('Remove', RemoveOption(local=False, remote=True), MessageClassOption.ham),
+    ('Remove', RemoveOption(local=True, remote=True), MessageClassOption.ham),
+    ('Set', SetOption(local=True, remote=False), MessageClassOption.ham),
+    ('Set', SetOption(local=False, remote=True), MessageClassOption.ham),
+    ('Set', SetOption(local=True, remote=True), MessageClassOption.ham),
 ])
-async def test_tell_valid_request(reader, writer, test_input, expected, spam):
+@patch('aiospamc.client.Client.send')
+async def test_tell_valid_request(mock_connection,
+                                  set_remove_name,
+                                  set_remove,
+                                  message_class,
+                                  spam):
     client = Client()
-    response = await client.tell(MessageClassOption.spam,
-                                 spam,
-                                 test_input)
 
-    args = writer.writer.call_args
-    assert expected in args[0][0]
+    response = await client.tell(message_class,
+                                 spam,
+                                 set_remove)
+
+    request = client.send.call_args[0][0]
+
+    assert isinstance(request, Request)
+    assert request.verb == 'TELL'
+    assert request.body
+    assert request.get_header('Message-class').value == message_class
+    assert request.get_header(set_remove_name).action.local == set_remove.local
+    assert request.get_header(set_remove_name).action.remote == set_remove.remote
+
 
 @pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_tell_verb_at_start(reader, writer, spam):
-    client = Client()
-    response = await client.tell(MessageClassOption.spam,
-                                 spam,
-                                 SetOption(local=True, remote=True))
-
-    args = writer.write.call_args
-    assert args[0][0].startswith(b'TELL')
-
-@pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-@pytest.mark.parametrize('test_input,expected', [
-    (RemoveOption(local=True, remote=False), (b'TELL',
-                                              spam().encode(),
-                                              bytes(MessageClass(MessageClassOption.spam)),
-                                              bytes(Remove(RemoveOption(local=True, remote=False))))),
-    (SetOption(local=True, remote=False), (b'TELL',
-                                           spam().encode(),
-                                           bytes(MessageClass(MessageClassOption.spam)),
-                                           bytes(Set(SetOption(local=True, remote=False)))))
-])
-async def test_tell_request_call(reader, writer, test_input, expected, spam):
-    client = Client()
-    response = await client.tell(MessageClassOption.spam,
-                                 spam,
-                                 test_input)
-
-    args = writer.write.call_args
-
-    assert all([phrase in args[0][0] for phrase in expected])
-
-@pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_tell_valid_response(spam):
+async def test_tell_valid_response(mock_connection, spam):
     client = Client()
     response = await client.tell(MessageClassOption.spam,
                                  spam,
@@ -83,50 +68,13 @@ async def test_tell_valid_response(spam):
 
     assert isinstance(response, Response)
 
+
 @pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-@pytest.mark.responses(response_invalid())
-async def test_tell_invalid_response(spam):
+async def test_tell_invalid_response(mock_connection, response_invalid, spam):
+    mock_connection.side_effect = [response_invalid]
+
     client = Client()
     with pytest.raises(BadResponse):
         response = await client.tell(MessageClassOption.spam,
                                      spam,
                                      SetOption(local=True, remote=True))
-
-@pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_tell_valid_request(reader, writer, spam):
-    client = Client()
-    response = await client.tell(MessageClassOption.spam,
-                                 spam,
-                                 SetOption(local=True, remote=True))
-
-    args = writer.write.call_args[0][0].decode()
-    # We can't guarantee the order of the headers, so we have to break things up
-    assert args.startswith('TELL SPAMC/1.5\r\n')
-    assert 'Set: local, remote\r\n' in args
-    assert 'Message-class: spam\r\n' in args
-    assert 'Content-length: {}\r\n'.format(len(spam.encode())) in args
-    assert args.endswith(spam)
-
-@pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_tell_compress_header_request(reader, writer, spam):
-    client = Client(compress=True)
-    response = await client.tell(MessageClassOption.spam,
-                                 spam,
-                                 SetOption(local=True, remote=True))
-
-    args = writer.write.call_args
-    assert b'Compress:' in args[0][0]
-
-@pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_tell_user_header_request(reader, writer, spam):
-    client = Client(user='TestUser')
-    response = await client.tell(MessageClassOption.spam,
-                                 spam,
-                                 SetOption(local=True, remote=True))
-
-    args = writer.write.call_args
-    assert b'User: TestUser' in args[0][0]

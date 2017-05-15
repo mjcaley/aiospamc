@@ -108,9 +108,9 @@ class Request(RequestResponseBase):
                           b'body': body}
 
     def __repr__(self):
-        request_format = '{}(verb=\'{}\', version=\'{}\', body={}, headers={})'
+        request_format = '{}(verb={}, version={}, body={}, headers={})'
         return request_format.format(self.__class__.__name__,
-                                     self.verb,
-                                     self.protocol_version,
+                                     repr(self.verb),
+                                     repr(self.protocol_version),
                                      repr(self.body) if self.body else 'None',
                                      [i for i in self._headers.values()])

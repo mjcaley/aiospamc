@@ -3,7 +3,7 @@
 import zlib
 
 import pytest
-from fixtures import *
+from conftest import *
 
 from aiospamc.exceptions import (BadResponse,
                                  ExUsage, ExDataErr, ExNoInput, ExNoUser,
@@ -19,6 +19,7 @@ def test_response_instantiates():
     response = Response('1.5', Status.EX_OK, 'EX_OK')
 
     assert 'response' in locals()
+
 
 @pytest.mark.parametrize('version,status,message,body,headers', [
     ('1.5', Status.EX_OK, 'EX_OK', None, []),
@@ -38,6 +39,7 @@ def test_response_bytes(version, status, message, body, headers):
         else:
             assert bytes(response).endswith(body.encode())
 
+
 def test_response_repr():
     response = Response('1.5', Status.EX_OK, 'EX_OK')
 
@@ -47,10 +49,12 @@ def test_response_repr():
                               'headers=(), '
                               'body=None)')
 
+
 def test_response_parse_valid(response_ok):
     response = Response.parse(response_ok)
 
     assert 'response' in locals()
+
 
 @pytest.mark.parametrize('test_input', [
     response_with_body(),
@@ -61,14 +65,21 @@ def test_response_parse_has_content_length(test_input):
 
     assert response._headers['Content-length']
 
+
 def test_response_parse_valid_with_body(response_with_body):
     response = Response.parse(response_with_body)
 
     assert hasattr(response, 'body')
 
+
 def test_response_parse_invalid(response_invalid):
     with pytest.raises(BadResponse):
         response = Response.parse(response_invalid)
+
+
+def test_response_parse_empty(response_empty):
+    with pytest.raises(BadResponse):
+        response = Response.parse(response_empty)
 
 @pytest.mark.parametrize('test_input,expected', [
     (ex_usage(), ExUsage),

@@ -1,69 +1,46 @@
 #!/usr/bin/env python3
 
-import asyncio
-
 import pytest
-from fixtures import *
+from asynctest import patch
 
 from aiospamc import Client
-from aiospamc.exceptions import BadResponse, SPAMDConnectionRefused
+from aiospamc.exceptions import BadResponse, AIOSpamcConnectionFailed
 from aiospamc.responses import Response
+from aiospamc.requests import Request
 
 
 @pytest.mark.asyncio
-async def test_check_connection_refused(event_loop, unused_tcp_port, spam):
-    client = Client('localhost', unused_tcp_port, loop=event_loop)
-    with pytest.raises(SPAMDConnectionRefused):
+@pytest.mark.usefixtures('connection_refused')
+async def test_check_connection_refused(unused_tcp_port, spam):
+    client = Client(host='localhost', port=unused_tcp_port)
+    with pytest.raises(AIOSpamcConnectionFailed):
         response = await client.check(spam)
 
+
 @pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_check_valid_response(spam):
+@patch('aiospamc.client.Client.send')
+async def test_check_valid_request(mock_connection, spam):
+    client = Client()
+    response = await client.check(spam)
+
+    request = client.send.call_args[0][0]
+
+    assert isinstance(request, Request)
+    assert request.verb == 'CHECK'
+    assert request.body
+
+
+@pytest.mark.asyncio
+async def test_check_valid_response(mock_connection, spam):
     client = Client()
     response = await client.check(spam)
 
     assert isinstance(response, Response)
 
+
 @pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-@pytest.mark.responses(response_invalid())
-async def test_check_invalid_response(spam):
+async def test_check_invalid_response(spam, mock_connection, response_invalid):
+    mock_connection.side_effect = [response_invalid]
     client = Client()
     with pytest.raises(BadResponse):
         response = await client.check(spam)
-
-@pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_check_verb_at_start(reader, writer, spam):
-    client = Client()
-    response = await client.check(spam)
-
-    args = writer.write.call_args
-    assert args[0][0].startswith(b'CHECK')
-
-@pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_check_valid_request(reader, writer, spam):
-    client = Client()
-    response = await client.check(spam)
-
-    arg = writer.write.call_args
-    assert arg[0][0].decode() == 'CHECK SPAMC/1.5\r\nContent-length: {}\r\n\r\n{}'.format(len(spam.encode()), spam)
-
-@pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_check_compress_header_request(reader, writer, spam):
-    client = Client(compress=True)
-    response = await client.check(spam)
-
-    args = writer.write.call_args
-    assert b'Compress:' in args[0][0]
-
-@pytest.mark.asyncio
-@pytest.mark.usefixtures('mock_stream')
-async def test_check_user_header_request(reader, writer, spam):
-    client = Client(user='TestUser')
-    response = await client.check(spam)
-
-    args = writer.write.call_args
-    assert b'User: TestUser' in args[0][0]

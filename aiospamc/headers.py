@@ -252,10 +252,8 @@ class _RemoveBase(_SetRemoveBase):
         return obj
 
     def __repr__(self):
-        return '{}(action={}(local={}, remote={}))'.format(self.__class__.__name__,
-                                                           self.action.__class__.__name__,
-                                                           self.action.local,
-                                                           self.action.remote)
+        return '{}(action={})'.format(self.__class__.__name__,
+                                      repr(self.action))
 
 class _SetBase(_SetRemoveBase):
     '''Base class for all set-style headers.'''
@@ -280,10 +278,8 @@ class _SetBase(_SetRemoveBase):
         return obj
 
     def __repr__(self):
-        return '{}(action={}(local={}, remote={}))'.format(self.__class__.__name__,
-                                                           self.action.__class__.__name__,
-                                                           self.action.local,
-                                                           self.action.remote)
+        return '{}(action={})'.format(self.__class__.__name__,
+                                      repr(self.action))
 
 class DidRemove(_RemoveBase):
     '''DidRemove header.  Used by SPAMD to indicate if a message was removed
@@ -453,7 +449,7 @@ class User(Header):
                                 self.name.encode())
 
     def __repr__(self):
-        return '{}(name=\'{}\')'.format(self.__class__.__name__, self.name)
+        return '{}(name={})'.format(self.__class__.__name__, repr(self.name))
 
     def field_name(self):
         return 'User'
@@ -506,9 +502,9 @@ class XHeader(Header):
                                 self.value.encode())
 
     def __repr__(self):
-        return '{}(name=\'{}\', value=\'{}\')'.format(self.__class__.__name__,
-                                                      self.name,
-                                                      self.value)
+        return '{}(name={}, value={})'.format(self.__class__.__name__,
+                                              repr(self.name),
+                                              repr(self.value))
 
     def field_name(self):
         return self.name

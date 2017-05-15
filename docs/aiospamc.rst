@@ -8,6 +8,7 @@ Submodules
 
    aiospamc.client
    aiospamc.common
+   aiospamc.connections
    aiospamc.exceptions
    aiospamc.headers
    aiospamc.options

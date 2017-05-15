@@ -4,7 +4,6 @@
 import zlib
 
 import pytest
-from fixtures import *
 
 from aiospamc.exceptions import BadRequest
 from aiospamc.headers import Compress, ContentLength, XHeader
@@ -45,7 +44,7 @@ def test_request_repr(verb, body, headers):
     assert repr(request).startswith('Request(')
     assert 'verb={},'.format(repr(verb)) in repr(request)
     assert "version='1.5'," in repr(request)
-    assert 'body={}'.format(repr(body)) in repr(request) 
+    assert 'body={}'.format(repr(body)) in repr(request)
     assert 'headers=' in repr(request)
     assert all(repr(header) in repr(request) for header in headers)
     assert repr(request).endswith(')')
