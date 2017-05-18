@@ -6,10 +6,10 @@ import pytest
 from conftest import *
 
 from aiospamc.exceptions import (BadResponse,
-                                 ExUsage, ExDataErr, ExNoInput, ExNoUser,
-                                 ExNoHost, ExUnavailable, ExSoftware, ExOSErr,
-                                 ExOSFile, ExCantCreat, ExIOErr, ExTempFail,
-                                 ExProtocol, ExNoPerm, ExConfig, ExTimeout)
+                                 UsageException, DataErrorException, NoInputException, NoUserException,
+                                 NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
+                                 OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
+                                 ProtocolException, NoPermissionException, ConfigException, TimeoutException)
 from aiospamc.headers import Compress
 from aiospamc.responses import Response, Status
 
@@ -82,22 +82,22 @@ def test_response_parse_empty(response_empty):
         response = Response.parse(response_empty)
 
 @pytest.mark.parametrize('test_input,expected', [
-    (ex_usage(), ExUsage),
-    (ex_data_err(), ExDataErr),
-    (ex_no_input(), ExNoInput),
-    (ex_no_user(), ExNoUser),
-    (ex_no_host(), ExNoHost),
-    (ex_unavailable(), ExUnavailable),
-    (ex_software(), ExSoftware),
-    (ex_os_err(), ExOSErr),
-    (ex_os_file(), ExOSFile),
-    (ex_cant_create(), ExCantCreat),
-    (ex_io_err(), ExIOErr),
-    (ex_temp_fail(), ExTempFail),
-    (ex_protocol(), ExProtocol),
-    (ex_no_perm(), ExNoPerm),
-    (ex_config(), ExConfig),
-    (ex_timeout(), ExTimeout),
+    (ex_usage(), UsageException),
+    (ex_data_err(), DataErrorException),
+    (ex_no_input(), NoInputException),
+    (ex_no_user(), NoUserException),
+    (ex_no_host(), NoHostException),
+    (ex_unavailable(), UnavailableException),
+    (ex_software(), InternalSoftwareException),
+    (ex_os_err(), OSErrorException),
+    (ex_os_file(), OSFileException),
+    (ex_cant_create(), CantCreateException),
+    (ex_io_err(), IOErrorException),
+    (ex_temp_fail(), TemporaryFailureException),
+    (ex_protocol(), ProtocolException),
+    (ex_no_perm(), NoPermissionException),
+    (ex_config(), ConfigException),
+    (ex_timeout(), TimeoutException),
 ])
 def test_response_response_exceptions(test_input, expected):
     with pytest.raises(expected):

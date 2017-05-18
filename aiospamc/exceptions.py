@@ -24,11 +24,6 @@ class BadResponse(ClientException):
     pass
 
 
-class SPAMDConnectionRefused(ClientException):
-    '''Server refused connection.'''
-    pass
-
-
 # ConnectionManager and Connection object exceptions
 class AIOSpamcConnectionException(Exception):
     '''Base class for exceptions from the connection.'''
@@ -45,81 +40,81 @@ class ResponseException(Exception):
     pass
 
 
-class ExUsage(ResponseException):
+class UsageException(ResponseException):
     '''Command line usage error.'''
     code = 64
 
 
-class ExDataErr(ResponseException):
+class DataErrorException(ResponseException):
     '''Data format error.'''
     code = 65
 
 
-class ExNoInput(ResponseException):
+class NoInputException(ResponseException):
     '''Cannot open input.'''
     code = 66
 
 
-class ExNoUser(ResponseException):
+class NoUserException(ResponseException):
     '''Addressee unknown.'''
     code = 67
 
 
-class ExNoHost(ResponseException):
+class NoHostException(ResponseException):
     '''Hostname unknown.'''
     code = 68
 
 
-class ExUnavailable(ResponseException):
+class UnavailableException(ResponseException):
     '''Service unavailable.'''
     code = 69
 
 
-class ExSoftware(ResponseException):
+class InternalSoftwareException(ResponseException):
     '''Internal software error.'''
     code = 70
 
 
-class ExOSErr(ResponseException):
+class OSErrorException(ResponseException):
     '''System error (e.g. can't fork the process).'''
     code = 71
 
 
-class ExOSFile(ResponseException):
+class OSFileException(ResponseException):
     '''Critical operating system file missing.'''
     code = 72
 
 
-class ExCantCreat(ResponseException):
+class CantCreateException(ResponseException):
     '''Can't create (user) output file.'''
     code = 73
 
 
-class ExIOErr(ResponseException):
+class IOErrorException(ResponseException):
     '''Input/output error.'''
     code = 74
 
 
-class ExTempFail(ResponseException):
+class TemporaryFailureException(ResponseException):
     '''Temporary failure, user is invited to try again.'''
     code = 75
 
 
-class ExProtocol(ResponseException):
+class ProtocolException(ResponseException):
     '''Remote error in protocol.'''
     code = 76
 
 
-class ExNoPerm(ResponseException):
+class NoPermissionException(ResponseException):
     '''Permission denied.'''
     code = 77
 
 
-class ExConfig(ResponseException):
+class ConfigException(ResponseException):
     '''Configuration error.'''
     code = 78
 
 
-class ExTimeout(ResponseException):
+class TimeoutException(ResponseException):
     '''Read timeout.'''
     code = 79

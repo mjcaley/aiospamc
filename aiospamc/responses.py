@@ -7,10 +7,10 @@ import re
 
 from aiospamc.common import RequestResponseBase
 from aiospamc.exceptions import (BadResponse,
-                                 ExUsage, ExDataErr, ExNoInput, ExNoUser,
-                                 ExNoHost, ExUnavailable, ExSoftware, ExOSErr,
-                                 ExOSFile, ExCantCreat, ExIOErr, ExTempFail,
-                                 ExProtocol, ExNoPerm, ExConfig, ExTimeout)
+                                 UsageException, DataErrorException, NoInputException, NoUserException,
+                                 NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
+                                 OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
+                                 ProtocolException, NoPermissionException, ConfigException, TimeoutException)
 
 
 class Status(enum.IntEnum):
@@ -32,22 +32,22 @@ class Status(enum.IntEnum):
         return obj
 
     EX_OK           = 0,    None,          'No problems'
-    EX_USAGE        = 64,   ExUsage,       'Command line usage error'
-    EX_DATAERR      = 65,   ExDataErr,     'Data format error'
-    EX_NOINPUT      = 66,   ExNoInput,     'Cannot open input'
-    EX_NOUSER       = 67,   ExNoUser,      'Addressee unknown'
-    EX_NOHOST       = 68,   ExNoHost,      'Host name unknown'
-    EX_UNAVAILABLE  = 69,   ExUnavailable, 'Service unavailable'
-    EX_SOFTWARE     = 70,   ExSoftware,    'Internal software error'
-    EX_OSERR        = 71,   ExOSErr,       'System error (e.g., can\'t fork)'
-    EX_OSFILE       = 72,   ExOSFile,      'Critical OS file missing'
-    EX_CANTCREAT    = 73,   ExCantCreat,   'Can\'t create (user) output file'
-    EX_IOERR        = 74,   ExIOErr,       'Input/output error'
-    EX_TEMPFAIL     = 75,   ExTempFail,    'Temp failure; user is invited to retry'
-    EX_PROTOCOL     = 76,   ExProtocol,    'Remote error in protocol'
-    EX_NOPERM       = 77,   ExNoPerm,      'Permission denied'
-    EX_CONFIG       = 78,   ExConfig,      'Configuration error'
-    EX_TIMEOUT      = 79,   ExTimeout,     'Read timeout'
+    EX_USAGE        = 64, UsageException, 'Command line usage error'
+    EX_DATAERR      = 65, DataErrorException, 'Data format error'
+    EX_NOINPUT      = 66, NoInputException, 'Cannot open input'
+    EX_NOUSER       = 67, NoUserException, 'Addressee unknown'
+    EX_NOHOST       = 68, NoHostException, 'Host name unknown'
+    EX_UNAVAILABLE  = 69, UnavailableException, 'Service unavailable'
+    EX_SOFTWARE     = 70, InternalSoftwareException, 'Internal software error'
+    EX_OSERR        = 71, OSErrorException, 'System error (e.g., can\'t fork)'
+    EX_OSFILE       = 72, OSFileException, 'Critical OS file missing'
+    EX_CANTCREAT    = 73, CantCreateException, 'Can\'t create (user) output file'
+    EX_IOERR        = 74, IOErrorException, 'Input/output error'
+    EX_TEMPFAIL     = 75, TemporaryFailureException, 'Temp failure; user is invited to retry'
+    EX_PROTOCOL     = 76, ProtocolException, 'Remote error in protocol'
+    EX_NOPERM       = 77, NoPermissionException, 'Permission denied'
+    EX_CONFIG       = 78, ConfigException, 'Configuration error'
+    EX_TIMEOUT      = 79, TimeoutException, 'Read timeout'
 
 class Response(RequestResponseBase):
     '''Class to encapsulate response.

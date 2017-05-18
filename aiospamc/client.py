@@ -6,7 +6,7 @@ import asyncio
 from functools import wraps
 import logging
 
-from aiospamc.exceptions import BadResponse, ResponseException, ExTempFail
+from aiospamc.exceptions import BadResponse, ResponseException, TemporaryFailureException
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
 from aiospamc.options import RemoveOption, SetOption
 from aiospamc.requests import Request
@@ -156,23 +156,38 @@ class Client:
             raised.
         aiospamc.exceptions.AIOSpamcConnectionFailed
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.ExUsage
-        aiospamc.exceptions.ExDataErr
-        aiospamc.exceptions.ExNoInput
-        aiospamc.exceptions.ExNoUser
-        aiospamc.exceptions.ExNoHost
-        aiospamc.exceptions.ExUnavailable
-        aiospamc.exceptions.ExSoftware
-        aiospamc.exceptions.ExOSErr
-        aiospamc.exceptions.ExOSFile
-        aiospamc.exceptions.ExCantCreat
-        aiospamc.exceptions.ExIOErr
-        aiospamc.exceptions.ExTempFail
-        aiospamc.exceptions.ExProtocol
-        aiospamc.exceptions.ExNoPerm
-        aiospamc.exceptions.ExConfig
-        aiospamc.exceptions.ExTimeout
-            Exception raised from the SPAMD service.
+        aiospamc.exceptions.UsageException
+            Error in command line usage.
+        aiospamc.exceptions.DataErrorException
+            Error with data format.
+        aiospamc.exceptions.NoInputException
+            Cannot open input.
+        aiospamc.exceptions.NoUserException
+            Addressee unknown.
+        aiospamc.exceptions.NoHostException
+            Hostname unknown.
+        aiospamc.exceptions.UnavailableException
+            Service unavailable.
+        aiospamc.exceptions.InternalSoftwareException
+            Internal software error.
+        aiospamc.exceptions.OSErrorException
+            System error.
+        aiospamc.exceptions.OSFileException
+            Operating system file missing.
+        aiospamc.exceptions.CantCreateException
+            Cannot create output file.
+        aiospamc.exceptions.IOErrorException
+            Input/output error.
+        aiospamc.exceptions.TemporaryFailureException
+            Temporary failure, may reattempt.
+        aiospamc.exceptions.ProtocolException
+            Error in the protocol.
+        aiospamc.exceptions.NoPermissionException
+            Permission denied.
+        aiospamc.exceptions.ConfigException
+            Error in configuration.
+        aiospamc.exceptions.TimeoutException
+            Timeout during connection.
         '''
 
         for attempt in range(1, self.retry_attempts):
@@ -184,7 +199,7 @@ class Client:
                 data = await connection.receive()
                 try:
                     response = Response.parse(data)
-                except ExTempFail as error:
+                except TemporaryFailureException:
                     self.logger.exception('Exception reporting temporary failure, retying in %i seconds',
                                           self.sleep_len)
                     await asyncio.sleep(self.sleep_len)
@@ -232,23 +247,38 @@ class Client:
             raised.
         aiospamc.exceptions.AIOSpamcConnectionFailed
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.ExUsage
-        aiospamc.exceptions.ExDataErr
-        aiospamc.exceptions.ExNoInput
-        aiospamc.exceptions.ExNoUser
-        aiospamc.exceptions.ExNoHost
-        aiospamc.exceptions.ExUnavailable
-        aiospamc.exceptions.ExSoftware
-        aiospamc.exceptions.ExOSErr
-        aiospamc.exceptions.ExOSFile
-        aiospamc.exceptions.ExCantCreat
-        aiospamc.exceptions.ExIOErr
-        aiospamc.exceptions.ExTempFail
-        aiospamc.exceptions.ExProtocol
-        aiospamc.exceptions.ExNoPerm
-        aiospamc.exceptions.ExConfig
-        aiospamc.exceptions.ExTimeout
-            Exception raised from the SPAMD service.
+        aiospamc.exceptions.UsageException
+            Error in command line usage.
+        aiospamc.exceptions.DataErrorException
+            Error with data format.
+        aiospamc.exceptions.NoInputException
+            Cannot open input.
+        aiospamc.exceptions.NoUserException
+            Addressee unknown.
+        aiospamc.exceptions.NoHostException
+            Hostname unknown.
+        aiospamc.exceptions.UnavailableException
+            Service unavailable.
+        aiospamc.exceptions.InternalSoftwareException
+            Internal software error.
+        aiospamc.exceptions.OSErrorException
+            System error.
+        aiospamc.exceptions.OSFileException
+            Operating system file missing.
+        aiospamc.exceptions.CantCreateException
+            Cannot create output file.
+        aiospamc.exceptions.IOErrorException
+            Input/output error.
+        aiospamc.exceptions.TemporaryFailureException
+            Temporary failure, may reattempt.
+        aiospamc.exceptions.ProtocolException
+            Error in the protocol.
+        aiospamc.exceptions.NoPermissionException
+            Permission denied.
+        aiospamc.exceptions.ConfigException
+            Error in configuration.
+        aiospamc.exceptions.TimeoutException
+            Timeout during connection.
         '''
 
         request = Request('CHECK', body=message)
@@ -283,23 +313,38 @@ class Client:
             raised.
         aiospamc.exceptions.AIOSpamcConnectionFailed
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.ExUsage
-        aiospamc.exceptions.ExDataErr
-        aiospamc.exceptions.ExNoInput
-        aiospamc.exceptions.ExNoUser
-        aiospamc.exceptions.ExNoHost
-        aiospamc.exceptions.ExUnavailable
-        aiospamc.exceptions.ExSoftware
-        aiospamc.exceptions.ExOSErr
-        aiospamc.exceptions.ExOSFile
-        aiospamc.exceptions.ExCantCreat
-        aiospamc.exceptions.ExIOErr
-        aiospamc.exceptions.ExTempFail
-        aiospamc.exceptions.ExProtocol
-        aiospamc.exceptions.ExNoPerm
-        aiospamc.exceptions.ExConfig
-        aiospamc.exceptions.ExTimeout
-            Exception raised from the SPAMD service.
+        aiospamc.exceptions.UsageException
+            Error in command line usage.
+        aiospamc.exceptions.DataErrorException
+            Error with data format.
+        aiospamc.exceptions.NoInputException
+            Cannot open input.
+        aiospamc.exceptions.NoUserException
+            Addressee unknown.
+        aiospamc.exceptions.NoHostException
+            Hostname unknown.
+        aiospamc.exceptions.UnavailableException
+            Service unavailable.
+        aiospamc.exceptions.InternalSoftwareException
+            Internal software error.
+        aiospamc.exceptions.OSErrorException
+            System error.
+        aiospamc.exceptions.OSFileException
+            Operating system file missing.
+        aiospamc.exceptions.CantCreateException
+            Cannot create output file.
+        aiospamc.exceptions.IOErrorException
+            Input/output error.
+        aiospamc.exceptions.TemporaryFailureException
+            Temporary failure, may reattempt.
+        aiospamc.exceptions.ProtocolException
+            Error in the protocol.
+        aiospamc.exceptions.NoPermissionException
+            Permission denied.
+        aiospamc.exceptions.ConfigException
+            Error in configuration.
+        aiospamc.exceptions.TimeoutException
+            Timeout during connection.
         '''
 
         request = Request('HEADERS', body=message)
@@ -324,23 +369,38 @@ class Client:
             raised.
         aiospamc.exceptions.AIOSpamcConnectionFailed
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.ExUsage
-        aiospamc.exceptions.ExDataErr
-        aiospamc.exceptions.ExNoInput
-        aiospamc.exceptions.ExNoUser
-        aiospamc.exceptions.ExNoHost
-        aiospamc.exceptions.ExUnavailable
-        aiospamc.exceptions.ExSoftware
-        aiospamc.exceptions.ExOSErr
-        aiospamc.exceptions.ExOSFile
-        aiospamc.exceptions.ExCantCreat
-        aiospamc.exceptions.ExIOErr
-        aiospamc.exceptions.ExTempFail
-        aiospamc.exceptions.ExProtocol
-        aiospamc.exceptions.ExNoPerm
-        aiospamc.exceptions.ExConfig
-        aiospamc.exceptions.ExTimeout
-            Exception raised from the SPAMD service.
+        aiospamc.exceptions.UsageException
+            Error in command line usage.
+        aiospamc.exceptions.DataErrorException
+            Error with data format.
+        aiospamc.exceptions.NoInputException
+            Cannot open input.
+        aiospamc.exceptions.NoUserException
+            Addressee unknown.
+        aiospamc.exceptions.NoHostException
+            Hostname unknown.
+        aiospamc.exceptions.UnavailableException
+            Service unavailable.
+        aiospamc.exceptions.InternalSoftwareException
+            Internal software error.
+        aiospamc.exceptions.OSErrorException
+            System error.
+        aiospamc.exceptions.OSFileException
+            Operating system file missing.
+        aiospamc.exceptions.CantCreateException
+            Cannot create output file.
+        aiospamc.exceptions.IOErrorException
+            Input/output error.
+        aiospamc.exceptions.TemporaryFailureException
+            Temporary failure, may reattempt.
+        aiospamc.exceptions.ProtocolException
+            Error in the protocol.
+        aiospamc.exceptions.NoPermissionException
+            Permission denied.
+        aiospamc.exceptions.ConfigException
+            Error in configuration.
+        aiospamc.exceptions.TimeoutException
+            Timeout during connection.
         '''
 
         request = Request('PING')
@@ -375,23 +435,38 @@ class Client:
             raised.
         aiospamc.exceptions.AIOSpamcConnectionFailed
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.ExUsage
-        aiospamc.exceptions.ExDataErr
-        aiospamc.exceptions.ExNoInput
-        aiospamc.exceptions.ExNoUser
-        aiospamc.exceptions.ExNoHost
-        aiospamc.exceptions.ExUnavailable
-        aiospamc.exceptions.ExSoftware
-        aiospamc.exceptions.ExOSErr
-        aiospamc.exceptions.ExOSFile
-        aiospamc.exceptions.ExCantCreat
-        aiospamc.exceptions.ExIOErr
-        aiospamc.exceptions.ExTempFail
-        aiospamc.exceptions.ExProtocol
-        aiospamc.exceptions.ExNoPerm
-        aiospamc.exceptions.ExConfig
-        aiospamc.exceptions.ExTimeout
-            Exception raised from the SPAMD service.
+        aiospamc.exceptions.UsageException
+            Error in command line usage.
+        aiospamc.exceptions.DataErrorException
+            Error with data format.
+        aiospamc.exceptions.NoInputException
+            Cannot open input.
+        aiospamc.exceptions.NoUserException
+            Addressee unknown.
+        aiospamc.exceptions.NoHostException
+            Hostname unknown.
+        aiospamc.exceptions.UnavailableException
+            Service unavailable.
+        aiospamc.exceptions.InternalSoftwareException
+            Internal software error.
+        aiospamc.exceptions.OSErrorException
+            System error.
+        aiospamc.exceptions.OSFileException
+            Operating system file missing.
+        aiospamc.exceptions.CantCreateException
+            Cannot create output file.
+        aiospamc.exceptions.IOErrorException
+            Input/output error.
+        aiospamc.exceptions.TemporaryFailureException
+            Temporary failure, may reattempt.
+        aiospamc.exceptions.ProtocolException
+            Error in the protocol.
+        aiospamc.exceptions.NoPermissionException
+            Permission denied.
+        aiospamc.exceptions.ConfigException
+            Error in configuration.
+        aiospamc.exceptions.TimeoutException
+            Timeout during connection.
         '''
 
         request = Request('PROCESS', body=message)
@@ -426,23 +501,38 @@ class Client:
             raised.
         aiospamc.exceptions.AIOSpamcConnectionFailed
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.ExUsage
-        aiospamc.exceptions.ExDataErr
-        aiospamc.exceptions.ExNoInput
-        aiospamc.exceptions.ExNoUser
-        aiospamc.exceptions.ExNoHost
-        aiospamc.exceptions.ExUnavailable
-        aiospamc.exceptions.ExSoftware
-        aiospamc.exceptions.ExOSErr
-        aiospamc.exceptions.ExOSFile
-        aiospamc.exceptions.ExCantCreat
-        aiospamc.exceptions.ExIOErr
-        aiospamc.exceptions.ExTempFail
-        aiospamc.exceptions.ExProtocol
-        aiospamc.exceptions.ExNoPerm
-        aiospamc.exceptions.ExConfig
-        aiospamc.exceptions.ExTimeout
-            Exception raised from the SPAMD service.
+        aiospamc.exceptions.UsageException
+            Error in command line usage.
+        aiospamc.exceptions.DataErrorException
+            Error with data format.
+        aiospamc.exceptions.NoInputException
+            Cannot open input.
+        aiospamc.exceptions.NoUserException
+            Addressee unknown.
+        aiospamc.exceptions.NoHostException
+            Hostname unknown.
+        aiospamc.exceptions.UnavailableException
+            Service unavailable.
+        aiospamc.exceptions.InternalSoftwareException
+            Internal software error.
+        aiospamc.exceptions.OSErrorException
+            System error.
+        aiospamc.exceptions.OSFileException
+            Operating system file missing.
+        aiospamc.exceptions.CantCreateException
+            Cannot create output file.
+        aiospamc.exceptions.IOErrorException
+            Input/output error.
+        aiospamc.exceptions.TemporaryFailureException
+            Temporary failure, may reattempt.
+        aiospamc.exceptions.ProtocolException
+            Error in the protocol.
+        aiospamc.exceptions.NoPermissionException
+            Permission denied.
+        aiospamc.exceptions.ConfigException
+            Error in configuration.
+        aiospamc.exceptions.TimeoutException
+            Timeout during connection.
         '''
 
         request = Request('REPORT', body=message)
@@ -479,23 +569,38 @@ class Client:
             raised.
         aiospamc.exceptions.AIOSpamcConnectionFailed
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.ExUsage
-        aiospamc.exceptions.ExDataErr
-        aiospamc.exceptions.ExNoInput
-        aiospamc.exceptions.ExNoUser
-        aiospamc.exceptions.ExNoHost
-        aiospamc.exceptions.ExUnavailable
-        aiospamc.exceptions.ExSoftware
-        aiospamc.exceptions.ExOSErr
-        aiospamc.exceptions.ExOSFile
-        aiospamc.exceptions.ExCantCreat
-        aiospamc.exceptions.ExIOErr
-        aiospamc.exceptions.ExTempFail
-        aiospamc.exceptions.ExProtocol
-        aiospamc.exceptions.ExNoPerm
-        aiospamc.exceptions.ExConfig
-        aiospamc.exceptions.ExTimeout
-            Exception raised from the SPAMD service.
+        aiospamc.exceptions.UsageException
+            Error in command line usage.
+        aiospamc.exceptions.DataErrorException
+            Error with data format.
+        aiospamc.exceptions.NoInputException
+            Cannot open input.
+        aiospamc.exceptions.NoUserException
+            Addressee unknown.
+        aiospamc.exceptions.NoHostException
+            Hostname unknown.
+        aiospamc.exceptions.UnavailableException
+            Service unavailable.
+        aiospamc.exceptions.InternalSoftwareException
+            Internal software error.
+        aiospamc.exceptions.OSErrorException
+            System error.
+        aiospamc.exceptions.OSFileException
+            Operating system file missing.
+        aiospamc.exceptions.CantCreateException
+            Cannot create output file.
+        aiospamc.exceptions.IOErrorException
+            Input/output error.
+        aiospamc.exceptions.TemporaryFailureException
+            Temporary failure, may reattempt.
+        aiospamc.exceptions.ProtocolException
+            Error in the protocol.
+        aiospamc.exceptions.NoPermissionException
+            Permission denied.
+        aiospamc.exceptions.ConfigException
+            Error in configuration.
+        aiospamc.exceptions.TimeoutException
+            Timeout during connection.
         '''
 
         request = Request('REPORT_IFSPAM', body=message)
@@ -533,23 +638,38 @@ class Client:
             raised.
         aiospamc.exceptions.AIOSpamcConnectionFailed
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.ExUsage
-        aiospamc.exceptions.ExDataErr
-        aiospamc.exceptions.ExNoInput
-        aiospamc.exceptions.ExNoUser
-        aiospamc.exceptions.ExNoHost
-        aiospamc.exceptions.ExUnavailable
-        aiospamc.exceptions.ExSoftware
-        aiospamc.exceptions.ExOSErr
-        aiospamc.exceptions.ExOSFile
-        aiospamc.exceptions.ExCantCreat
-        aiospamc.exceptions.ExIOErr
-        aiospamc.exceptions.ExTempFail
-        aiospamc.exceptions.ExProtocol
-        aiospamc.exceptions.ExNoPerm
-        aiospamc.exceptions.ExConfig
-        aiospamc.exceptions.ExTimeout
-            Exception raised from the SPAMD service.
+        aiospamc.exceptions.UsageException
+            Error in command line usage.
+        aiospamc.exceptions.DataErrorException
+            Error with data format.
+        aiospamc.exceptions.NoInputException
+            Cannot open input.
+        aiospamc.exceptions.NoUserException
+            Addressee unknown.
+        aiospamc.exceptions.NoHostException
+            Hostname unknown.
+        aiospamc.exceptions.UnavailableException
+            Service unavailable.
+        aiospamc.exceptions.InternalSoftwareException
+            Internal software error.
+        aiospamc.exceptions.OSErrorException
+            System error.
+        aiospamc.exceptions.OSFileException
+            Operating system file missing.
+        aiospamc.exceptions.CantCreateException
+            Cannot create output file.
+        aiospamc.exceptions.IOErrorException
+            Input/output error.
+        aiospamc.exceptions.TemporaryFailureException
+            Temporary failure, may reattempt.
+        aiospamc.exceptions.ProtocolException
+            Error in the protocol.
+        aiospamc.exceptions.NoPermissionException
+            Permission denied.
+        aiospamc.exceptions.ConfigException
+            Error in configuration.
+        aiospamc.exceptions.TimeoutException
+            Timeout during connection.
         '''
 
         request = Request('SYMBOLS', body=message)
@@ -594,23 +714,38 @@ class Client:
             raised.
         aiospamc.exceptions.AIOSpamcConnectionFailed
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.ExUsage
-        aiospamc.exceptions.ExDataErr
-        aiospamc.exceptions.ExNoInput
-        aiospamc.exceptions.ExNoUser
-        aiospamc.exceptions.ExNoHost
-        aiospamc.exceptions.ExUnavailable
-        aiospamc.exceptions.ExSoftware
-        aiospamc.exceptions.ExOSErr
-        aiospamc.exceptions.ExOSFile
-        aiospamc.exceptions.ExCantCreat
-        aiospamc.exceptions.ExIOErr
-        aiospamc.exceptions.ExTempFail
-        aiospamc.exceptions.ExProtocol
-        aiospamc.exceptions.ExNoPerm
-        aiospamc.exceptions.ExConfig
-        aiospamc.exceptions.ExTimeout
-            Exception raised from the SPAMD service.
+        aiospamc.exceptions.UsageException
+            Error in command line usage.
+        aiospamc.exceptions.DataErrorException
+            Error with data format.
+        aiospamc.exceptions.NoInputException
+            Cannot open input.
+        aiospamc.exceptions.NoUserException
+            Addressee unknown.
+        aiospamc.exceptions.NoHostException
+            Hostname unknown.
+        aiospamc.exceptions.UnavailableException
+            Service unavailable.
+        aiospamc.exceptions.InternalSoftwareException
+            Internal software error.
+        aiospamc.exceptions.OSErrorException
+            System error.
+        aiospamc.exceptions.OSFileException
+            Operating system file missing.
+        aiospamc.exceptions.CantCreateException
+            Cannot create output file.
+        aiospamc.exceptions.IOErrorException
+            Input/output error.
+        aiospamc.exceptions.TemporaryFailureException
+            Temporary failure, may reattempt.
+        aiospamc.exceptions.ProtocolException
+            Error in the protocol.
+        aiospamc.exceptions.NoPermissionException
+            Permission denied.
+        aiospamc.exceptions.ConfigException
+            Error in configuration.
+        aiospamc.exceptions.TimeoutException
+            Timeout during connection.
         '''
 
         request = Request('TELL',
