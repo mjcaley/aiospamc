@@ -6,8 +6,16 @@ SPAMC/SPAMD Protocol As Implemented by SpamAssassin
 Requests and Responses
 **********************
 
-The structure of a request is similar to an HTTP request.  The method/verb, protocol name and version are listed followed by headers separated by newline characters (carriage return and linefeed or ``\r\n``).  Following the headers is a blank line with a newline (``\r\n\r\n``).  If there is a message body it will be added after all headers.
-The current requests are :ref:`check_request`, :ref:`headers_request`, :ref:`ping_request`, :ref:`process_request`, :ref:`report_request`, :ref:`report_ifspam_request`, :ref:`skip_request`, :ref:`symbols_request`, and :ref:`tell_request`::
+The structure of a request is similar to an HTTP request.  The method/verb,
+protocol name and version are listed followed by headers separated by newline
+characters (carriage return and linefeed or ``\r\n``).  Following the headers
+is a blank line with a newline (``\r\n``).  If there is a message body it will
+be added after all headers.
+
+The current requests are :ref:`check_request`, :ref:`headers_request`,
+:ref:`ping_request`, :ref:`process_request`, :ref:`report_request`,
+:ref:`report_ifspam_request`, :ref:`skip_request`, :ref:`symbols_request`, and
+:ref:`tell_request`::
 
     METHOD SPAMC/1.5\r\n
     HEADER_NAME1 : HEADER_VALUE1\r\n
@@ -15,7 +23,11 @@ The current requests are :ref:`check_request`, :ref:`headers_request`, :ref:`pin
     \r\n
     REQUEST_BODY
 
-The structure of responses are also similar to HTTP responses.  The protocol name, version, status code, and message are listed on one line.  Any headers are also listed and all are separated by newline characters.  Following the headers is a newline.  If there is a message body it’s included after all headers::
+The structure of responses are also similar to HTTP responses.  The protocol
+name, version, status code, and message are listed on one line.  Any headers
+are also listed and all are separated by newline characters.  Following the
+headers is a newline.  If there is a message body it’s included after all
+headers::
 
     SPAMD/1.5 STATUS_CODE MESSAGE\r\n
     HEADER_NAME1 : HEADER_VALUE1\r\n
@@ -23,7 +35,8 @@ The structure of responses are also similar to HTTP responses.  The protocol nam
     \r\n
     RESPONSE_BODY
 
-The following are descriptions of the requests that can be sent and examples of the responses that you can expect to receive.
+The following are descriptions of the requests that can be sent and examples of
+the responses that you can expect to receive.
 
 .. _check_request:
 
@@ -54,11 +67,14 @@ An email based on the :rfc:`5322` standard.
 Response
 --------
 
-Will include a Spam header with a “True” or “False” value, followed by the score and threshold.
+Will include a Spam header with a “True” or “False” value, followed by the
+score and threshold.
 Example::
 
     SPAMD/1.1 0 EX_OK
     Spam: True ; 1000.0 / 5.0
+
+.. _headers_request:
 
 HEADERS
 =======
@@ -87,7 +103,8 @@ An email based on the :rfc:`5322` standard.
 Response
 --------
 
-Will return the modified headers of the message in the body.  The :ref:`spam_header` header is also included.
+Will return the modified headers of the message in the body.  The
+:ref:`spam_header` header is also included.
 ::
 
     SPAMD/1.1 0 EX_OK
@@ -166,7 +183,8 @@ An email based on the :rfc:`5322` standard.
 Response
 --------
 
-Will return a modified message in the body.  The :ref:`spam_header` header is also included.
+Will return a modified message in the body.  The :ref:`spam_header` header is
+also included.
 Example::
 
     SPAMD/1.1 0 EX_OK
@@ -284,7 +302,8 @@ An email based on the :rfc:`5322` standard.
 Response
 --------
 
-Response returns the :ref:`spam_header` header and the body containing a report of the message scanned.
+Response returns the :ref:`spam_header` header and the body containing a
+report of the message scanned.
 
 Example::
 
@@ -317,14 +336,16 @@ Example::
 REPORT_IFSPAM
 =============
 
-Matches the :ref:`report_request` request, with the exception a report will not be generated if the message is not spam.
+Matches the :ref:`report_request` request, with the exception a report will not
+be generated if the message is not spam.
 
 .. _skip_request:
 
 SKIP
 ====
 
-Sent when a connection is made in error.  The SPAMD service will immediately close the connection.
+Sent when a connection is made in error.  The SPAMD service will immediately
+close the connection.
 
 Request
 -------
@@ -344,7 +365,8 @@ None.
 SYMBOLS
 =======
 
-Instruct SpamAssassin to process the message and return the rules that were matched.
+Instruct SpamAssassin to process the message and return the rules that were
+matched.
 
 Request
 -------
@@ -368,7 +390,8 @@ An email based on the :rfc:`5322` standard.
 Response
 --------
 
-Response includes the :ref:`spam_header` header.  The body contains the SpamAssassin rules that were matched.
+Response includes the :ref:`spam_header` header.  The body contains the
+SpamAssassin rules that were matched.
 Example::
 
     SPAMD/1.1 0 EX_OK
@@ -382,11 +405,17 @@ Example::
 TELL
 ====
 
-Send a request to classify a message and add or remove it from a database.  The message type is defined by the :ref:`message-class_header`.  The :ref:`remove_header` and :ref:`set_header` headers are used to choose the location ("local" or "remote") to add or remove it.  SpamAssassin will return an error if a request tries to apply a conflicting change (e.g. both setting and removing to the same location).
+Send a request to classify a message and add or remove it from a database.  The
+message type is defined by the :ref:`message-class_header`.  The
+:ref:`remove_header` and :ref:`set_header` headers are used to choose the
+location ("local" or "remote") to add or remove it.  SpamAssassin will return
+an error if a request tries to apply a conflicting change (e.g. both setting
+and removing to the same location).
 
 .. note::
 
-    The SpamAssassin daemon must have the ``--allow-tell`` option enabled to support this feature.
+    The SpamAssassin daemon must have the ``--allow-tell`` option enabled to
+    support this feature.
 
 Request
 -------
@@ -412,7 +441,8 @@ An email based on the :rfc:`5322` standard.
 Response
 --------
 
-If successful, the response will include the :ref:`didremove_header` or :ref:`didset_header` headers depending on the request.
+If successful, the response will include the :ref:`didremove_header` or
+:ref:`didset_header` headers depending on the request.
 
 Response from a request that sent a :ref:`remove_header`::
 
@@ -428,26 +458,34 @@ Response from a request that sent a :ref:`set_header`::
     Content-length: 2
     
 
-.. _headers_request:
+.. _headers:
 
 *******
 Headers
 *******
 
-Headers are structured very simply.  They have a name and value which are separated by a colon (:).  All headers are followed by a newline.  The current headers include :ref:`compress_header`, :ref:`content-length_header`, :ref:`didremove_header`, :ref:`didset_header`, :ref:`message-class_header`, :ref:`remove_header`, :ref:`set_header`, :ref:`spam_header`, and :ref:`user_header`.
+Headers are structured very simply.  They have a name and value which are
+separated by a colon (:).  All headers are followed by a newline.  The current
+headers include :ref:`compress_header`, :ref:`content-length_header`,
+:ref:`didremove_header`, :ref:`didset_header`, :ref:`message-class_header`,
+:ref:`remove_header`, :ref:`set_header`, :ref:`spam_header`, and
+:ref:`user_header`.
 
 For example::
 
     Content-length: 42\r\n
 
-The following is a list of headers defined by SpamAssassin, although anything is allowable as a header.  If an unrecognized header is included in the request or response it should be ignored.
+The following is a list of headers defined by SpamAssassin, although anything
+is allowable as a header.  If an unrecognized header is included in the
+request or response it should be ignored.
 
 .. _compress_header:
 
 Compress
 ========
 
-Specifies that the body is compressed and what compression algorithm is used.  Contains a string of the compression algorithm.
+Specifies that the body is compressed and what compression algorithm is used.
+Contains a string of the compression algorithm.
 Currently only ``zlib`` is supported.
 
 .. _content-length_header:
@@ -455,23 +493,28 @@ Currently only ``zlib`` is supported.
 Content-length
 ==============
 
-The length of the body in bytes.  Contains an integer representing the body length.
+The length of the body in bytes.  Contains an integer representing the body
+length.
 
 .. _didremove_header:
 
 DidRemove
 =========
 
-Included in a response to a :ref:`tell_request` request.  Identifies which databases a message was removed from.
-Contains a string containing either ``local``, ``remote`` or both seprated by a comma.
+Included in a response to a :ref:`tell_request` request.  Identifies which
+databases a message was removed from.
+Contains a string containing either ``local``, ``remote`` or both seprated by a
+comma.
 
 .. _didset_header:
 
 DidSet
 ======
 
-Included in a response to a :ref:`tell_request` request.  Identifies which databases a message was set in.
-Contains a string containing either ``local``, ``remote`` or both seprated by a comma.
+Included in a response to a :ref:`tell_request` request.  Identifies which
+databases a message was set in.
+Contains a string containing either ``local``, ``remote`` or both seprated by a
+comma.
 
 .. _message-class_header:
 
@@ -479,31 +522,40 @@ Message-class
 =============
 
 Classifies the message contained in the body.
-Contains a string containing either ``local``, ``remote`` or both seprated by a comma.
+Contains a string containing either ``local``, ``remote`` or both seprated by a
+comma.
 
 .. _remove_header:
 
 Remove
 ======
 
-Included in a :ref:`tell_request` request to remove the message from the specified database.
-Contains a string containing either ``local``, ``remote`` or both seprated by a comma.
+Included in a :ref:`tell_request` request to remove the message from the
+specified database.
+Contains a string containing either ``local``, ``remote`` or both seprated by a
+comma.
 
 .. _set_header:
 
 Set
 ===
 
-Included in a :ref:`tell_request` request to remove the message from the specified database.
-Contains a string containing either ``local``, ``remote`` or both seprated by a comma.
+Included in a :ref:`tell_request` request to remove the message from the
+specified database.
+Contains a string containing either ``local``, ``remote`` or both seprated by a
+comma.
 
 .. _spam_header:
 
 Spam
 ====
 
-Identify whether the message submitted was spam or not including the score and threshold.
-Contains a string containing a boolean if the message is spam (either ``True``, ``False``, ``Yes``, or ``No``), followed by a ``;``, a floating point number representing the score, followed by a ``/``, and finally a floating point number representing the threshold of which to consider it spam.
+Identify whether the message submitted was spam or not including the score and
+threshold.
+Contains a string containing a boolean if the message is spam (either ``True``,
+``False``, ``Yes``, or ``No``), followed by a ``;``, a floating point number
+representing the score, followed by a ``/``, and finally a floating point
+number representing the threshold of which to consider it spam.
 
 For example::
 
@@ -514,16 +566,19 @@ For example::
 User
 ====
 
-Specify which user the request will run under.  SpamAssassin will use the configuration files for the user included in the header.
+Specify which user the request will run under.  SpamAssassin will use the
+configuration files for the user included in the header.
 Contains a string containing the name of the user.
 
 ************
 Status Codes
 ************
 
-A status code is an integer detailing whether the request was successful or if an error occurred.
+A status code is an integer detailing whether the request was successful or if
+an error occurred.
 
-The following status codes are defined in the SpamAssassin source repository [2]_.
+The following status codes are defined in the SpamAssassin source repository
+[2]_.
 
 EX_OK
 =====
@@ -648,7 +703,9 @@ Definition: Read timeout.
 Body
 ****
 
-SpamAssassin will generally want the body of a request to be in a supported RFC email format.  The response body will differ depending on the type of request that was sent.
+SpamAssassin will generally want the body of a request to be in a supported RFC
+email format.  The response body will differ depending on the type of request
+that was sent.
 
 **********
 References

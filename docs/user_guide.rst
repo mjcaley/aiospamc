@@ -6,7 +6,8 @@ User Guide
 Requirements
 ************
 
-* Python 3.5 or later is required to use the new async/await syntax provided by the asyncio library.
+* Python 3.5 or later is required to use the new async/await syntax provided by
+the asyncio library.
 * SpamAssassin running as a service.
 
 *******
@@ -32,11 +33,17 @@ With GIT
 How to use aiospamc
 *******************
 
-Instantiating the :class:`aiospamc.client.Client` class will be the primary way to interact with aiospamc.
+Instantiating the :class:`aiospamc.client.Client` class will be the primary way
+to interact with aiospamc.
 
-Parameters are available to specify how to connect to the SpamAssassin SPAMD service including host, port, and whether SSL is enabled.  They default to ``localhost``, ``783``, and SSL being disabled.  Additional optional parameters are the username that requests will be sent as (no user by default) and whether to compress the request body (disabled by default).
+Parameters are available to specify how to connect to the SpamAssassin SPAMD
+service including host, port, and whether SSL is enabled.  They default to
+``localhost``, ``783``, and SSL being disabled.  Additional optional parameters
+are the username that requests will be sent as (no user by default) and whether
+to compress the request body (disabled by default).
 
-A coroutine method is available for each type of request that can be sent to SpamAssassin.
+A coroutine method is available for each type of request that can be sent to
+SpamAssassin.
 
 An example using the :meth:`aiospamc.client.Client.check` method:
 
@@ -65,17 +72,25 @@ Other requests can be seen in the :class:`aiospamc.client.Client` class.
 Making your own requests
 ************************
 
-If a request that isn't built into aiospamc is needed a new request can be created and sent.
+If a request that isn't built into aiospamc is needed a new request can be
+created and sent.
 
-A new request can be made by instantiating the :class:`aiospamc.requests.Request` class.  The :attr:`aiospamc.requests.Request.verb` defines the method/verb of the request.
+A new request can be made by instantiating the
+:class:`aiospamc.requests.Request` class.  The
+:attr:`aiospamc.requests.Request.verb` defines the method/verb of the request.
 
-Standard headers or the :class:`aiospamc.headers.XHeader` extension header is available in the :mod:`aiospamc.headers` module. Headers are managed on the request object with the methods:
+Standard headers or the :class:`aiospamc.headers.XHeader` extension header is
+available in the :mod:`aiospamc.headers` module. Headers are managed on the
+request object with the methods:
 
 * :meth:`aiospamc.content_man.BodyHeaderManager.add_header`
 * :meth:`aiospamc.content_man.BodyHeaderManager.get_header`
 * :meth:`aiospamc.content_man.BodyHeaderManager.delete_header`
 
-Once a request is composed, it can be sent through the :meth:`aiospamc.client.Client.send` method as-is.  The method will automatically add the :class:`aiospamc.headers.User` and :class:`aiospamc.headers.Compress` headers if required.
+Once a request is composed, it can be sent through the
+:meth:`aiospamc.client.Client.send` method as-is.  The method will automatically
+add the :class:`aiospamc.headers.User` and :class:`aiospamc.headers.Compress`
+headers if required.
 
 For example:
 
@@ -110,4 +125,5 @@ For example:
 Interpreting results
 ********************
 
-Responses are encapsulated in the :class:`aiospamc.responses.Response` class.  Any data will need to be additionally parsed by the user.
+Responses are encapsulated in the :class:`aiospamc.responses.Response` class.
+Any data will need to be additionally parsed by the user.
