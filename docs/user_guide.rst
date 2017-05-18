@@ -6,8 +6,7 @@ User Guide
 Requirements
 ************
 
-* Python 3.5 or later is required to use the new async/await syntax provided by
-the asyncio library.
+* Python 3.5 or later is required to use the new async/await syntax provided by the asyncio library.
 * SpamAssassin running as a service.
 
 *******
