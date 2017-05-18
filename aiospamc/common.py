@@ -79,7 +79,6 @@ class RequestResponseBase:
             Body in a string object.
         '''
 
-        print(headers)
         if not body:
             return None
         elif any(header.field_name() == 'Compress' for header in headers):
