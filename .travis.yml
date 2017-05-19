@@ -5,10 +5,10 @@ matrix:
     - python: "3.5-dev"
     - python: "3.6"
     - python: "3.6-dev"
-  allow_failures:
     - python: "nightly"
 before_install:
-  - pip install pytest --upgrade  # Workaround Python 3.5 not having updated PyTest package
+  - pip uninstall -y pytest
+  - pip install --upgrade setuptools_scm
   - pip install codecov
 install:
   - pip install .
