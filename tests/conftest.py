@@ -76,7 +76,7 @@ def response_with_body():
 @pytest.fixture
 def response_empty_body():
     '''Response with Content-length header, but empty body in bytes.'''
-    return b'SPAMD/1.5 0 EX_OK\r\nContent-length: 0\r\n'
+    return b'SPAMD/1.5 0 EX_OK\r\nContent-length: 0\r\n\r\n'
 
 
 @pytest.fixture
@@ -89,97 +89,97 @@ def response_invalid():
 @pytest.fixture
 def ex_usage():
     '''Command line usage error.'''
-    return b'SPAMD/1.5 64 EX_USAGE\r\n'
+    return b'SPAMD/1.5 64 EX_USAGE\r\n\r\n'
 
 
 @pytest.fixture
 def ex_data_err():
     '''Data format error.'''
-    return b'SPAMD/1.5 65 EX_DATAERR\r\n'
+    return b'SPAMD/1.5 65 EX_DATAERR\r\n\r\n'
 
 
 @pytest.fixture
 def ex_no_input():
     '''No input response in bytes.'''
-    return b'SPAMD/1.5 66 EX_NOINPUT\r\n'
+    return b'SPAMD/1.5 66 EX_NOINPUT\r\n\r\n'
 
 
 @pytest.fixture
 def ex_no_user():
     '''No user response in bytes.'''
-    return b'SPAMD/1.5 67 EX_NOUSER\r\n'
+    return b'SPAMD/1.5 67 EX_NOUSER\r\n\r\n'
 
 
 @pytest.fixture
 def ex_no_host():
     '''No host response in bytes.'''
-    return b'SPAMD/1.5 68 EX_NOHOST\r\n'
+    return b'SPAMD/1.5 68 EX_NOHOST\r\n\r\n'
 
 
 @pytest.fixture
 def ex_unavailable():
     '''Unavailable response in bytes.'''
-    return b'SPAMD/1.5 69 EX_UNAVAILABLE\r\n'
+    return b'SPAMD/1.5 69 EX_UNAVAILABLE\r\n\r\n'
 
 
 @pytest.fixture
 def ex_software():
     '''Software exception response in bytes.'''
-    return b'SPAMD/1.5 70 EX_SOFTWARE\r\n'
+    return b'SPAMD/1.5 70 EX_SOFTWARE\r\n\r\n'
 
 
 @pytest.fixture
 def ex_os_err():
     '''Operating system error response in bytes.'''
-    return b'SPAMD/1.5 71 EX_OSERR\r\n'
+    return b'SPAMD/1.5 71 EX_OSERR\r\n\r\n'
 
 
 @pytest.fixture
 def ex_os_file():
     '''Operating system file error in bytes.'''
-    return b'SPAMD/1.5 72 EX_OSFILE\r\n'
+    return b'SPAMD/1.5 72 EX_OSFILE\r\n\r\n'
 
 
 @pytest.fixture
 def ex_cant_create():
     '''Can't create response error in bytes.'''
-    return b'SPAMD/1.5 73 EX_CANTCREAT\r\n'
+    return b'SPAMD/1.5 73 EX_CANTCREAT\r\n\r\n'
 
 
 @pytest.fixture
 def ex_io_err():
     '''Input/output error response in bytes.'''
-    return b'SPAMD/1.5 74 EX_IOERR\r\n'
+    return b'SPAMD/1.5 74 EX_IOERR\r\n\r\n'
 
 
 @pytest.fixture
 def ex_temp_fail():
     '''Temporary failure error response in bytes.'''
-    return b'SPAMD/1.5 75 EX_TEMPFAIL\r\n'
+    return b'SPAMD/1.5 75 EX_TEMPFAIL\r\n\r\n'
 
 
 @pytest.fixture
 def ex_protocol():
     '''Protocol error response in bytes.'''
-    return b'SPAMD/1.5 76 EX_PROTOCOL\r\n'
+    return b'SPAMD/1.5 76 EX_PROTOCOL\r\n\r\n'
 
 
 @pytest.fixture
 def ex_no_perm():
     '''No permission error response in bytes.'''
-    return b'SPAMD/1.5 77 EX_NOPERM\r\n'
+    return b'SPAMD/1.5 77 EX_NOPERM\r\n\r\n'
 
 
 @pytest.fixture
 def ex_config():
     '''Configuration error response in bytes.'''
-    return b'SPAMD/1.5 78 EX_CONFIG\r\n'
+    return b'SPAMD/1.5 78 EX_CONFIG\r\n\r\n'
 
 
 @pytest.fixture
 def ex_timeout():
     '''Timeout error response in bytes.'''
-    return b'SPAMD/1.5 79 EX_TIMEOUT\r\n'
+    return b'SPAMD/1.5 79 EX_TIMEOUT\r\n\r\n'
 
 
 # Mock fixtures for asyncio objects/functions

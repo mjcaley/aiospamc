@@ -6,11 +6,15 @@ import asyncio
 from functools import wraps
 import logging
 
-from aiospamc.exceptions import BadResponse, ResponseException, TemporaryFailureException
+from aiospamc.exceptions import (BadResponse, ResponseException,
+                                 UsageException, DataErrorException, NoInputException, NoUserException,
+                                 NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
+                                 OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
+                                 ProtocolException, NoPermissionException, ConfigException, TimeoutException)
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
-from aiospamc.options import RemoveOption, SetOption
+from aiospamc.parser import SAParser
 from aiospamc.requests import Request
-from aiospamc.responses import Response
+from aiospamc.responses import Status
 
 
 def _add_compress_header(func):
@@ -27,6 +31,7 @@ def _add_compress_header(func):
 
     return wrapper
 
+
 def _add_user_header(func):
     '''If the class instance's :attribute:`user` boolean is `True` then the
     :class:`aiospamc.headers.User` header is added to the
@@ -42,6 +47,7 @@ def _add_user_header(func):
         return await func(cls, request)
 
     return wrapper
+
 
 class Client:
     '''Client object for interacting with SPAMD.
@@ -113,6 +119,8 @@ class Client:
         self._ssl = ssl
         self.loop = loop or asyncio.get_event_loop()
 
+        self.parser = SAParser()
+
         self.sleep_len = 3
         self.retry_attempts = 4
         self.logger = logging.getLogger(__name__)
@@ -132,6 +140,48 @@ class Client:
                                  repr(self.user),
                                  repr(self.compress),
                                  repr(self._ssl))
+
+    @staticmethod
+    def _raise_response_exception(response):
+        if not response:
+            raise BadResponse(response.error)
+
+        if response.value.status_code is Status.EX_OK:
+            return
+        elif response.value.status_code is Status.EX_USAGE:
+            raise UsageException(response.value)
+        elif response.value.status_code is Status.EX_DATAERR:
+            raise DataErrorException(response.value)
+        elif response.value.status_code is Status.EX_NOINPUT:
+            raise NoInputException(response.value)
+        elif response.value.status_code is Status.EX_NOUSER:
+            raise NoUserException(response.value)
+        elif response.value.status_code is Status.EX_NOHOST:
+            raise NoHostException(response.value)
+        elif response.value.status_code is Status.EX_UNAVAILABLE:
+            raise UnavailableException(response.value)
+        elif response.value.status_code is Status.EX_SOFTWARE:
+            raise InternalSoftwareException(response.value)
+        elif response.value.status_code is Status.EX_OSERR:
+            raise OSErrorException(response.value)
+        elif response.value.status_code is Status.EX_OSFILE:
+            raise OSFileException(response.value)
+        elif response.value.status_code is Status.EX_CANTCREAT:
+            raise CantCreateException(response.value)
+        elif response.value.status_code is Status.EX_IOERR:
+            raise IOErrorException(response.value)
+        elif response.value.status_code is Status.EX_TEMPFAIL:
+            raise TemporaryFailureException(response.value)
+        elif response.value.status_code is Status.EX_PROTOCOL:
+            raise ProtocolException(response.value)
+        elif response.value.status_code is Status.EX_NOPERM:
+            raise NoPermissionException(response.value)
+        elif response.value.status_code is Status.EX_CONFIG:
+            raise ConfigException(response.value)
+        elif response.value.status_code is Status.EX_TIMEOUT:
+            raise TimeoutException(response.value)
+        else:
+            raise ResponseException(response.value)
 
     @_add_compress_header
     @_add_user_header
@@ -198,7 +248,8 @@ class Client:
 
                 data = await connection.receive()
                 try:
-                    response = Response.parse(data)
+                    response = self.parser(data)
+                    self._raise_response_exception(response)
                 except TemporaryFailureException:
                     self.logger.exception('Exception reporting temporary failure, retying in %i seconds',
                                           self.sleep_len)
@@ -211,11 +262,11 @@ class Client:
                     # Success! return the response
                     break
 
-        self.logger.debug('Received repsonse (%s) for request (%s)',
-                          id(response),
+        self.logger.debug('Received respsonse (%s) for request (%s)',
+                          id(response.value),
                           id(request))
 
-        return response
+        return response.value
 
     async def check(self, message):
         '''Request the SPAMD service to check a message with a CHECK request.
@@ -681,7 +732,8 @@ class Client:
     async def tell(self,
                    message_class,
                    message,
-                   action
+                   remove_action=None,
+                   set_action=None,
                   ):
         '''Instruct the SPAMD service to to mark the message
 
@@ -694,9 +746,10 @@ class Client:
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
-        action : Union[aiospamc.options.RemoveOption, aiospamc.options.SetOption]
-            Contains 'local' and 'remote' options.  Depending on which type
-            is passed with determine what headers are added to the request.
+        remove_action : aiospamc.options.ActionOption
+            Remove message class for message in database.
+        set_action : aiospamc.options.ActionOption
+            Set message class for message in database.
 
         Returns
         -------
@@ -748,13 +801,13 @@ class Client:
             Timeout during connection.
         '''
 
-        request = Request('TELL',
-                          message,
-                          MessageClass(message_class))
-        if isinstance(action, RemoveOption):
-            request.add_header(Remove(action))
-        elif isinstance(action, SetOption):
-            request.add_header(Set(action))
+        request = Request(verb='TELL',
+                          headers=(MessageClass(message_class),),
+                          body=message)
+        if remove_action:
+            request.add_header(Set(remove_action))
+        if set_action:
+            request.add_header(Remove(set_action))
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 

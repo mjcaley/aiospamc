@@ -4,66 +4,39 @@
 
 import zlib
 
-from aiospamc.headers import ContentLength, header_from_bytes
+from aiospamc.headers import ContentLength
 
 
 class RequestResponseBase:
     '''Base class for requests and responses.'''
 
-    def __init__(self, body=None, *headers):
+    def __init__(self, body=None, headers=None):
         '''
         Parameters
         ----------
         body : :obj:`str`, optional
             String representation of the body.  An instance of the
             aiospamc.headers.ContentLength will be automatically added.
-        *headers : :obj:`aiospamc.headers.Header`, optional
+        headers : tuple of :obj:`aiospamc.headers.Header`, optional
             Collection of headers to be added.  If it contains an instance of
             aiospamc.headers.Compress then the body is automatically
             compressed.
         '''
 
-        self._headers = {item.field_name() : item for item in headers}
+        if headers:
+            self._headers = {item.field_name(): item for item in headers}
+        else:
+            self._headers = {}
         self._body = ''
         self._compressed_body = None
         if body:
-            self.body = body
-
-    @classmethod
-    def parse(cls, bytes_string):
-        '''Parses a byte string and returns an instance of the class.
-
-        Parameters
-        ----------
-        bytes_string : bytes
-            Byte encoded string.
-        '''
-
-        raise NotImplementedError
+            if isinstance(body, str):
+                self.body = body
+            elif isinstance(body, bytes):
+                self.body = self._decode_body(body, self._headers.values())
 
     @staticmethod
-    def _parse_headers(headers):
-        '''Parse headers of a repsonse.
-
-        Parameters
-        ----------
-        headers : :obj:`tuple` of :obj:`str`
-            Collection of strings.
-
-        Returns
-        -------
-        headers : :obj:`list` of :obj:`aiospamce.headers.Header`
-            Collection of Header objects.
-        '''
-
-        if not headers:
-            return []
-        if headers[-1] == b'':
-            headers.pop()
-        return [header_from_bytes(header) for header in headers]
-
-    @staticmethod
-    def _parse_body(body, headers):
+    def _decode_body(body, headers):
         '''Parses a body of a response.
 
         Parameters

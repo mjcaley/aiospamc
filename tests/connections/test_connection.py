@@ -11,7 +11,7 @@ def test_instantiates():
     assert 'conn' in locals()
 
 
-@pytest.mark.asycio
+@pytest.mark.asyncio
 async def test_open_not_implemented():
     conn = Connection()
 

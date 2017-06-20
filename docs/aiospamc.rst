@@ -12,6 +12,7 @@ Submodules
    aiospamc.exceptions
    aiospamc.headers
    aiospamc.options
+   aiospamc.parser
    aiospamc.requests
    aiospamc.responses
 

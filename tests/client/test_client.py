@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from unittest.mock import patch, MagicMock
+
 import pytest
 from asynctest import CoroutineMock, Mock
 
@@ -7,8 +9,13 @@ from aiospamc import Client
 from aiospamc.client import _add_user_header, _add_compress_header
 from aiospamc.connections.tcp_connection import TcpConnectionManager
 from aiospamc.connections.unix_connection import UnixConnectionManager
+from aiospamc.exceptions import (BadResponse, ResponseException,
+                                 UsageException, DataErrorException, NoInputException, NoUserException,
+                                 NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
+                                 OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
+                                 ProtocolException, NoPermissionException, ConfigException, TimeoutException)
 from aiospamc.headers import Compress, User
-from aiospamc.responses import Response
+from aiospamc.responses import Response, Status
 
 
 def test_client_repr():
@@ -102,3 +109,45 @@ async def test_send_tempfail(mock_connection, request_ping, response_pong, ex_te
     response = await client.send(request_ping)
 
     assert isinstance(response, Response)
+
+
+@patch('aiospamc.parser.Success')
+def test_response_exception_ok(result):
+    result.value.status_code = Status.EX_OK
+
+    assert Client._raise_response_exception(result) is None
+
+
+@pytest.mark.parametrize('test_input,expected', [
+    (Status.EX_USAGE, UsageException),
+    (Status.EX_DATAERR, DataErrorException),
+    (Status.EX_NOINPUT, NoInputException),
+    (Status.EX_NOUSER, NoUserException),
+    (Status.EX_NOHOST, NoHostException),
+    (Status.EX_UNAVAILABLE, UnavailableException),
+    (Status.EX_SOFTWARE, InternalSoftwareException),
+    (Status.EX_OSERR, OSErrorException),
+    (Status.EX_OSFILE, OSFileException),
+    (Status.EX_CANTCREAT, CantCreateException),
+    (Status.EX_IOERR, IOErrorException),
+    (Status.EX_TEMPFAIL, TemporaryFailureException),
+    (Status.EX_PROTOCOL, ProtocolException),
+    (Status.EX_NOPERM, NoPermissionException),
+    (Status.EX_CONFIG, ConfigException),
+    (Status.EX_TIMEOUT, TimeoutException),
+    (999, ResponseException)
+])
+@patch('aiospamc.parser.Success')
+def test_response_exception(result, test_input, expected):
+    result.value.status_code = test_input
+
+    with pytest.raises(expected):
+        Client._raise_response_exception(result)
+
+
+def test_response_exception_bad():
+    result = MagicMock('aiospamc.parser.Failure')
+    result.error = 'error'
+
+    with pytest.raises(BadResponse):
+        Client._raise_response_exception(result)
