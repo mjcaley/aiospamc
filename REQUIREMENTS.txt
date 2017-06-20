@@ -1,0 +1,10 @@
+# Testing
+pytest >= 3.1.2
+pytest-runner >= 2.11
+pytest-cov >= 2.5.1
+pytest-asyncio >= 0.6.0
+asynctest >= 0.8.0
+
+# Documentation
+Sphinx >= 1.6.2
+sphinxcontrib-asyncio >= 0.2.0
