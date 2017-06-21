@@ -5,6 +5,7 @@
 An asyncio-based library to communicate with SpamAssassin's SPAMD service.'''
 
 from aiospamc.client import Client
+from aiospamc.options import ActionOption, MessageClassOption
 
 __all__ = ('Client',
            'MessageClassOption',
