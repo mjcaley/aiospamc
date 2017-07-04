@@ -898,22 +898,27 @@ class Response(Parser):
     '''
 
     def __init__(self):
-        match = Str(b'SPAMD') >> -~Whitespace() >> \
+        status_line = Str(b'SPAMD') >> -~Whitespace() >> \
             -Match(b'/') >> Version() >> \
             -~Whitespace() >> \
             Integer() >> -~Whitespace() >> \
-            Str(b'[a-zA-Z0-9_-]+') >> -~Whitespace() >> \
-            -Newline() >> \
-            ZeroOrMore(Headers()) >> -Newline() >> \
-            Body()
-        self.match = Map(match, remove_empty)
+            Str(b'[^\r\n]+') >> -~Whitespace() >> \
+            -Newline()
+        self.status_line = Map(status_line, remove_empty)
+        headers_body = ZeroOrMore(Headers()) >> -Newline() >> Body()
+        self.headers_body = Map(headers_body, remove_empty)
 
     def __call__(self, stream, index=0):
-        result = self.match(stream, index)
-        if result:
-            _, version, status_code, message, *headers, body = result.value
+        status_result = self.status_line(stream, index)
+        header_body_result = self.headers_body(*status_result.remaining)
 
-            return Success(
+        if status_result:
+            _, version, status_code, message = status_result.value
+
+            if header_body_result:
+                *headers, body = header_body_result.value
+
+                return Success(
                     value=aiospamc.responses.Response(
                             version=version,
                             status_code=aiospamc.responses.Status(status_code),
@@ -921,8 +926,16 @@ class Response(Parser):
                             headers=headers,
                             body=body
                     ),
-                    remaining=result.remaining
-            )
+                    remaining=header_body_result.remaining)
+            else:
+                return Success(
+                        value=aiospamc.responses.Response(
+                                version=version,
+                                status_code=aiospamc.responses.Status(status_code),
+                                message=message
+                        ),
+                        remaining=status_result.remaining
+                )
         else:
             return Failure(error='Could not parse Response',
                            remaining=Stream(stream, index))

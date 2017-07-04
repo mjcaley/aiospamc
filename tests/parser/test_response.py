@@ -40,6 +40,25 @@ def test_success(test_input):
     assert isinstance(result.value, aiospamc.responses.Response)
 
 
+def test_success_detailed_message():
+    r = Response()
+
+    result = r(b'SPAMD/1.0 69 Service Unavailable: TELL commands are not'
+               b'enabled, set the --allow-tell switch.\r\n')
+
+    assert isinstance(result, Success)
+    assert isinstance(result.value, aiospamc.responses.Response)
+
+
+def test_success_pong():
+    r = Response()
+
+    result = r(b'SPAMD/1.5 0 PONG\r\n')
+
+    assert isinstance(result, Success)
+    assert isinstance(result.value, aiospamc.responses.Response)
+
+
 @pytest.mark.parametrize('test_input', [
     b'SPAMD/1.5 0 EX_OK\r\nSpam: True ; 1000.0 / 2000.0\r\n\r\n',
     b'SPAMD/1.5 64 EX_USAGE\r\nSpam: True ; 1000.0 / 2000.0\r\n\r\n',
