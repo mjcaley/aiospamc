@@ -33,7 +33,7 @@ Example
 
     import asyncio
 
-    import aiospamc
+    from aiospamc import *
 
 
     GTUBE = '''Subject: Test spam mail (GTUBE)
@@ -67,7 +67,7 @@ Example
     client = Client(host='localhost')
     responses = loop.run_until_complete(asyncio.gather(
         client.ping(),
-        client.check(gtube),
-        client.headers(gtube)
+        client.check(GTUBE),
+        client.headers(GTUBE)
     ))
     print(responses)
