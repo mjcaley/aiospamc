@@ -17,7 +17,7 @@ class RequestResponseBase:
         body : :obj:`str`, optional
             String representation of the body.  An instance of the
             aiospamc.headers.ContentLength will be automatically added.
-        headers : tuple of :obj:`aiospamc.headers.Header`, optional
+        headers : tuple of :class:`aiospamc.headers.Header`, optional
             Collection of headers to be added.  If it contains an instance of
             aiospamc.headers.Compress then the body is automatically
             compressed.
@@ -43,7 +43,7 @@ class RequestResponseBase:
         ----------
         body : bytes
             Bytes representation of body.
-        headers : :obj:`tuple` or :obj:`list` of :obj:`aiospamc.headers.Header`
+        headers : :obj:`tuple` or :obj:`list` of :class:`aiospamc.headers.Header`
             Collection of headers.
 
         Returns
@@ -104,7 +104,7 @@ class RequestResponseBase:
 
         Parameters
         ----------
-        header : aiospamc.headers.Header
+        header : :class:`aiospamc.headers.Header`
             A header object to be added.
         '''
 
@@ -117,17 +117,17 @@ class RequestResponseBase:
 
         Parameters
         ----------
-        header_name : str
+        header_name : :obj:`str`
             String name of the header.
 
         Returns
         -------
-        aiospamc.headers.Header
+        :class:`aiospamc.headers.Header`
             A Header object or subclass of it.
 
         Raises
         ------
-        KeyError
+        :class:`KeyError`
         '''
 
         return self._headers[header_name]
@@ -137,12 +137,12 @@ class RequestResponseBase:
 
         Parameters
         ----------
-        header_name : str
+        header_name : :obj:`str`
             String name of the header.
 
         Raises
         ------
-        KeyError
+        :class:`KeyError`
         '''
 
         if header_name == 'Compress' and self.body:

@@ -44,7 +44,7 @@ class Compress(Header):
         return '{}()'.format(self.__class__.__name__)
 
     def __bytes__(self):
-        return b'%b: zlib\r\n'% (self.field_name().encode())
+        return b'%b: zlib\r\n' % (self.field_name().encode())
 
     def field_name(self):
         return 'Compress'
@@ -85,7 +85,7 @@ class MessageClass(Header):
 
     Attributes
     ----------
-    value : aiospamc.options.MessageClassOption
+    value : :class:`aiospamc.options.MessageClassOption`
         Specifies the classification of the message.
     '''
 
@@ -94,7 +94,7 @@ class MessageClass(Header):
 
         Parameters
         ----------
-        value : :obj:`aiospamc.options.MessageClassOption`, optional
+        value : :class:`aiospamc.options.MessageClassOption`, optional
             Specifies the classification of the message.
         '''
 
@@ -116,7 +116,7 @@ class _SetRemoveBase(Header):
 
     Attributes
     ----------
-    action : aiospamc.options._Action
+    action : :class:`aiospamc.options.ActionOption`
         Actions to be done on local or remote.
     '''
 
@@ -125,7 +125,7 @@ class _SetRemoveBase(Header):
 
         Parameters
         ----------
-        action : :obj:`aiospamc.options._Action`, optional
+        action : :class:`aiospamc.options.ActionOption`, optional
             Actions to be done on local or remote.
         '''
 
@@ -157,7 +157,7 @@ class DidRemove(_SetRemoveBase):
 
     Attributes
     ----------
-    action : aiospamc.options.RemoveAction
+    action : :class:`aiospamc.options.ActionOption`
         Actions to be done on local or remote.
     '''
 
@@ -171,7 +171,7 @@ class DidSet(_SetRemoveBase):
 
     Attributes
     ----------
-    action : :obj:`aiospamc.options.SetAction`
+    action : :class:`aiospamc.options.ActionOption`
         Actions to be done on local or remote.
     '''
 
@@ -186,7 +186,7 @@ class Remove(_SetRemoveBase):
 
     Attributes
     ----------
-    action : aiospamc.options.RemoveAction
+    action : :class:`aiospamc.options.ActionOption`
         Actions to be done on local or remote.
     '''
 
@@ -201,7 +201,7 @@ class Set(_SetRemoveBase):
 
     Attributes
     ----------
-    action : aiospamc.options.SetAction
+    action : :class:`aiospamc.options.ActionOption`
         Actions to be done on local or remote.
     '''
 
@@ -215,11 +215,11 @@ class Spam(Header):
 
     Attributes
     ----------
-    value : bool
+    value : :obj:`bool`
             True if the message is spam, False if not.
-    score : float
+    score : :obj:`float`
         Score of the message after being scanned.
-    threshold : float
+    threshold : :obj:`float`
         Threshold of which the message would have been marked as spam.
     '''
 
@@ -262,7 +262,7 @@ class User(Header):
 
     Attributes
     ----------
-    name : str
+    name : :obj:`str`
         Name of the user account.
     '''
 
@@ -294,9 +294,9 @@ class XHeader(Header):
 
     Attributes
     ----------
-    name : str
+    name : :obj:`str`
         Name of the header.
-    value : str
+    value : :obj:`str`
         Contents of the value.
     '''
 
@@ -305,9 +305,9 @@ class XHeader(Header):
 
         Parameters
         ----------
-        name : str
+        name : :obj:`str`
             Name of the header.
-        value : str
+        value : :obj:`str`
             Contents of the value.
         '''
 

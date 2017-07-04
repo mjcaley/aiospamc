@@ -17,7 +17,7 @@ Python asyncio-based library that implements the SPAMC/SPAMD client protocol use
 Documentation
 -------------
 
-Documentation can be found at: https://pythonhosted.org/aiospamc/
+Documentation can be found at: https://aiospamc.readthedocs.io/
 
 ------------
 Requirements
@@ -32,7 +32,6 @@ Example
 .. code:: python
 
     import asyncio
-    import logging
 
     import aiospamc
 
@@ -64,30 +63,11 @@ Example
     You should send this test mail from an account outside of your network.
     '''
 
-    def example():
-        import email
-        gtube_msg = email.message_from_string(GTUBE)
-
-        async def print_response(title, func, *opts):
-            try:
-                resp = await func(*opts)
-                print('----------------------------------------------------------')
-                print(title, ':', repr(resp))
-            except Exception as e:
-                logging.exception(' '.join(['Error:', str(e)]))
-
-        loop = asyncio.new_event_loop()
-        client = aiospamc.Client(loop=loop)
-
-        loop.run_until_complete(
-            asyncio.gather(
-                print_response('Ping', client.ping),
-                print_response('Check', client.check, str(gtube_msg)),
-                print_response('Headers', client.headers, str(gtube_msg)),
-                loop=loop)
-        )
-
-        loop.close()
-
-    if __name__ == '__main__':
-        example()
+    loop = asyncio.new_event_loop()
+    client = Client(host='localhost')
+    responses = loop.run_until_complete(asyncio.gather(
+        client.ping(),
+        client.check(gtube),
+        client.headers(gtube)
+    ))
+    print(responses)

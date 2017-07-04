@@ -17,9 +17,9 @@ class Success:
 
     Attributes
     ----------
-    value : object
+    value
         Result of a successful parse.
-    remaining : aiospamc.parser.Stream
+    remaining : :class:`aiospamc.parser.Stream`
         Remaining stream to parse.
     '''
 
@@ -28,9 +28,9 @@ class Success:
 
         Parameters
         ----------
-        value : object
+        value
             Result of a successful parse.
-        remaining : aiospamc.parser.Stream
+        remaining : :class:`aiospamc.parser.Stream`
             Remaining stream to parse.
         '''
 
@@ -54,9 +54,9 @@ class Failure:
 
     Attributes
     ----------
-    error : str
+    error : :obj:`str`
         Error message.
-    remaining : aiospamc.parser.Stream
+    remaining : :class:`aiospamc.parser.Stream`
         Remaining stream to parse.
     '''
 
@@ -65,9 +65,9 @@ class Failure:
 
         Parameters
         ----------
-        error : str
+        error : :obj:`str`
             Error message.
-        remaining : aiospamc.parser.Stream
+        remaining : :class:`aiospamc.parser.Stream`
             Remaining stream to parse.
         '''
 
@@ -295,7 +295,7 @@ class Replace(Parser):
     Parameters
     ----------
     parser : :class:`aiospamc.parser.Parser`
-    replace : object
+    replace
         Value to replace a successful result with.
     '''
 
@@ -401,7 +401,7 @@ class Match(Parser):
 
     Parameters
     ----------
-    match : bytes
+    match : :obj:`bytes`
         Regular expression to match.
     '''
 
@@ -423,7 +423,7 @@ class Str(Parser):
 
     Parameters
     ----------
-    match : bytes
+    match : :obj:`bytes`
         Regular expression to match.
     '''
 

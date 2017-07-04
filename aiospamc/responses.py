@@ -47,6 +47,7 @@ class Status(enum.IntEnum):
     EX_CONFIG       = 78, ConfigException, 'Configuration error'
     EX_TIMEOUT      = 79, TimeoutException, 'Read timeout'
 
+
 class Response(RequestResponseBase):
     '''Class to encapsulate response.
 
@@ -58,7 +59,7 @@ class Response(RequestResponseBase):
         Status code give by the response.
     message : :obj:`str`
         Message accompanying the status code.
-    body : :obj:`str`
+    body : :obj:`str` or :obj:`bytes`
         Contents of the response body.
     '''
 
@@ -73,7 +74,7 @@ class Response(RequestResponseBase):
             Success or error code.
         message : :obj:`str`
             Message associated with status code.
-        body : :obj:`str`, optional
+        body : :obj:`str` or :obj:`bytes`, optional
             String representation of the body.  An instance of the
             :class:`aiospamc.headers.ContentLength` will be automatically added.
         headers : tuple of :class:`aiospamc.headers.Header`, optional

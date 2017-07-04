@@ -14,16 +14,16 @@ Install
 *******
 
 With PIP
-==========
+========
 
-::
+.. code-block:: bash
 
     pip install aiospamc
 
 With GIT
 ========
 
-::
+.. code-block:: bash
 
     git clone https://github.com/mjcaley/aiospamc.git
     python3 aiospamc/setup.py install
@@ -82,9 +82,9 @@ Standard headers or the :class:`aiospamc.headers.XHeader` extension header is
 available in the :mod:`aiospamc.headers` module. Headers are managed on the
 request object with the methods:
 
-* :meth:`aiospamc.content_man.BodyHeaderManager.add_header`
-* :meth:`aiospamc.content_man.BodyHeaderManager.get_header`
-* :meth:`aiospamc.content_man.BodyHeaderManager.delete_header`
+* :meth:`aiospamc.requests.Request.add_header`
+* :meth:`aiospamc.requests.Request.get_header`
+* :meth:`aiospamc.requests.Request.delete_header`
 
 Once a request is composed, it can be sent through the
 :meth:`aiospamc.client.Client.send` method as-is.  The method will automatically
@@ -93,9 +93,8 @@ headers if required.
 
 For example:
 
-.. code:: python
-
     import asyncio
+
     import aiospamc
     from aiospamc.requests import Request
     from aiospamc.headers import XHeader
@@ -109,14 +108,13 @@ For example:
                        'This is a message just to say hello.'
                        'So, "Hello".')
     
-    loop = asyncio.get_event_loop()
-    client = aiospamc.Client()
-    
-    request = Request('FAKE')
+    request = Request(verb='FAKE')
     fake_header1 = XHeader('fake_header', 'Fake values')
     request.add_header(fake_header1)
     request.body = example_message
-    
+
+    loop = asyncio.get_event_loop()
+    client = aiospamc.Client()
     response = loop.run_until_complete(client.send(request))
     print(response)
 
@@ -125,4 +123,4 @@ Interpreting results
 ********************
 
 Responses are encapsulated in the :class:`aiospamc.responses.Response` class.
-Any data will need to be additionally parsed by the user.
+It includes the status code, headers and body.

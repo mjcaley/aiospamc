@@ -10,11 +10,11 @@ class Request(RequestResponseBase):
 
     Attributes
     ----------
-    verb : str
+    verb : :obj:`str`
         Method name of the request.
-    version : str
+    version : :obj:`str`
         Protocol version.
-    body : str
+    body : :obj:`str` or :obj:`bytes`
         String representation of the body.  An instance of the
         :class:`aiospamc.headers.ContentLength` will be automatically added.
     '''
@@ -26,9 +26,9 @@ class Request(RequestResponseBase):
         ----------
         verb : :obj:`str`
             Method name of the request.
-        version: :obj`str`
+        version: :obj:`str`
             Version of the protocol.
-        body : :obj:`str`, optional
+        body : :obj:`str` or :obj:`bytes`, optional
             String representation of the body.  An instance of the
             :class:`aiospamc.headers.ContentLength` will be automatically added.
         headers : tuple of :class:`aiospamc.headers.Header`, optional

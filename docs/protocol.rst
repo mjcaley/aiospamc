@@ -1,3 +1,5 @@
+.. highlight:: none
+
 ###################################################
 SPAMC/SPAMD Protocol As Implemented by SpamAssassin
 ###################################################
@@ -6,7 +8,7 @@ SPAMC/SPAMD Protocol As Implemented by SpamAssassin
 Requests and Responses
 **********************
 
-The structure of a request is similar to an HTTP request.  The method/verb,
+The structure of a request is similar to an HTTP request. [1]_  The method/verb,
 protocol name and version are listed followed by headers separated by newline
 characters (carriage return and linefeed or ``\r\n``).  Following the headers
 is a blank line with a newline (``\r\n``).  If there is a message body it will
@@ -710,5 +712,6 @@ that was sent.
 **********
 References
 **********
+
 .. [1] https://svn.apache.org/viewvc/spamassassin/branches/3.4/spamd/PROTOCOL?revision=1676616&view=co
 .. [2] https://svn.apache.org/viewvc/spamassassin/branches/3.4/spamd/spamd.raw?revision=1749346&view=co

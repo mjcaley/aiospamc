@@ -56,17 +56,17 @@ class Client:
     ----------
     connection : :class:`aiospamc.connections.ConnectionManager`
         Manager instance to open connections.
-    user : str
+    user : :obj:`str`
         Name of the user that SPAMD will run the checks under.
-    compress : bool
+    compress : :obj:`bool`
         If true, the request body will be compressed.
-    sleep_len : float
+    sleep_len : :obj:`float`
         Length of time to wait to retry a connection in seconds.
-    retry_attempts : float
+    retry_attempts : :obj:`float`
         Number of times to retry a connection.
-    loop : asyncio.AbstractEventLoop
+    loop : :class:`asyncio.AbstractEventLoop`
         The asyncio event loop.
-    logger : logging.Logger
+    logger : :class:`logging.Logger`
         Logging instance, logs to 'aiospamc.client'
     '''
 
@@ -82,6 +82,8 @@ class Client:
 
         Parameters
         ----------
+        socket_path : :obj:`str`, optional
+            The path to the Unix socket for the SPAMD service.
         host : :obj:`str`, optional
             Hostname or IP address of the SPAMD service, defaults to localhost.
         port : :obj:`int`, optional
@@ -92,7 +94,7 @@ class Client:
             If true, the request body will be compressed.
         ssl : :obj:`bool`, optional
             If true, will enable SSL/TLS for the connection.
-        loop : :obj:`asyncio.AbstractEventLoop`
+        loop : :class:`asyncio.AbstractEventLoop`
             The asyncio event loop.
 
         Raises
@@ -192,51 +194,51 @@ class Client:
 
         Parameters
         ----------
-        request : aiospamc.requests.Request
+        request : :class:`aiospamc.requests.Request`
             Request object to send.
 
         Returns
         -------
-        aiospamc.responses.Response
+        :class:`aiospamc.responses.Response`
 
         Raises
         ------
-        aiospamc.exceptions.BadResponse
+        :class:`aiospamc.exceptions.BadResponse`
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.UsageException
+        :class:`aiospamc.exceptions.UsageException`
             Error in command line usage.
-        aiospamc.exceptions.DataErrorException
+        :class:`aiospamc.exceptions.DataErrorException`
             Error with data format.
-        aiospamc.exceptions.NoInputException
+        :class:`aiospamc.exceptions.NoInputException`
             Cannot open input.
-        aiospamc.exceptions.NoUserException
+        :class:`aiospamc.exceptions.NoUserException`
             Addressee unknown.
-        aiospamc.exceptions.NoHostException
+        :class:`aiospamc.exceptions.NoHostException`
             Hostname unknown.
-        aiospamc.exceptions.UnavailableException
+        :class:`aiospamc.exceptions.UnavailableException`
             Service unavailable.
-        aiospamc.exceptions.InternalSoftwareException
+        :class:`aiospamc.exceptions.InternalSoftwareException`
             Internal software error.
-        aiospamc.exceptions.OSErrorException
+        :class:`aiospamc.exceptions.OSErrorException`
             System error.
-        aiospamc.exceptions.OSFileException
+        :class:`aiospamc.exceptions.OSFileException`
             Operating system file missing.
-        aiospamc.exceptions.CantCreateException
+        :class:`aiospamc.exceptions.CantCreateException`
             Cannot create output file.
-        aiospamc.exceptions.IOErrorException
+        :class:`aiospamc.exceptions.IOErrorException`
             Input/output error.
-        aiospamc.exceptions.TemporaryFailureException
+        :class:`aiospamc.exceptions.TemporaryFailureException`
             Temporary failure, may reattempt.
-        aiospamc.exceptions.ProtocolException
+        :class:`aiospamc.exceptions.ProtocolException`
             Error in the protocol.
-        aiospamc.exceptions.NoPermissionException
+        :class:`aiospamc.exceptions.NoPermissionException`
             Permission denied.
-        aiospamc.exceptions.ConfigException
+        :class:`aiospamc.exceptions.ConfigException`
             Error in configuration.
-        aiospamc.exceptions.TimeoutException
+        :class:`aiospamc.exceptions.TimeoutException`
             Timeout during connection.
         '''
 
@@ -279,7 +281,7 @@ class Client:
 
         Parameters
         ----------
-        message : str
+        message : :obj:`str`
             A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -287,48 +289,48 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.Response
+        :class:`aiospamc.responses.Response`
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
         Raises
         ------
-        aiospamc.exceptions.BadResponse
+        :class:`aiospamc.exceptions.BadResponse`
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.UsageException
+        :class:`aiospamc.exceptions.UsageException`
             Error in command line usage.
-        aiospamc.exceptions.DataErrorException
+        :class:`aiospamc.exceptions.DataErrorException`
             Error with data format.
-        aiospamc.exceptions.NoInputException
+        :class:`aiospamc.exceptions.NoInputException`
             Cannot open input.
-        aiospamc.exceptions.NoUserException
+        :class:`aiospamc.exceptions.NoUserException`
             Addressee unknown.
-        aiospamc.exceptions.NoHostException
+        :class:`aiospamc.exceptions.NoHostException`
             Hostname unknown.
-        aiospamc.exceptions.UnavailableException
+        :class:`aiospamc.exceptions.UnavailableException`
             Service unavailable.
-        aiospamc.exceptions.InternalSoftwareException
+        :class:`aiospamc.exceptions.InternalSoftwareException`
             Internal software error.
-        aiospamc.exceptions.OSErrorException
+        :class:`aiospamc.exceptions.OSErrorException`
             System error.
-        aiospamc.exceptions.OSFileException
+        :class:`aiospamc.exceptions.OSFileException`
             Operating system file missing.
-        aiospamc.exceptions.CantCreateException
+        :class:`aiospamc.exceptions.CantCreateException`
             Cannot create output file.
-        aiospamc.exceptions.IOErrorException
+        :class:`aiospamc.exceptions.IOErrorException`
             Input/output error.
-        aiospamc.exceptions.TemporaryFailureException
+        :class:`aiospamc.exceptions.TemporaryFailureException`
             Temporary failure, may reattempt.
-        aiospamc.exceptions.ProtocolException
+        :class:`aiospamc.exceptions.ProtocolException`
             Error in the protocol.
-        aiospamc.exceptions.NoPermissionException
+        :class:`aiospamc.exceptions.NoPermissionException`
             Permission denied.
-        aiospamc.exceptions.ConfigException
+        :class:`aiospamc.exceptions.ConfigException`
             Error in configuration.
-        aiospamc.exceptions.TimeoutException
+        :class:`aiospamc.exceptions.TimeoutException`
             Timeout during connection.
         '''
 
@@ -343,7 +345,7 @@ class Client:
 
         Parameters
         ----------
-        message : str
+        message : :obj:`str`
             A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -351,7 +353,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.Response
+        :class:`aiospamc.responses.Response`
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -359,42 +361,42 @@ class Client:
 
         Raises
         ------
-        aiospamc.exceptions.BadResponse
+        :class:`aiospamc.exceptions.BadResponse`
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.UsageException
+        :class:`aiospamc.exceptions.UsageException`
             Error in command line usage.
-        aiospamc.exceptions.DataErrorException
+        :class:`aiospamc.exceptions.DataErrorException`
             Error with data format.
-        aiospamc.exceptions.NoInputException
+        :class:`aiospamc.exceptions.NoInputException`
             Cannot open input.
-        aiospamc.exceptions.NoUserException
+        :class:`aiospamc.exceptions.NoUserException`
             Addressee unknown.
-        aiospamc.exceptions.NoHostException
+        :class:`aiospamc.exceptions.NoHostException`
             Hostname unknown.
-        aiospamc.exceptions.UnavailableException
+        :class:`aiospamc.exceptions.UnavailableException`
             Service unavailable.
-        aiospamc.exceptions.InternalSoftwareException
+        :class:`aiospamc.exceptions.InternalSoftwareException`
             Internal software error.
-        aiospamc.exceptions.OSErrorException
+        :class:`aiospamc.exceptions.OSErrorException`
             System error.
-        aiospamc.exceptions.OSFileException
+        :class:`aiospamc.exceptions.OSFileException`
             Operating system file missing.
-        aiospamc.exceptions.CantCreateException
+        :class:`aiospamc.exceptions.CantCreateException`
             Cannot create output file.
-        aiospamc.exceptions.IOErrorException
+        :class:`aiospamc.exceptions.IOErrorException`
             Input/output error.
-        aiospamc.exceptions.TemporaryFailureException
+        :class:`aiospamc.exceptions.TemporaryFailureException`
             Temporary failure, may reattempt.
-        aiospamc.exceptions.ProtocolException
+        :class:`aiospamc.exceptions.ProtocolException`
             Error in the protocol.
-        aiospamc.exceptions.NoPermissionException
+        :class:`aiospamc.exceptions.NoPermissionException`
             Permission denied.
-        aiospamc.exceptions.ConfigException
+        :class:`aiospamc.exceptions.ConfigException`
             Error in configuration.
-        aiospamc.exceptions.TimeoutException
+        :class:`aiospamc.exceptions.TimeoutException`
             Timeout during connection.
         '''
 
@@ -410,47 +412,47 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.Response
+        :class:`aiospamc.responses.Response`
             Response message will contain 'PONG' if successful.
 
         Raises
         ------
-        aiospamc.exceptions.BadResponse
+        :class:`aiospamc.exceptions.BadResponse`
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.UsageException
+        :class:`aiospamc.exceptions.UsageException`
             Error in command line usage.
-        aiospamc.exceptions.DataErrorException
+        :class:`aiospamc.exceptions.DataErrorException`
             Error with data format.
-        aiospamc.exceptions.NoInputException
+        :class:`aiospamc.exceptions.NoInputException`
             Cannot open input.
-        aiospamc.exceptions.NoUserException
+        :class:`aiospamc.exceptions.NoUserException`
             Addressee unknown.
-        aiospamc.exceptions.NoHostException
+        :class:`aiospamc.exceptions.NoHostException`
             Hostname unknown.
-        aiospamc.exceptions.UnavailableException
+        :class:`aiospamc.exceptions.UnavailableException`
             Service unavailable.
-        aiospamc.exceptions.InternalSoftwareException
+        :class:`aiospamc.exceptions.InternalSoftwareException`
             Internal software error.
-        aiospamc.exceptions.OSErrorException
+        :class:`aiospamc.exceptions.OSErrorException`
             System error.
-        aiospamc.exceptions.OSFileException
+        :class:`aiospamc.exceptions.OSFileException`
             Operating system file missing.
-        aiospamc.exceptions.CantCreateException
+        :class:`aiospamc.exceptions.CantCreateException`
             Cannot create output file.
-        aiospamc.exceptions.IOErrorException
+        :class:`aiospamc.exceptions.IOErrorException`
             Input/output error.
-        aiospamc.exceptions.TemporaryFailureException
+        :class:`aiospamc.exceptions.TemporaryFailureException`
             Temporary failure, may reattempt.
-        aiospamc.exceptions.ProtocolException
+        :class:`aiospamc.exceptions.ProtocolException`
             Error in the protocol.
-        aiospamc.exceptions.NoPermissionException
+        :class:`aiospamc.exceptions.NoPermissionException`
             Permission denied.
-        aiospamc.exceptions.ConfigException
+        :class:`aiospamc.exceptions.ConfigException`
             Error in configuration.
-        aiospamc.exceptions.TimeoutException
+        :class:`aiospamc.exceptions.TimeoutException`
             Timeout during connection.
         '''
 
@@ -465,7 +467,7 @@ class Client:
 
         Parameters
         ----------
-        message : str
+        message : :obj:`str`
             A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -473,7 +475,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.Response
+        :class:`aiospamc.responses.Response`
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -481,42 +483,42 @@ class Client:
 
         Raises
         ------
-        aiospamc.exceptions.BadResponse
+        :class:`aiospamc.exceptions.BadResponse`
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.UsageException
+        :class:`aiospamc.exceptions.UsageException`
             Error in command line usage.
-        aiospamc.exceptions.DataErrorException
+        :class:`aiospamc.exceptions.DataErrorException`
             Error with data format.
-        aiospamc.exceptions.NoInputException
+        :class:`aiospamc.exceptions.NoInputException`
             Cannot open input.
-        aiospamc.exceptions.NoUserException
+        :class:`aiospamc.exceptions.NoUserException`
             Addressee unknown.
-        aiospamc.exceptions.NoHostException
+        :class:`aiospamc.exceptions.NoHostException`
             Hostname unknown.
-        aiospamc.exceptions.UnavailableException
+        :class:`aiospamc.exceptions.UnavailableException`
             Service unavailable.
-        aiospamc.exceptions.InternalSoftwareException
+        :class:`aiospamc.exceptions.InternalSoftwareException`
             Internal software error.
-        aiospamc.exceptions.OSErrorException
+        :class:`aiospamc.exceptions.OSErrorException`
             System error.
-        aiospamc.exceptions.OSFileException
+        :class:`aiospamc.exceptions.OSFileException`
             Operating system file missing.
-        aiospamc.exceptions.CantCreateException
+        :class:`aiospamc.exceptions.CantCreateException`
             Cannot create output file.
-        aiospamc.exceptions.IOErrorException
+        :class:`aiospamc.exceptions.IOErrorException`
             Input/output error.
-        aiospamc.exceptions.TemporaryFailureException
+        :class:`aiospamc.exceptions.TemporaryFailureException`
             Temporary failure, may reattempt.
-        aiospamc.exceptions.ProtocolException
+        :class:`aiospamc.exceptions.ProtocolException`
             Error in the protocol.
-        aiospamc.exceptions.NoPermissionException
+        :class:`aiospamc.exceptions.NoPermissionException`
             Permission denied.
-        aiospamc.exceptions.ConfigException
+        :class:`aiospamc.exceptions.ConfigException`
             Error in configuration.
-        aiospamc.exceptions.TimeoutException
+        :class:`aiospamc.exceptions.TimeoutException`
             Timeout during connection.
         '''
 
@@ -531,7 +533,7 @@ class Client:
 
         Parameters
         ----------
-        message : str
+        message : :obj:`str`
             A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -539,7 +541,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.Response
+        :class:`aiospamc.responses.Response`
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -547,42 +549,42 @@ class Client:
 
         Raises
         ------
-        aiospamc.exceptions.BadResponse
+        :class:`aiospamc.exceptions.BadResponse`
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.UsageException
+        :class:`aiospamc.exceptions.UsageException`
             Error in command line usage.
-        aiospamc.exceptions.DataErrorException
+        :class:`aiospamc.exceptions.DataErrorException`
             Error with data format.
-        aiospamc.exceptions.NoInputException
+        :class:`aiospamc.exceptions.NoInputException`
             Cannot open input.
-        aiospamc.exceptions.NoUserException
+        :class:`aiospamc.exceptions.NoUserException`
             Addressee unknown.
-        aiospamc.exceptions.NoHostException
+        :class:`aiospamc.exceptions.NoHostException`
             Hostname unknown.
-        aiospamc.exceptions.UnavailableException
+        :class:`aiospamc.exceptions.UnavailableException`
             Service unavailable.
-        aiospamc.exceptions.InternalSoftwareException
+        :class:`aiospamc.exceptions.InternalSoftwareException`
             Internal software error.
-        aiospamc.exceptions.OSErrorException
+        :class:`aiospamc.exceptions.OSErrorException`
             System error.
-        aiospamc.exceptions.OSFileException
+        :class:`aiospamc.exceptions.OSFileException`
             Operating system file missing.
-        aiospamc.exceptions.CantCreateException
+        :class:`aiospamc.exceptions.CantCreateException`
             Cannot create output file.
-        aiospamc.exceptions.IOErrorException
+        :class:`aiospamc.exceptions.IOErrorException`
             Input/output error.
-        aiospamc.exceptions.TemporaryFailureException
+        :class:`aiospamc.exceptions.TemporaryFailureException`
             Temporary failure, may reattempt.
-        aiospamc.exceptions.ProtocolException
+        :class:`aiospamc.exceptions.ProtocolException`
             Error in the protocol.
-        aiospamc.exceptions.NoPermissionException
+        :class:`aiospamc.exceptions.NoPermissionException`
             Permission denied.
-        aiospamc.exceptions.ConfigException
+        :class:`aiospamc.exceptions.ConfigException`
             Error in configuration.
-        aiospamc.exceptions.TimeoutException
+        :class:`aiospamc.exceptions.TimeoutException`
             Timeout during connection.
         '''
 
@@ -598,7 +600,7 @@ class Client:
 
         Parameters
         ----------
-        message : str
+        message : :obj:`str`
             A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -606,7 +608,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.Response
+        :class:`aiospamc.responses.Response`
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -615,42 +617,42 @@ class Client:
 
         Raises
         ------
-        aiospamc.exceptions.BadResponse
+        :class:`aiospamc.exceptions.BadResponse`
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.UsageException
+        :class:`aiospamc.exceptions.UsageException`
             Error in command line usage.
-        aiospamc.exceptions.DataErrorException
+        :class:`aiospamc.exceptions.DataErrorException`
             Error with data format.
-        aiospamc.exceptions.NoInputException
+        :class:`aiospamc.exceptions.NoInputException`
             Cannot open input.
-        aiospamc.exceptions.NoUserException
+        :class:`aiospamc.exceptions.NoUserException`
             Addressee unknown.
-        aiospamc.exceptions.NoHostException
+        :class:`aiospamc.exceptions.NoHostException`
             Hostname unknown.
-        aiospamc.exceptions.UnavailableException
+        :class:`aiospamc.exceptions.UnavailableException`
             Service unavailable.
-        aiospamc.exceptions.InternalSoftwareException
+        :class:`aiospamc.exceptions.InternalSoftwareException`
             Internal software error.
-        aiospamc.exceptions.OSErrorException
+        :class:`aiospamc.exceptions.OSErrorException`
             System error.
-        aiospamc.exceptions.OSFileException
+        :class:`aiospamc.exceptions.OSFileException`
             Operating system file missing.
-        aiospamc.exceptions.CantCreateException
+        :class:`aiospamc.exceptions.CantCreateException`
             Cannot create output file.
-        aiospamc.exceptions.IOErrorException
+        :class:`aiospamc.exceptions.IOErrorException`
             Input/output error.
-        aiospamc.exceptions.TemporaryFailureException
+        :class:`aiospamc.exceptions.TemporaryFailureException`
             Temporary failure, may reattempt.
-        aiospamc.exceptions.ProtocolException
+        :class:`aiospamc.exceptions.ProtocolException`
             Error in the protocol.
-        aiospamc.exceptions.NoPermissionException
+        :class:`aiospamc.exceptions.NoPermissionException`
             Permission denied.
-        aiospamc.exceptions.ConfigException
+        :class:`aiospamc.exceptions.ConfigException`
             Error in configuration.
-        aiospamc.exceptions.TimeoutException
+        :class:`aiospamc.exceptions.TimeoutException`
             Timeout during connection.
         '''
 
@@ -668,7 +670,7 @@ class Client:
 
         Parameters
         ----------
-        message : str
+        message : :obj:`str`
             A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -676,7 +678,7 @@ class Client:
 
         Returns
         -------
-        aiospamc.responses.Response
+        :class:`aiospamc.responses.Response`
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
@@ -684,42 +686,42 @@ class Client:
 
         Raises
         ------
-        aiospamc.exceptions.BadResponse
+        :class:`aiospamc.exceptions.BadResponse`
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.UsageException
+        :class:`aiospamc.exceptions.UsageException`
             Error in command line usage.
-        aiospamc.exceptions.DataErrorException
+        :class:`aiospamc.exceptions.DataErrorException`
             Error with data format.
-        aiospamc.exceptions.NoInputException
+        :class:`aiospamc.exceptions.NoInputException`
             Cannot open input.
-        aiospamc.exceptions.NoUserException
+        :class:`aiospamc.exceptions.NoUserException`
             Addressee unknown.
-        aiospamc.exceptions.NoHostException
+        :class:`aiospamc.exceptions.NoHostException`
             Hostname unknown.
-        aiospamc.exceptions.UnavailableException
+        :class:`aiospamc.exceptions.UnavailableException`
             Service unavailable.
-        aiospamc.exceptions.InternalSoftwareException
+        :class:`aiospamc.exceptions.InternalSoftwareException`
             Internal software error.
-        aiospamc.exceptions.OSErrorException
+        :class:`aiospamc.exceptions.OSErrorException`
             System error.
-        aiospamc.exceptions.OSFileException
+        :class:`aiospamc.exceptions.OSFileException`
             Operating system file missing.
-        aiospamc.exceptions.CantCreateException
+        :class:`aiospamc.exceptions.CantCreateException`
             Cannot create output file.
-        aiospamc.exceptions.IOErrorException
+        :class:`aiospamc.exceptions.IOErrorException`
             Input/output error.
-        aiospamc.exceptions.TemporaryFailureException
+        :class:`aiospamc.exceptions.TemporaryFailureException`
             Temporary failure, may reattempt.
-        aiospamc.exceptions.ProtocolException
+        :class:`aiospamc.exceptions.ProtocolException`
             Error in the protocol.
-        aiospamc.exceptions.NoPermissionException
+        :class:`aiospamc.exceptions.NoPermissionException`
             Permission denied.
-        aiospamc.exceptions.ConfigException
+        :class:`aiospamc.exceptions.ConfigException`
             Error in configuration.
-        aiospamc.exceptions.TimeoutException
+        :class:`aiospamc.exceptions.TimeoutException`
             Timeout during connection.
         '''
 
@@ -739,21 +741,21 @@ class Client:
 
         Parameters
         ----------
-        message_class : aiospamc.options.MessageClassOption
+        message_class : :class:`aiospamc.options.MessageClassOption`
             An enumeration to classify the message as 'spam' or 'ham.'
-        message : str
+        message : :obj:`str`
             A string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
-        remove_action : aiospamc.options.ActionOption
+        remove_action : :class:`aiospamc.options.ActionOption`
             Remove message class for message in database.
-        set_action : aiospamc.options.ActionOption
+        set_action : :class:`aiospamc.options.ActionOption`
             Set message class for message in database.
 
         Returns
         -------
-        aiospamc.responses.Response
+        :class:`aiospamc.responses.Response`
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
@@ -762,42 +764,42 @@ class Client:
 
         Raises
         ------
-        aiospamc.exceptions.BadResponse
+        :class:`aiospamc.exceptions.BadResponse`
             If the response from SPAMD is ill-formed this exception will be
             raised.
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
             Raised if an error occurred when trying to connect.
-        aiospamc.exceptions.UsageException
+        :class:`aiospamc.exceptions.UsageException`
             Error in command line usage.
-        aiospamc.exceptions.DataErrorException
+        :class:`aiospamc.exceptions.DataErrorException`
             Error with data format.
-        aiospamc.exceptions.NoInputException
+        :class:`aiospamc.exceptions.NoInputException`
             Cannot open input.
-        aiospamc.exceptions.NoUserException
+        :class:`aiospamc.exceptions.NoUserException`
             Addressee unknown.
-        aiospamc.exceptions.NoHostException
+        :class:`aiospamc.exceptions.NoHostException`
             Hostname unknown.
-        aiospamc.exceptions.UnavailableException
+        :class:`aiospamc.exceptions.UnavailableException`
             Service unavailable.
-        aiospamc.exceptions.InternalSoftwareException
+        :class:`aiospamc.exceptions.InternalSoftwareException`
             Internal software error.
-        aiospamc.exceptions.OSErrorException
+        :class:`aiospamc.exceptions.OSErrorException`
             System error.
-        aiospamc.exceptions.OSFileException
+        :class:`aiospamc.exceptions.OSFileException`
             Operating system file missing.
-        aiospamc.exceptions.CantCreateException
+        :class:`aiospamc.exceptions.CantCreateException`
             Cannot create output file.
-        aiospamc.exceptions.IOErrorException
+        :class:`aiospamc.exceptions.IOErrorException`
             Input/output error.
-        aiospamc.exceptions.TemporaryFailureException
+        :class:`aiospamc.exceptions.TemporaryFailureException`
             Temporary failure, may reattempt.
-        aiospamc.exceptions.ProtocolException
+        :class:`aiospamc.exceptions.ProtocolException`
             Error in the protocol.
-        aiospamc.exceptions.NoPermissionException
+        :class:`aiospamc.exceptions.NoPermissionException`
             Permission denied.
-        aiospamc.exceptions.ConfigException
+        :class:`aiospamc.exceptions.ConfigException`
             Error in configuration.
-        aiospamc.exceptions.TimeoutException
+        :class:`aiospamc.exceptions.TimeoutException`
             Timeout during connection.
         '''
 
