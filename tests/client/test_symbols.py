@@ -12,7 +12,7 @@ from aiospamc.requests import Request
 @pytest.mark.asyncio
 @pytest.mark.usefixtures('connection_refused')
 async def test_symbols_connection_refused(spam):
-    client = Client()
+    client = Client(host='localhost')
     with pytest.raises(AIOSpamcConnectionFailed):
         response = await client.symbols(spam)
 
@@ -20,7 +20,7 @@ async def test_symbols_connection_refused(spam):
 @pytest.mark.asyncio
 @patch('aiospamc.client.Client.send')
 async def test_symbols_valid_request(mock_connection, spam):
-    client = Client()
+    client = Client(host='localhost')
     response = await client.symbols(spam)
 
     request = client.send.call_args[0][0]
@@ -32,7 +32,7 @@ async def test_symbols_valid_request(mock_connection, spam):
 
 @pytest.mark.asyncio
 async def test_symbols_valid_response(mock_connection, spam):
-    client = Client()
+    client = Client(host='localhost')
     response = await client.symbols(spam)
 
     assert isinstance(response, Response)
@@ -42,6 +42,6 @@ async def test_symbols_valid_response(mock_connection, spam):
 async def test_symbols_invalid_response(mock_connection, response_invalid, spam):
     mock_connection.side_effect = [response_invalid]
 
-    client = Client()
+    client = Client(host='localhost')
     with pytest.raises(BadResponse):
         response = await client.symbols(spam)

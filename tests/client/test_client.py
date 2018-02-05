@@ -17,9 +17,9 @@ from aiospamc.responses import Response, Status
 
 
 def test_client_repr():
-    client = Client()
+    client = Client(host='localhost')
     assert repr(client) == ('Client(socket_path=\'/var/run/spamassassin/spamd.sock\', '
-                            'host=None, '
+                            'host=\'localhost\', '
                             'port=783, '
                             'user=None, '
                             'compress=False, '
@@ -91,7 +91,7 @@ async def test_user_decorator(user,
 @pytest.mark.asyncio
 async def test_send(mock_connection, request_ping, response_pong):
     mock_connection.side_effect = [response_pong, ]
-    client = Client()
+    client = Client(host='localhost')
 
     response = await client.send(request_ping)
 
@@ -101,7 +101,7 @@ async def test_send(mock_connection, request_ping, response_pong):
 @pytest.mark.asyncio
 async def test_send_tempfail(mock_connection, request_ping, response_pong, ex_temp_fail):
     mock_connection.side_effect = [ex_temp_fail, ex_temp_fail, response_pong]
-    client = Client()
+    client = Client(host='localhost')
     client.sleep_len = 0.1
 
     response = await client.send(request_ping)

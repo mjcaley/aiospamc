@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 
 import asyncio
+import sys
+
 from asynctest import patch, MagicMock
 
 import pytest
+
+
+collect_ignore = ["setup.py"]
+if sys.platform == 'win32':
+    collect_ignore.append("connections/test_unix_connection.py")
 
 
 @pytest.fixture
@@ -186,9 +193,14 @@ def ex_timeout():
 
 @pytest.fixture
 def connection_refused():
-    with patch('asyncio.open_connection', side_effect=[ConnectionRefusedError()]), \
-         patch('asyncio.open_unix_connection', side_effect=[ConnectionRefusedError()]):
-        yield
+    tcp_open = patch('asyncio.open_connection', side_effect=[ConnectionRefusedError()])
+    if sys.platform == 'win32':
+        with tcp_open:
+            yield
+    else:
+        unix_open = patch('asyncio.open_unix_connection', side_effect=[ConnectionRefusedError()])
+        with tcp_open, unix_open:
+            yield
 
 
 @pytest.fixture
@@ -199,12 +211,18 @@ def mock_connection(response_ok):
     reader.read.side_effect = cycle([response_ok])
     writer = MagicMock(spec=asyncio.StreamWriter)
 
-    with patch('aiospamc.connections.Connection.connection_string',
-               return_value='MockConnectionString'), \
-         patch('aiospamc.connections.Connection.open',
-               return_value=(reader, writer)), \
-         patch('aiospamc.connections.tcp_connection.TcpConnection.open',
-               return_value=(reader, writer)), \
-         patch('aiospamc.connections.unix_connection.UnixConnection.open',
-               return_value=(reader, writer)):
-        yield reader.read
+    conn_string = patch('aiospamc.connections.Connection.connection_string',
+                        return_value='MockConnectionString')
+    conn_open = patch('aiospamc.connections.Connection.open',
+                      return_value=(reader, writer))
+    tcp_open = patch('aiospamc.connections.tcp_connection.TcpConnection.open',
+                     return_value=(reader, writer))
+    unix_open = patch('aiospamc.connections.unix_connection.UnixConnection.open',
+                      return_value=(reader, writer))
+
+    if sys.platform == 'win32':
+        with conn_string, conn_open, tcp_open:
+            yield reader.read
+    else:
+        with conn_string, conn_open, tcp_open, unix_open:
+            yield reader.read
