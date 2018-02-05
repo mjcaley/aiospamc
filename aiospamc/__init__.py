@@ -14,5 +14,5 @@ __all__ = ('Client',
 __author__ = 'Michael Caley'
 __copyright__ = 'Copyright 2016, 2017 Michael Caley'
 __license__ = 'MIT'
-__version__ = '0.3.0'
+__version__ = '0.4.0.dev1'
 __email__ = 'mjcaley@darkarctic.com'
