@@ -12,7 +12,7 @@ from aiospamc.exceptions import (BadResponse, ResponseException,
                                  OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
                                  ProtocolException, NoPermissionException, ConfigException, TimeoutException)
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
-from aiospamc.parser import SAParser
+from aiospamc.parser import Parser, ParseError
 from aiospamc.requests import Request
 from aiospamc.responses import Status
 
@@ -121,7 +121,7 @@ class Client:
         self._ssl = ssl
         self.loop = loop or asyncio.get_event_loop()
 
-        self.parser = SAParser()
+        self.parser = Parser()
 
         self.sleep_len = 3
         self.retry_attempts = 4
@@ -145,45 +145,42 @@ class Client:
 
     @staticmethod
     def _raise_response_exception(response):
-        if not response:
-            raise BadResponse(response.error)
-
-        if response.value.status_code is Status.EX_OK:
+        if response.status_code is Status.EX_OK:
             return
-        elif response.value.status_code is Status.EX_USAGE:
-            raise UsageException(response.value)
-        elif response.value.status_code is Status.EX_DATAERR:
-            raise DataErrorException(response.value)
-        elif response.value.status_code is Status.EX_NOINPUT:
-            raise NoInputException(response.value)
-        elif response.value.status_code is Status.EX_NOUSER:
-            raise NoUserException(response.value)
-        elif response.value.status_code is Status.EX_NOHOST:
-            raise NoHostException(response.value)
-        elif response.value.status_code is Status.EX_UNAVAILABLE:
-            raise UnavailableException(response.value)
-        elif response.value.status_code is Status.EX_SOFTWARE:
-            raise InternalSoftwareException(response.value)
-        elif response.value.status_code is Status.EX_OSERR:
-            raise OSErrorException(response.value)
-        elif response.value.status_code is Status.EX_OSFILE:
-            raise OSFileException(response.value)
-        elif response.value.status_code is Status.EX_CANTCREAT:
-            raise CantCreateException(response.value)
-        elif response.value.status_code is Status.EX_IOERR:
-            raise IOErrorException(response.value)
-        elif response.value.status_code is Status.EX_TEMPFAIL:
-            raise TemporaryFailureException(response.value)
-        elif response.value.status_code is Status.EX_PROTOCOL:
-            raise ProtocolException(response.value)
-        elif response.value.status_code is Status.EX_NOPERM:
-            raise NoPermissionException(response.value)
-        elif response.value.status_code is Status.EX_CONFIG:
-            raise ConfigException(response.value)
-        elif response.value.status_code is Status.EX_TIMEOUT:
-            raise TimeoutException(response.value)
+        elif response.status_code is Status.EX_USAGE:
+            raise UsageException(response)
+        elif response.status_code is Status.EX_DATAERR:
+            raise DataErrorException(response)
+        elif response.status_code is Status.EX_NOINPUT:
+            raise NoInputException(response)
+        elif response.status_code is Status.EX_NOUSER:
+            raise NoUserException(response)
+        elif response.status_code is Status.EX_NOHOST:
+            raise NoHostException(response)
+        elif response.status_code is Status.EX_UNAVAILABLE:
+            raise UnavailableException(response)
+        elif response.status_code is Status.EX_SOFTWARE:
+            raise InternalSoftwareException(response)
+        elif response.status_code is Status.EX_OSERR:
+            raise OSErrorException(response)
+        elif response.status_code is Status.EX_OSFILE:
+            raise OSFileException(response)
+        elif response.status_code is Status.EX_CANTCREAT:
+            raise CantCreateException(response)
+        elif response.status_code is Status.EX_IOERR:
+            raise IOErrorException(response)
+        elif response.status_code is Status.EX_TEMPFAIL:
+            raise TemporaryFailureException(response)
+        elif response.status_code is Status.EX_PROTOCOL:
+            raise ProtocolException(response)
+        elif response.status_code is Status.EX_NOPERM:
+            raise NoPermissionException(response)
+        elif response.status_code is Status.EX_CONFIG:
+            raise ConfigException(response)
+        elif response.status_code is Status.EX_TIMEOUT:
+            raise TimeoutException(response)
         else:
-            raise ResponseException(response.value)
+            raise ResponseException(response)
 
     @_add_compress_header
     @_add_user_header
@@ -250,25 +247,27 @@ class Client:
 
                 data = await connection.receive()
                 try:
-                    response = self.parser(data)
+                    response = self.parser.parse(data)
                     self._raise_response_exception(response)
                 except TemporaryFailureException:
                     self.logger.exception('Exception reporting temporary failure, retying in %i seconds',
                                           self.sleep_len)
                     await asyncio.sleep(self.sleep_len)
                     continue
-                except (BadResponse, ResponseException) as error:
+                except ResponseException as error:
                     self.logger.exception('Exception when composing response: %s', error)
                     raise
+                except ParseError:
+                    raise BadResponse
                 else:
                     # Success! return the response
                     break
 
         self.logger.debug('Received respsonse (%s) for request (%s)',
-                          id(response.value),
+                          id(response),
                           id(request))
 
-        return response.value
+        return response
 
     async def check(self, message):
         '''Request the SPAMD service to check a message with a CHECK request.

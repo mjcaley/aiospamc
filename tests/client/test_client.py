@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from unittest.mock import patch, MagicMock
-
 import pytest
 from asynctest import CoroutineMock, Mock
 
@@ -111,11 +109,10 @@ async def test_send_tempfail(mock_connection, request_ping, response_pong, ex_te
     assert isinstance(response, Response)
 
 
-@patch('aiospamc.parser.Success')
-def test_response_exception_ok(result):
-    result.value.status_code = Status.EX_OK
+def test_response_exception_ok():
+    response = Response(version='1.5', status_code=Status.EX_OK, message='')
 
-    assert Client._raise_response_exception(result) is None
+    assert Client._raise_response_exception(response) is None
 
 
 @pytest.mark.parametrize('test_input,expected', [
@@ -137,17 +134,27 @@ def test_response_exception_ok(result):
     (Status.EX_TIMEOUT, TimeoutException),
     (999, ResponseException)
 ])
-@patch('aiospamc.parser.Success')
-def test_response_exception(result, test_input, expected):
-    result.value.status_code = test_input
+def test_response_exception(test_input, expected):
+    response = Response(version='1.5', status_code=test_input, message='')
+    response.status_code = test_input
 
     with pytest.raises(expected):
-        Client._raise_response_exception(result)
+        Client._raise_response_exception(response)
 
 
-def test_response_exception_bad():
-    result = MagicMock('aiospamc.parser.Failure')
-    result.error = 'error'
+@pytest.mark.asyncio
+async def test_bad_response_exception(mock_connection, request_ping):
+    mock_connection.side_effect = [b'invalid']
+    c = Client(host='localhost')
 
     with pytest.raises(BadResponse):
-        Client._raise_response_exception(result)
+        await c.send(request_ping)
+
+
+@pytest.mark.asyncio
+async def test_response_general_exception(mock_connection, request_ping):
+    mock_connection.side_effect = [b'SPAMD/1.5 999 PONG\r\n']
+    c = Client(host='localhost')
+
+    with pytest.raises(ResponseException):
+        await c.send(request_ping)
