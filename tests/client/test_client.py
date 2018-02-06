@@ -98,17 +98,6 @@ async def test_send(mock_connection, request_ping, response_pong):
     assert isinstance(response, Response)
 
 
-@pytest.mark.asyncio
-async def test_send_tempfail(mock_connection, request_ping, response_pong, ex_temp_fail):
-    mock_connection.side_effect = [ex_temp_fail, ex_temp_fail, response_pong]
-    client = Client(host='localhost')
-    client.sleep_len = 0.1
-
-    response = await client.send(request_ping)
-
-    assert isinstance(response, Response)
-
-
 def test_response_exception_ok():
     response = Response(version='1.5', status_code=Status.EX_OK, message='')
 

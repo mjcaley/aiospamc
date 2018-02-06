@@ -60,10 +60,6 @@ class Client:
         Name of the user that SPAMD will run the checks under.
     compress : :obj:`bool`
         If true, the request body will be compressed.
-    sleep_len : :obj:`float`
-        Length of time to wait to retry a connection in seconds.
-    retry_attempts : :obj:`float`
-        Number of times to retry a connection.
     loop : :class:`asyncio.AbstractEventLoop`
         The asyncio event loop.
     logger : :class:`logging.Logger`
@@ -123,8 +119,6 @@ class Client:
 
         self.parser = Parser()
 
-        self.sleep_len = 3
-        self.retry_attempts = 4
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Created instance of %r', self)
 
@@ -239,34 +233,27 @@ class Client:
             Timeout during connection.
         '''
 
-        for attempt in range(1, self.retry_attempts):
-            self.logger.debug('Sending request (%s) attempt #%s', id(request), attempt)
-            async with self.connection.new_connection() as connection:
-                await connection.send(bytes(request))
-                self.logger.debug('Request (%s) successfully sent', id(request))
+        self.logger.debug('Sending request (%s)', id(request))
+        async with self.connection.new_connection() as connection:
+            await connection.send(bytes(request))
+            self.logger.debug('Request (%s) successfully sent', id(request))
+            data = await connection.receive()
 
-                data = await connection.receive()
-                try:
-                    response = self.parser.parse(data)
-                    self._raise_response_exception(response)
-                except TemporaryFailureException:
-                    self.logger.exception('Exception reporting temporary failure, retying in %i seconds',
-                                          self.sleep_len)
-                    await asyncio.sleep(self.sleep_len)
-                    continue
-                except ResponseException as error:
-                    self.logger.exception('Exception when composing response: %s', error)
-                    raise
-                except ParseError:
-                    raise BadResponse
-                else:
-                    # Success! return the response
-                    break
+        try:
+            try:
+                response = self.parser.parse(data)
+            except ParseError:
+                raise BadResponse
+            self._raise_response_exception(response)
+        except ResponseException as error:
+            self.logger.exception('Exception for request (%s)when composing response: %s',
+                                  id(request),
+                                  error)
+            raise
 
-        self.logger.debug('Received respsonse (%s) for request (%s)',
-                          id(response),
-                          id(request))
-
+        self.logger.debug('Received response (%s) for request (%s)',
+            id(response),
+            id(request))
         return response
 
     async def check(self, message):
