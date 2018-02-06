@@ -43,6 +43,7 @@ setup(
 
     packages=find_packages(exclude=['tests']),
 
+    python_requires='!=2.*,!=3.0,!=3.1,!=3.2,!=3.3,!=3.4',
     setup_requires=['pytest-runner', ],
     tests_require=['pytest-asyncio>=0.6', 'pytest-cov', 'pytest>=3.0', 'asynctest'],
 )
