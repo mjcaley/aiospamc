@@ -12,7 +12,7 @@ from aiospamc.exceptions import (BadResponse, ResponseException,
                                  OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
                                  ProtocolException, NoPermissionException, ConfigException, TimeoutException)
 from aiospamc.headers import Compress, MessageClass, Remove, Set, User
-from aiospamc.parser import Parser, ParseError
+from aiospamc.parser import parse, ParseError
 from aiospamc.requests import Request
 from aiospamc.responses import Status
 
@@ -117,7 +117,7 @@ class Client:
         self._ssl = ssl
         self.loop = loop or asyncio.get_event_loop()
 
-        self.parser = Parser()
+        self.parser = parse
 
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Created instance of %r', self)
@@ -241,7 +241,7 @@ class Client:
 
         try:
             try:
-                response = self.parser.parse(data)
+                response = self.parser(data)
             except ParseError:
                 raise BadResponse
             self._raise_response_exception(response)

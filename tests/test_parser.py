@@ -9,7 +9,7 @@ from aiospamc.requests import Request
 from aiospamc.responses import Response, Status
 from aiospamc.options import ActionOption, MessageClassOption
 
-from aiospamc.parser import Parser, ParseError
+from aiospamc.parser import parse, Parser, ParseError
 
 
 def test_parseerror_is_exception():
@@ -365,13 +365,9 @@ def test_parser_response(data):
      (b'PING SPAMC/1.5\r\n', Request)
 ])
 def test_parser_parse_success(data, expected):
-    p = Parser()
-
-    assert isinstance(p.parse(data), expected)
+    assert isinstance(parse(data), expected)
 
 
 def test_parser_parse_fail():
-    p = Parser()
-
     with pytest.raises(ParseError):
-        p.parse(b'invalid')
+        parse(b'invalid')

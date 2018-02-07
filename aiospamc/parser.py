@@ -477,25 +477,24 @@ class Parser:
         return aiospamc.responses.Response(version=v, status_code=c, message=m, headers=h,
                                            body=b)
 
-    def parse(self, string=None):
-        '''Parses a request or response.
+def parse(string):
+    '''Parses a request or response.
 
-        Returns
-        -------
-        :class:`aiospamc.requests.Request` or :class:`aiospamc.responses.Response`
-        '''
+    Returns
+    -------
+    :class:`aiospamc.requests.Request` or :class:`aiospamc.responses.Response`
+    '''
 
-        self.string = string
-        self.index = 0
+    parser = Parser(string)
 
-        try:
-            return self.request()
-        except ParseError:
-            pass
+    try:
+        return parser.request()
+    except ParseError:
+        pass
 
-        try:
-            return self.response()
-        except ParseError:
-            pass
+    try:
+        return parser.response()
+    except ParseError:
+        pass
 
-        raise ParseError(0, 'Unable to parse request or response')
+    raise ParseError(0, 'Unable to parse request or response')
