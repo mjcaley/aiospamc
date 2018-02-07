@@ -46,8 +46,7 @@ SpamAssassin.
 
 An example using the :meth:`aiospamc.client.Client.check` method:
 
-.. code:: python
-
+.. highlight:: python
     import asyncio
     import aiospamc
     
@@ -93,11 +92,13 @@ headers if required.
 
 For example:
 
+.. highlight:: python
     import asyncio
 
     import aiospamc
+    from aiospamc import Client
+    from aiospamc.exceptions import ResponseException
     from aiospamc.requests import Request
-    from aiospamc.headers import XHeader
     
     example_message = ('From: John Doe <jdoe@machine.example>'
                        'To: Mary Smith <mary@example.net>'
@@ -107,16 +108,20 @@ For example:
                        ''
                        'This is a message just to say hello.'
                        'So, "Hello".')
-    
-    request = Request(verb='FAKE')
-    fake_header1 = XHeader('fake_header', 'Fake values')
-    request.add_header(fake_header1)
-    request.body = example_message
 
     loop = asyncio.get_event_loop()
-    client = aiospamc.Client()
-    response = loop.run_until_complete(client.send(request))
-    print(response)
+    client = aiospamc.Client(host='localhost')
+
+    async def is_spam(message):
+        request = Request(verb='CHECK', body=message.encode())
+        try:
+            response = await client.send(request)
+            return response.get_header('Spam').value
+        except aiospamc.ResponseException:
+            raise
+
+    spam_result = loop.run_until_complete(is_spam(example_message))
+    print('Example message is spam:', spam_result)
 
 ********************
 Interpreting results

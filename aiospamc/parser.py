@@ -17,9 +17,9 @@ class ParseError(Exception):
 
     Attributes
     ----------
-    index : int
+    index : :obj:`int`
         Index in the stream the exception occurred.
-    message : str
+    message : :obj:`str`
         User readable message.
     '''
 
@@ -28,9 +28,9 @@ class ParseError(Exception):
 
         Parameters
         ----------
-        index : int
+        index : :obj:`int`
             Index in the stream the exception occurred.
-        message : str
+        message : :obj:`str`
             User readable message.
         '''
         self.index = index
@@ -59,7 +59,7 @@ class Parser:
 
         Parameters
         ----------
-        string : str, optional
+        string : :obj:`str`, optional
             The string to parse.
         '''
         self.string = string or b''
@@ -70,7 +70,7 @@ class Parser:
 
         Parameters
         ----------
-        by : int
+        by : :obj:`int`
             Number of bytes in the stream to advance.
         '''
 
@@ -81,7 +81,7 @@ class Parser:
 
         Returns
         -------
-        str
+        :obj:`str`
         '''
 
         return self.string[self.index:]
@@ -91,7 +91,7 @@ class Parser:
 
         Returns
         -------
-        bool
+        :obj:`bool`
         '''
 
         return self.index >= len(self.string)
@@ -101,7 +101,7 @@ class Parser:
 
         Parameters
         ----------
-        pattern : bytes
+        pattern : :obj:`bytes`
 
         Returns
         -------
@@ -120,7 +120,7 @@ class Parser:
 
         Parameters
         ----------
-        pattern : bytes
+        pattern : :obj:`bytes`
 
         Returns
         -------
@@ -169,7 +169,7 @@ class Parser:
 
         Returns
         -------
-        str
+        :obj:`str`
         '''
 
         return self.consume(rb'\d+\.\d+').group().decode()
@@ -179,7 +179,7 @@ class Parser:
 
         Returns
         -------
-        bytes
+        :obj:`bytes`
         '''
 
         return self.current()
@@ -192,7 +192,7 @@ class Parser:
 
         Returns
         -------
-        str
+        :obj:`str`
         '''
 
         self.skip(self.whitespace)
@@ -207,7 +207,7 @@ class Parser:
 
         Returns
         -------
-        int
+        :obj:`int`
         '''
 
         self.skip(self.whitespace)
@@ -253,7 +253,7 @@ class Parser:
 
         Returns
         -------
-        dict
+        :obj:`dict`
             Has the keys `value`, `score`, and `threshold`.
         '''
 
@@ -279,7 +279,7 @@ class Parser:
 
         Returns
         -------
-        str
+        :obj:`str`
         '''
 
         self.skip(self.whitespace)
@@ -332,7 +332,7 @@ class Parser:
 
         Returns
         -------
-        list of :class:`aiospamc.headers.Header`
+        :obj:`list` of :class:`aiospamc.headers.Header`
         '''
 
         header_list = []
@@ -353,7 +353,7 @@ class Parser:
 
         Returns
         -------
-        str
+        :obj:`str`
         '''
 
         return self.consume(rb'SPAMC').group().decode()
@@ -364,7 +364,7 @@ class Parser:
 
         Returns
         -------
-        str
+        :obj:`str`
         '''
 
         name = self.consume(rb'CHECK|'
@@ -415,7 +415,7 @@ class Parser:
 
         Returns
         -------
-        str
+        :obj:`str`
         '''
 
         return self.consume(rb'SPAMD').group().decode()
@@ -440,7 +440,7 @@ class Parser:
 
         Returns
         -------
-        str
+        :obj:`str`
         '''
 
         return self.consume(rb'.*(?=\r\n)').group().decode()

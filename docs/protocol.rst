@@ -22,18 +22,20 @@ The current requests are :ref:`check_request`, :ref:`headers_request`,
     METHOD SPAMC/1.5\r\n
     HEADER_NAME1 : HEADER_VALUE1\r\n
     HEADER_NAME2 : HEADER_VALUE2\r\n
+    ...
     \r\n
     REQUEST_BODY
 
 The structure of responses are also similar to HTTP responses.  The protocol
-name, version, status code, and message are listed on one line.  Any headers
-are also listed and all are separated by newline characters.  Following the
-headers is a newline.  If there is a message body it’s included after all
+name, version, status code, and message are listed on the first line.  Any
+headers are also listed and all are separated by newline characters.  Following
+the headers is a newline.  If there is a message body it’s included after all
 headers::
 
     SPAMD/1.5 STATUS_CODE MESSAGE\r\n
     HEADER_NAME1 : HEADER_VALUE1\r\n
     HEADER_NAME2 : HEADER_VALUE2\r\n
+    ...
     \r\n
     RESPONSE_BODY
 
@@ -427,7 +429,7 @@ Required Headers
 
 * :ref:`content-length_header`
 * :ref:`message-class_header`
-* :ref:`remove_header` or :ref:`set_header`
+* :ref:`remove_header` and/or :ref:`set_header`
 * :ref:`user_header`
 
 Optional Headers
@@ -443,7 +445,7 @@ An email based on the :rfc:`5322` standard.
 Response
 --------
 
-If successful, the response will include the :ref:`didremove_header` or
+If successful, the response will include the :ref:`didremove_header` and/or
 :ref:`didset_header` headers depending on the request.
 
 Response from a request that sent a :ref:`remove_header`::
