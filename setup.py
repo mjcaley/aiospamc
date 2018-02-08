@@ -12,7 +12,7 @@ with readme.open(encoding='utf-8') as f:
 
 setup(
     name='aiospamc',
-    version='0.4.0.dev2',
+    version='0.4.0.dev5',
 
     description='An asyncio-based library to communicate with SpamAssassin\'s '
                 'SPAMD service.',
