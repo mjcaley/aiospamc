@@ -22,6 +22,7 @@ script: python setup.py test
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 deploy:
+  python: 3.5
   provider: pypi
   user: "mjcaley"
   password:
