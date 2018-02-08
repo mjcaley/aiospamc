@@ -12,7 +12,7 @@ __all__ = ('Client',
            'ActionOption')
 
 __author__ = 'Michael Caley'
-__copyright__ = 'Copyright 2016, 2017 Michael Caley'
+__copyright__ = 'Copyright 2016-2018 Michael Caley'
 __license__ = 'MIT'
-__version__ = '0.4.0.dev1'
+__version__ = '0.4.0.dev2'
 __email__ = 'mjcaley@darkarctic.com'
