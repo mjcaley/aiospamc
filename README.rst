@@ -29,7 +29,8 @@ Requirements
 Example
 -------
 
-.. highlight:: python
+.. code:: python
+    
     import asyncio
 
     from aiospamc import *
