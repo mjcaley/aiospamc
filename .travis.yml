@@ -15,10 +15,13 @@ matrix:
 before_install:
   - pip freeze | xargs pip uninstall -y
   - pip install -U pip
+  - pip install pipenv
   - pip install codecov
 install:
-  - pip install .
-script: python setup.py test
+  - pipenv install --dev
+script:
+  - python setup.py check -rsm
+  - python setup.py test
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 deploy:
