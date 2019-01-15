@@ -62,7 +62,9 @@ Example
 
     You should send this test mail from an account outside of your network.
     '''
-
+    # Note: Mail data must end with \n.
+    # If the data does not end with \n spamd will not return results.
+    
     loop = asyncio.new_event_loop()
     client = Client(host='localhost')
     responses = loop.run_until_complete(asyncio.gather(
