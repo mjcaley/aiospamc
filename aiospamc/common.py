@@ -79,7 +79,8 @@ class RequestResponseBase:
         self._body = value
         if 'Compress' in self._headers:
             self._compress_body()
-        self._set_content_length(value)
+        else:
+            self._set_content_length(value)
 
     @body.deleter
     def body(self):
@@ -96,7 +97,10 @@ class RequestResponseBase:
         self._set_content_length(self.body)
 
     def _set_content_length(self, body_):
-        self.add_header(ContentLength(len(body_)))
+        if isinstance(body_, str):
+            self.add_header(ContentLength(len(body_.encode())))
+        elif isinstance(body_, bytes):
+            self.add_header(ContentLength(len(body_)))
 
     def add_header(self, header):
         '''Adds a header to the request.  A header with the same name will be
