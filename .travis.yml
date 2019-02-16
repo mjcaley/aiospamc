@@ -1,10 +1,12 @@
 language: python
+dist: xenial
 matrix:
   include:
     - python: "3.5"
     - python: "3.5-dev"
     - python: "3.6"
     - python: "3.6-dev"
+    - python: "3.7"
     - python: "3.7-dev"
     - python: "nightly"
   allow_failures:
@@ -13,15 +15,13 @@ matrix:
     - python: "3.7-dev"
     - python: "nightly"
 before_install:
-  - pip freeze | xargs pip uninstall -y
-  - pip install -U pip
-  - pip install pipenv
+  - curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+  - source $HOME/.poetry/env
   - pip install codecov
 install:
-  - pipenv install --dev
+  - poetry install
 script:
-  - python setup.py check -rsm
-  - python setup.py test
+  - poetry run test
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 deploy:
@@ -31,5 +31,5 @@ deploy:
     secure: "T6Vjs95rveJPDjVaVHK4OjQoMwzJo2XpI4MP7FRNvXvyPtuUSAuu0pCVADfj8DP4b5RDO5GQyhLj9q6oyKJ3XnIn1HnCnDfQp+8SGiNj51J1gyMLWj8RIs43OicI3txj6bWQBRvLxhIN641yXvbLohpdT6vlXiv/FJv8QNpznJBIjCkWZ/pOj4lf7utdQbtMJfbicvKaDONwX0HBWaS+LVKF5Es2cSiaYgEC18Jo4Ew8O3hmXC4AMbAhhmHQUxqurM1ifOiwbSJkA1lFlbDytlhuzw1M06thhhaDfackysJIXy81/ffpQ/0qdPLDvSpOQoU06TxDzeQbVtcLHSpjnhLDQSs7FDjBsqsOR9sy+7VQwgjEUkvh3gw3y+UJnOiz9AuaICgjcRoVQH49XhfXDGmz2h7WehiUlkbMJYqu8vxahEUSwEohiHr/g+ODWXbxtPDEcD7f5o+x6kzABv4dnyMtWikuRABzjxBpsboo3Kg81ps8J4l7QrLb8w6zZo8RavkzPW/lgR9GcZ8r8dGNDqJaE73qkKrF8BAa7HBwzwqJFdTEdhKFN9PNRV1cX6TjUqVd3y7vh7A7MUbiiYBfPyGtRjHiY9vqA8rLQONss5UuTi9Upb4ArtyfHdFUITAszqate5WxgMWHLxVLELOorv4ffL/ymCVVAv5lvcP8cOI="
   on:
     tags: true
-    python: "3.6"
+    python: "3.5"
   distributions: "sdist bdist_wheel"
