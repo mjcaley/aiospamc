@@ -32,12 +32,16 @@ def test_response_bytes(version, status, message, body, headers):
                         body=body,
                         headers=headers)
 
-    assert bytes(response).startswith(b'SPAMD/%b' % version.encode())
+    assert bytes(response).startswith(b'SPAMD/%b' % version.encode('ascii'))
     assert b' %d ' % status.value in bytes(response)
-    assert b' %b\r\n' % message.encode() in bytes(response)
+    assert b' %b\r\n' % message.encode('ascii') in bytes(response)
     assert all(bytes(header) in bytes(response) for header in headers)
     if body:
-        if any(isinstance(header, Compress) for header in headers):
-            assert bytes(response).endswith(zlib.compress(body.encode()))
+        if isinstance(body, bytes):
+            bodybytes = body
         else:
-            assert bytes(response).endswith(body.encode())
+            bodybytes = body.encode()
+        if any(isinstance(header, Compress) for header in headers):
+            assert bytes(response).endswith(zlib.compress(bodybytes))
+        else:
+            assert bytes(response).endswith(bodybytes)

@@ -54,16 +54,19 @@ def checkpoint(func):
 class Parser:
     '''Parser object for requests and responses.'''
 
-    def __init__(self, string=None):
+    def __init__(self, string=None, encoding='utf-8'):
         '''Parser constructor.
 
         Parameters
         ----------
         string : :obj:`str`, optional
             The string to parse.
+        encoding : :obj:`str`, optional
+            Encoding (default: 'utf-8')
         '''
         self.string = string or b''
         self.index = 0
+        self.encoding = encoding
 
     def advance(self, by):
         '''Advance the current index by number of bytes.
@@ -172,7 +175,7 @@ class Parser:
         :obj:`str`
         '''
 
-        return self.consume(rb'\d+\.\d+').group().decode()
+        return self.consume(rb'\d+\.\d+').group().decode('ascii')
 
     def body(self):
         '''Consumes the rest of the message and returns the contents.
@@ -199,7 +202,7 @@ class Parser:
         algorithm = self.consume(rb'zlib').group()
         self.skip(self.whitespace)
 
-        return algorithm.decode()
+        return algorithm.decode('ascii')
 
     @checkpoint
     def content_length_value(self):
@@ -286,7 +289,7 @@ class Parser:
         username = self.consume(rb'[a-zA-Z0-9-_]+').group()
         self.skip(self.whitespace)
 
-        return username.decode()
+        return username.decode('ascii')
 
     @checkpoint
     def header(self):
@@ -323,8 +326,8 @@ class Parser:
             return aiospamc.headers.User(name=self.user_value())
         else:
             return aiospamc.headers.XHeader(
-                    name=name.decode(),
-                    value=self.consume(rb'.+(?=\r\n)').group().decode()
+                    name=name.decode('ascii'),
+                    value=self.consume(rb'.+(?=\r\n)').group().decode('ascii')
             )
 
     def headers(self):
@@ -356,7 +359,7 @@ class Parser:
         :obj:`str`
         '''
 
-        return self.consume(rb'SPAMC').group().decode()
+        return self.consume(rb'SPAMC').group().decode('ascii')
 
     @checkpoint
     def method(self):
@@ -378,7 +381,7 @@ class Parser:
                             rb'TELL')
         self.whitespace()
 
-        return name.group().decode()
+        return name.group().decode('ascii')
 
     @checkpoint
     def request(self):
@@ -406,7 +409,7 @@ class Parser:
         else:
             b = None
 
-        return aiospamc.requests.Request(verb=m, version=v, headers=h, body=b)
+        return aiospamc.requests.Request(verb=m, version=v, headers=h, body=b, encoding=self.encoding)
 
     # Response functions
 
@@ -418,7 +421,7 @@ class Parser:
         :obj:`str`
         '''
 
-        return self.consume(rb'SPAMD').group().decode()
+        return self.consume(rb'SPAMD').group().decode('ascii')
 
     @checkpoint
     def status_code(self):
@@ -443,7 +446,7 @@ class Parser:
         :obj:`str`
         '''
 
-        return self.consume(rb'.*(?=\r\n)').group().decode()
+        return self.consume(rb'.*(?=\r\n)').group().decode('ascii')
 
     @checkpoint
     def response(self):
@@ -474,10 +477,10 @@ class Parser:
         else:
             b = None
 
-        return aiospamc.responses.Response(version=v, status_code=c, message=m, headers=h,
-                                           body=b)
+        return aiospamc.responses.Response(
+            version=v, status_code=c, message=m, headers=h, body=b, encoding=self.encoding)
 
-def parse(string):
+def parse(string, encoding='utf-8'):
     '''Parses a request or response.
 
     Returns
@@ -485,7 +488,7 @@ def parse(string):
     :class:`aiospamc.requests.Request` or :class:`aiospamc.responses.Response`
     '''
 
-    parser = Parser(string)
+    parser = Parser(string, encoding=encoding)
 
     try:
         return parser.request()

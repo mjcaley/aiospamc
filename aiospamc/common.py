@@ -10,7 +10,7 @@ from aiospamc.headers import ContentLength
 class RequestResponseBase:
     '''Base class for requests and responses.'''
 
-    def __init__(self, body=None, headers=None):
+    def __init__(self, body=None, headers=None, encoding='utf-8'):
         '''
         Parameters
         ----------
@@ -21,22 +21,25 @@ class RequestResponseBase:
             Collection of headers to be added.  If it contains an instance of
             aiospamc.headers.Compress then the body is automatically
             compressed.
+        encoding : :obj:`str`, optional
+            Encoding to use (default: 'utf-8')
         '''
 
         if headers:
             self._headers = {item.field_name(): item for item in headers}
         else:
             self._headers = {}
+        self.encoding = encoding
         self._body = ''
         self._compressed_body = None
         if body:
             if isinstance(body, str):
                 self.body = body
             elif isinstance(body, bytes):
-                self.body = self._decode_body(body, self._headers.values())
+                self.body = self._decode_body(body, self._headers.values(), encoding=encoding)
 
     @staticmethod
-    def _decode_body(body, headers):
+    def _decode_body(body, headers, encoding):
         '''Parses a body of a response.
 
         Parameters
@@ -45,6 +48,8 @@ class RequestResponseBase:
             Bytes representation of body.
         headers : :obj:`tuple` or :obj:`list` of :class:`aiospamc.headers.Header`
             Collection of headers.
+        encoding : :obj:`str`
+            Encoding to use.
 
         Returns
         -------
@@ -55,9 +60,9 @@ class RequestResponseBase:
         if not body:
             return None
         elif any(header.field_name() == 'Compress' for header in headers):
-            return zlib.decompress(body).decode()
+            return zlib.decompress(body).decode(encoding)
         else:
-            return body.decode()
+            return body.decode(encoding)
 
     @property
     def body(self):
@@ -88,7 +93,7 @@ class RequestResponseBase:
         self.delete_header('Content-length')
 
     def _compress_body(self):
-        self._compressed_body = zlib.compress(self.body.encode())
+        self._compressed_body = zlib.compress(self.body.encode(self.encoding))
         self._set_content_length(self._compressed_body)
 
     def _decompress_body(self):

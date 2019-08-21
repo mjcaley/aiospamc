@@ -37,10 +37,10 @@ def test_common_instantiates_with_headers():
 @pytest.mark.parametrize('test_input,headers,expected', [
     (b'Test body\n', [], 'Test body\n'),
     (b'', [], None),
-    (zlib.compress('Test body\n'.encode()), [Compress()], 'Test body\n')
+    (zlib.compress('Test body\n'.encode('ascii')), [Compress()], 'Test body\n')
 ])
 def test_common_parse_body(test_input, headers, expected):
-    body = RequestResponseBase._decode_body(test_input, headers)
+    body = RequestResponseBase._decode_body(test_input, headers, 'ascii')
 
     assert body == expected
 

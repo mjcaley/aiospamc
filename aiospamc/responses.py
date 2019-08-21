@@ -63,7 +63,8 @@ class Response(RequestResponseBase):
         Contents of the response body.
     '''
 
-    def __init__(self, version, status_code, message, headers=None, body=None):
+    def __init__(self, version, status_code, message, headers=None, body=None,
+                     encoding='utf-8'):
         '''Response constructor.
 
         Parameters
@@ -81,18 +82,19 @@ class Response(RequestResponseBase):
             Collection of headers to be added.  If it contains an instance of
             :class:`aiospamc.headers.Compress` then the body is automatically
             compressed.
+        encoding : :obj:`str`, optional
+            Name of encoding to use for messages (default: 'utf-8').
         '''
-
         self.version = version
         self.status_code = status_code
         self.message = message
-        super().__init__(body, headers)
+        super().__init__(body, headers, encoding)
 
     def __bytes__(self):
         if self._compressed_body:
             body = self._compressed_body
         elif self.body:
-            body = self.body.encode()
+            body = self.body.encode(self.encoding)
         else:
             body = b''
 
@@ -102,6 +104,6 @@ class Response(RequestResponseBase):
                 b'%(headers)b\r\n'
                 b'%(body)b') % {b'version': b'1.5',
                                 b'status': self.status_code.value,
-                                b'message': self.message.encode(),
+                                b'message': self.message.encode(self.encoding),
                                 b'headers': b''.join(map(bytes, self._headers.values())),
                                 b'body': body}

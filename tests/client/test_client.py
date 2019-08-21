@@ -18,12 +18,23 @@ from aiospamc.responses import Response, Status
 
 def test_client_repr():
     client = Client(host='localhost')
-    assert repr(client) == ('Client(socket_path=\'/var/run/spamassassin/spamd.sock\', '
-                            'host=\'localhost\', '
-                            'port=783, '
-                            'user=None, '
-                            'compress=False, '
-                            'ssl=False)')
+    assert repr(client) == ("Client(socket_path='/var/run/spamassassin/spamd.sock', "
+                            "host='localhost', "
+                            "port=783, "
+                            "user=None, "
+                            "compress=False, "
+                            "ssl=False, "
+                            "encoding='utf-8'")
+
+def test_client_repr_latin_1():
+    client = Client(host='localhost', encoding='latin-1')
+    assert repr(client) == ("Client(socket_path='/var/run/spamassassin/spamd.sock', "
+                            "host='localhost', "
+                            "port=783, "
+                            "user=None, "
+                            "compress=False, "
+                            "ssl=False, "
+                            "encoding='latin-1'")
 
 
 def test_tcp_manager():

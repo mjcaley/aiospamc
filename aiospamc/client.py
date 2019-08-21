@@ -73,7 +73,8 @@ class Client:
                  user=None,
                  compress=False,
                  ssl=False,
-                 loop=None):
+                 loop=None,
+                 encoding='utf-8'):
         '''Client constructor.
 
         Parameters
@@ -92,6 +93,8 @@ class Client:
             If true, will enable SSL/TLS for the connection.
         loop : :class:`asyncio.AbstractEventLoop`
             The asyncio event loop.
+        encoding : :obj:`str`, optional
+            Encoding (default: 'utf-8').
 
         Raises
         ------
@@ -116,6 +119,7 @@ class Client:
         self.compress = compress
         self._ssl = ssl
         self.loop = loop or asyncio.get_event_loop()
+        self.encoding = encoding
 
         self.parser = parse
 
@@ -128,14 +132,16 @@ class Client:
                       'port={}, '
                       'user={}, '
                       'compress={}, '
-                      'ssl={})')
+                      'ssl={}, '
+                      'encoding={}')
         return client_fmt.format(self.__class__.__name__,
                                  repr(self._socket_path),
                                  repr(self._host),
                                  repr(self._port),
                                  repr(self.user),
                                  repr(self.compress),
-                                 repr(self._ssl))
+                                 repr(self._ssl),
+                                 repr(self.encoding))
 
     @staticmethod
     def _raise_response_exception(response):
@@ -241,7 +247,7 @@ class Client:
 
         try:
             try:
-                response = self.parser(data)
+                response = self.parser(data, encoding=self.encoding)
             except ParseError:
                 raise BadResponse
             self._raise_response_exception(response)
@@ -320,7 +326,7 @@ class Client:
             Timeout during connection.
         '''
 
-        request = Request('CHECK', body=message)
+        request = Request('CHECK', body=message, encoding=self.encoding)
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
@@ -386,7 +392,7 @@ class Client:
             Timeout during connection.
         '''
 
-        request = Request('HEADERS', body=message)
+        request = Request('HEADERS', body=message, encoding=self.encoding)
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
@@ -442,7 +448,7 @@ class Client:
             Timeout during connection.
         '''
 
-        request = Request('PING')
+        request = Request('PING', encoding=self.encoding)
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
@@ -508,7 +514,7 @@ class Client:
             Timeout during connection.
         '''
 
-        request = Request('PROCESS', body=message)
+        request = Request('PROCESS', body=message, encoding=self.encoding)
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
@@ -574,7 +580,7 @@ class Client:
             Timeout during connection.
         '''
 
-        request = Request('REPORT', body=message)
+        request = Request('REPORT', body=message, encoding=self.encoding)
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
@@ -642,7 +648,7 @@ class Client:
             Timeout during connection.
         '''
 
-        request = Request('REPORT_IFSPAM', body=message)
+        request = Request('REPORT_IFSPAM', body=message, encoding=self.encoding)
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
@@ -711,7 +717,7 @@ class Client:
             Timeout during connection.
         '''
 
-        request = Request('SYMBOLS', body=message)
+        request = Request('SYMBOLS', body=message, encoding=self.encoding)
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 
@@ -791,7 +797,8 @@ class Client:
 
         request = Request(verb='TELL',
                           headers=(MessageClass(message_class),),
-                          body=message)
+                          body=message,
+                          encoding=self.encoding)
         if remove_action:
             request.add_header(Set(remove_action))
         if set_action:

@@ -19,7 +19,8 @@ class Request(RequestResponseBase):
         :class:`aiospamc.headers.ContentLength` will be automatically added.
     '''
 
-    def __init__(self, verb, version='1.5', headers=None, body=None):
+    def __init__(self, verb, version='1.5', headers=None, body=None,
+            encoding='utf-8'):
         '''Request constructor.
 
         Parameters
@@ -35,17 +36,19 @@ class Request(RequestResponseBase):
             Collection of headers to be added.  If it contains an instance of
             :class:`aiospamc.headers.Compress` then the body is automatically
             compressed.
+        encoding : :obj:`str`, optional
+            Encoding (default: 'utf-8')
         '''
 
         self.verb = verb
         self.version = version
-        super().__init__(body, headers)
+        super().__init__(body, headers, encoding)
 
     def __bytes__(self):
         if self._compressed_body:
             body = self._compressed_body
         elif self.body:
-            body = self.body.encode()
+            body = self.body.encode(self.encoding)
         else:
             body = b''
 
@@ -55,7 +58,7 @@ class Request(RequestResponseBase):
                    b'%(headers)b\r\n'
                    b'%(body)b')
 
-        return request % {b'verb': self.verb.encode(),
-                          b'version': self.version.encode(),
+        return request % {b'verb': self.verb.encode('ascii'),
+                          b'version': self.version.encode('ascii'),
                           b'headers': b''.join(map(bytes, self._headers.values())),
                           b'body': body}

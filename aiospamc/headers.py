@@ -44,7 +44,7 @@ class Compress(Header):
         return '{}()'.format(self.__class__.__name__)
 
     def __bytes__(self):
-        return b'%b: zlib\r\n' % (self.field_name().encode())
+        return b'%b: zlib\r\n' % (self.field_name().encode('ascii'))
 
     def field_name(self):
         return 'Compress'
@@ -70,7 +70,7 @@ class ContentLength(Header):
         self.length = length
 
     def __bytes__(self):
-        return b'%b: %d\r\n' % (self.field_name().encode(),
+        return b'%b: %d\r\n' % (self.field_name().encode('ascii'),
                                 self.length)
 
     def __repr__(self):
@@ -101,8 +101,8 @@ class MessageClass(Header):
         self.value = value or MessageClassOption.ham
 
     def __bytes__(self):
-        return b'%b: %b\r\n' % (self.field_name().encode(),
-                                self.value.name.encode())
+        return b'%b: %b\r\n' % (self.field_name().encode('ascii'),
+                                self.value.name.encode('ascii'))
 
     def __repr__(self):
         return '{}(value={})'.format(self.__class__.__name__, str(self.value))
@@ -143,7 +143,7 @@ class _SetRemoveBase(Header):
         if self.action.remote:
             values.append(b'remote')
 
-        return b'%b: %b\r\n' % (self.field_name().encode(),
+        return b'%b: %b\r\n' % (self.field_name().encode('ascii'),
                                 b', '.join(values))
 
     def __repr__(self):
@@ -241,8 +241,8 @@ class Spam(Header):
         self.threshold = threshold
 
     def __bytes__(self):
-        return b'%b: %b ; %.1f / %.1f\r\n' % (self.field_name().encode(),
-                                              str(self.value).encode(),
+        return b'%b: %b ; %.1f / %.1f\r\n' % (self.field_name().encode('ascii'),
+                                              str(self.value).encode('ascii'),
                                               self.score,
                                               self.threshold)
 
@@ -278,8 +278,8 @@ class User(Header):
         self.name = name or getpass.getuser()
 
     def __bytes__(self):
-        return b'%b: %b\r\n' % (self.field_name().encode(),
-                                self.name.encode())
+        return b'%b: %b\r\n' % (self.field_name().encode('ascii'),
+                                self.name.encode('ascii'))
 
     def __repr__(self):
         return '{}(name={})'.format(self.__class__.__name__, repr(self.name))
@@ -315,8 +315,8 @@ class XHeader(Header):
         self.value = value
 
     def __bytes__(self):
-        return b'%b: %b\r\n' % (self.field_name().encode(),
-                                self.value.encode())
+        return b'%b: %b\r\n' % (self.field_name().encode('ascii'),
+                                self.value.encode('ascii'))
 
     def __repr__(self):
         return '{}(name={}, value={})'.format(self.__class__.__name__,
