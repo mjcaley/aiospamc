@@ -34,7 +34,7 @@ loop = asyncio.new_event_loop()
 client = Client(host='localhost')
 responses = loop.run_until_complete(asyncio.gather(
     client.ping(),
-    client.check(GTUBE),
-    client.headers(GTUBE)
+    client.check(GTUBE.encode('ascii')),
+    client.headers(GTUBE.encode('ascii'))
 ))
 print(responses)
