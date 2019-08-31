@@ -28,7 +28,7 @@ steps:
   displayName: 'Install Poetry'
 
 - script: |
-    poetry install
+    $HOME/.poetry/bin/poetry install
   displayName: 'Install dependencies'
 
 - script: |
