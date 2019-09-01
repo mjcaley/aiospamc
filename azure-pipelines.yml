@@ -73,9 +73,9 @@ stages:
         artifactName: drop
 
     - script: |
-        echo "PyPI secret: $PYPIAPIKEY"
+        echo $PYPIAPIKEY
         $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
-        $HOME/.poetry/bin/poetry publish -r test -u __token__ -p "$PYPIAPIKEY"
+        $HOME/.poetry/bin/poetry publish -r test -u __token__ -p $PYPIAPIKEY
       displayName: 'Upload to PyPI'
       env:
         PyPIAPIKey: $(PyPIAPIKey)
