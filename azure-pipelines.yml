@@ -45,5 +45,5 @@ steps:
 - task: PublishCodeCoverageResults@1
   condition: succeededOrFailed()
   inputs:
-    codeCoverageTools: cobertura
+    codeCoverageTool: cobertura
     summaryFileLocation: $(Build.StagingDirectory)/coverage.xml
