@@ -33,12 +33,17 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    pip install pytest pytest-azurepipelines
-    pytest tests/ --cov aiospamc --cov-report="xml:$BUILD_SOURCESDIRECTORY/coverage.xml"
+    pytest tests/ --junit-xml="$BUILD_STAGINGDIRECTORY/test-results.xml" --cov aiospamc --cov-report="xml:$BUILD_STAGINGDIRECTORY/coverage.xml"
   displayName: 'pytest'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: junit
+    testResultsFiles: test-results.xml
+    searchFolder: $(Build.StagingDirectory)
 
 - task: PublishCodeCoverageResults@1
   condition: succeededOrFailed()
   inputs:
     codeCoverageTools: cobertura
-    summaryFileLocation: $(Build.SourcesDirectory)/coverage.xml
+    summaryFileLocation: $(Build.StagingDirectory)/coverage.xml
