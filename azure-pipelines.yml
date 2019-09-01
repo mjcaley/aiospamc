@@ -47,3 +47,12 @@ steps:
   inputs:
     codeCoverageTool: cobertura
     summaryFileLocation: $(Build.StagingDirectory)/coverage.xml
+
+- script: |
+    $HOME/.poetry/bin/poetry build
+  displayName: 'Package'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: $(Build.SourcesDirectory)/dist/
+    artifactName: drop
