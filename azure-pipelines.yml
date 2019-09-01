@@ -56,7 +56,6 @@ stages:
 - stage: release
   displayName: Release
   dependsOn: build
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - job: Release
     steps:
@@ -67,5 +66,5 @@ stages:
         pip install twine
       displayName: Install twine
     - script: |
-        #twine upload --repository-url https://test.pypi.org/legacy/ $(Build.)
-        echo "Upload package here"
+        twine upload --repository-url https://test.pypi.org/legacy/ dist/* --user __token__ --password $(PyPIAPIKey)
+      displayName: Upload to PyPI
