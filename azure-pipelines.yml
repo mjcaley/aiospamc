@@ -25,7 +25,7 @@ steps:
 
 - script: |
     curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-    $HOME/.poetry/bin/poetry config settings.virtualenv.create false
+    $HOME/.poetry/bin/poetry config settings.virtualenvs.create false
   displayName: 'Install Poetry'
 
 - script: |
