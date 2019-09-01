@@ -63,8 +63,8 @@ Example
     You should send this test mail from an account outside of your network.
     '''
 
-    loop = asyncio.new_event_loop()
-    client = Client(host='localhost')
+    loop = asyncio.get_event_loop()
+    client = Client(host='localhost', loop=loop)
     responses = loop.run_until_complete(asyncio.gather(
         client.ping(),
         client.check(GTUBE),
