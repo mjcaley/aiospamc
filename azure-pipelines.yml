@@ -77,4 +77,4 @@ stages:
         $HOME/.poetry/bin/poetry publish -r test -u __token__ -p "$PYPIAPIKEY"
       displayName: 'Upload to PyPI'
       env:
-        PyPIAPIKey: 'PYPIAPIKEY'
+        PyPIAPIKey: $(PyPIAPIKey)
