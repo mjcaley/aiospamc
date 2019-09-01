@@ -48,11 +48,6 @@ stages:
         $HOME/.poetry/bin/poetry build
       displayName: 'Package'
 
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: $(Build.SourcesDirectory)/dist/
-        artifactName: drop
-
 - stage: release
   displayName: Release
   dependsOn: build
@@ -61,10 +56,23 @@ stages:
     steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.7'
+        versionSpec: '3.5'
+
     - script: |
-        pip install twine
-      displayName: Install twine
+        curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+        $HOME/.poetry/bin/poetry config settings.virtualenvs.create false
+      displayName: 'Install Poetry'
+
     - script: |
-        twine upload --repository-url https://test.pypi.org/legacy/ dist/* --user __token__ --password $(PyPIAPIKey)
-      displayName: Upload to PyPI
+        $HOME/.poetry/bin/poetry build
+      displayName: 'Poetry build'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: $(Build.SourcesDirectory)/dist/
+        artifactName: drop
+
+    - script: |
+        $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
+        $HOME/.poetry/bin/poetry publish --repository test --user=__token__ --password="$PYPIAPIKEY"
+      displayName: 'Upload to PyPI'
