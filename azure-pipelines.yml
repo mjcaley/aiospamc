@@ -59,13 +59,13 @@ stages:
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - job: Release
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.7'
-  - script: |
-      pip install twine
-    displayName: Install twine
-  - script: |
-      #twine upload --repository-url https://test.pypi.org/legacy/ $(Build.)
-      echo "Upload package here"
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+    - script: |
+        pip install twine
+      displayName: Install twine
+    - script: |
+        #twine upload --repository-url https://test.pypi.org/legacy/ $(Build.)
+        echo "Upload package here"
