@@ -34,11 +34,11 @@ steps:
 
 - script: |
     pip install pytest pytest-azurepipelines
-    pytest tests/ --cov aiospamc --cov-report xml -o $(Build.SourceDirectory)/coverage.xml
+    pytest tests/ --cov aiospamc --cov-report xml -o $BUILD_SOURCESDIRECTORY/coverage.xml
   displayName: 'pytest'
 
 - task: PublishCodeCoverageResults@1
   condition: succeededOrFailed()
   inputs:
     codeCoverageTools: cobertura
-    summaryFileLocation: $(Build.SourceDirectory)/coverage.xml
+    summaryFileLocation: $(Build.SourcesDirectory)/coverage.xml
