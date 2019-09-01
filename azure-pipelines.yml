@@ -34,7 +34,7 @@ steps:
 
 - script: |
     pip install pytest pytest-azurepipelines
-    pytest tests/ --cov aiospamc --cov-report xml -o $BUILD_SOURCESDIRECTORY/coverage.xml
+    pytest tests/ --cov aiospamc --cov-report="xml:$BUILD_SOURCESDIRECTORY/coverage.xml"
   displayName: 'pytest'
 
 - task: PublishCodeCoverageResults@1
