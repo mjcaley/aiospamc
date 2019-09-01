@@ -1,58 +1,71 @@
-# Python package
-# Create and test a Python package on multiple Python versions.
-# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+stages:
+- stage: build
+  displayName: Build
+  jobs:
+  - job: Test
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      matrix:
+        Python35:
+          python.version: '3.5'
+        Python36:
+          python.version: '3.6'
+        Python37:
+          python.version: '3.7'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+      displayName: 'Use Python $(python.version)'
 
-trigger:
-- master
+    - script: |
+        curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+        $HOME/.poetry/bin/poetry config settings.virtualenvs.create false
+      displayName: 'Install Poetry'
 
-pool:
-  vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    Python35:
-      python.version: '3.5'
-    Python36:
-      python.version: '3.6'
-    Python37:
-      python.version: '3.7'
+    - script: |
+        $HOME/.poetry/bin/poetry install
+      displayName: 'Install dependencies'
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+    - script: |
+        pytest tests/ --junit-xml="$BUILD_STAGINGDIRECTORY/test-results.xml" --cov aiospamc --cov-report="xml:$BUILD_STAGINGDIRECTORY/coverage.xml"
+      displayName: 'pytest'
 
-- script: |
-    curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-    $HOME/.poetry/bin/poetry config settings.virtualenvs.create false
-  displayName: 'Install Poetry'
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: junit
+        testResultsFiles: test-results.xml
+        searchFolder: $(Build.StagingDirectory)
 
-- script: |
-    $HOME/.poetry/bin/poetry install
-  displayName: 'Install dependencies'
+    - task: PublishCodeCoverageResults@1
+      condition: succeededOrFailed()
+      inputs:
+        codeCoverageTool: cobertura
+        summaryFileLocation: $(Build.StagingDirectory)/coverage.xml
 
-- script: |
-    pytest tests/ --junit-xml="$BUILD_STAGINGDIRECTORY/test-results.xml" --cov aiospamc --cov-report="xml:$BUILD_STAGINGDIRECTORY/coverage.xml"
-  displayName: 'pytest'
+    - script: |
+        $HOME/.poetry/bin/poetry build
+      displayName: 'Package'
 
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: junit
-    testResultsFiles: test-results.xml
-    searchFolder: $(Build.StagingDirectory)
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: $(Build.SourcesDirectory)/dist/
+        artifactName: drop
 
-- task: PublishCodeCoverageResults@1
-  condition: succeededOrFailed()
-  inputs:
-    codeCoverageTool: cobertura
-    summaryFileLocation: $(Build.StagingDirectory)/coverage.xml
-
-- script: |
-    $HOME/.poetry/bin/poetry build
-  displayName: 'Package'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: $(Build.SourcesDirectory)/dist/
-    artifactName: drop
+- stage: release
+  displayName: Release
+  dependsOn: build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - job: Release
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+  - script: |
+      pip install twine
+    displayName: Install twine
+  - script: |
+      #twine upload --repository-url https://test.pypi.org/legacy/ $(Build.)
+      echo "Upload package here"
