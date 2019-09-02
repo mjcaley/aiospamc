@@ -48,11 +48,12 @@ stages:
         $HOME/.poetry/bin/poetry build
       displayName: 'Package'
 
-- stage: release
-  displayName: Release
+- stage: package
+  displayName: Package
+  condition: all(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn: build
   jobs:
-  - job: Release
+  - job: Package
     steps:
     - task: UsePythonVersion@0
       inputs:
@@ -71,12 +72,3 @@ stages:
       inputs:
         pathToPublish: $(Build.SourcesDirectory)/dist/
         artifactName: drop
-
-    - script: |
-        echo "Password: B $PASSWORD E"
-        echo "Secret password: B $SECRET_PASSWORD E"
-        $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
-        $HOME/.poetry/bin/poetry publish -r test -u __token__ -p $PASSWORD
-      displayName: 'Upload to PyPI'
-      env:
-        Password: "$(PyPIAPIKey)"
