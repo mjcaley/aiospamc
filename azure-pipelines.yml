@@ -73,8 +73,8 @@ stages:
         artifactName: drop
 
     - script: |
-        echo $PASSWORD
-        echo $SECRET_PASSWORD
+        echo "Password: B $PASSWORD E"
+        echo "Secret password: B $SECRET_PASSWORD E"
         $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
         $HOME/.poetry/bin/poetry publish -r test -u __token__ -p $PASSWORD
       displayName: 'Upload to PyPI'
