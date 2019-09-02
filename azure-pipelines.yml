@@ -74,6 +74,7 @@ stages:
 
     - script: |
         echo $PASSWORD
+        echo $SECRET_PASSWORD
         $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
         $HOME/.poetry/bin/poetry publish -r test -u __token__ -p $PASSWORD
       displayName: 'Upload to PyPI'
