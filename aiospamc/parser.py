@@ -257,7 +257,7 @@ class Parser:
             Has the keys `value`, `score`, and `threshold`.
         '''
 
-        number = rb'(\d+(\.\d+)?)'
+        number = rb'(-?\d+(\.\d+)?)'
 
         self.skip(self.whitespace)
         value = True if self.consume(rb'(True|False)').group() == b'True' else False
