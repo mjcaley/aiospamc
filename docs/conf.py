@@ -33,8 +33,7 @@
 # ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
-              'sphinx.ext.napoleon',
-              'sphinxcontrib.asyncio']
+              'sphinx.ext.napoleon']
 
 napoleon_include_init_with_doc = True
 

@@ -30,9 +30,7 @@ asynctest = "^0.13.0"
 pytest = "^5.1"
 pytest-cov = "^2.7"
 pytest-asyncio = "^0.10.0"
-
-[tool.poetry.extras]
-docgen = ["sphinx", "sphinxcontrib-asyncio"]
+sphinx = "^2.2"
 
 [tool.poetry.scripts]
 test = 'pytest:main'
