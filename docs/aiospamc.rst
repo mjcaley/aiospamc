@@ -1,24 +1,85 @@
 aiospamc package
 ================
 
-Submodules
-----------
+Subpackages
+-----------
 
 .. toctree::
 
-   aiospamc.client
-   aiospamc.common
    aiospamc.connections
-   aiospamc.exceptions
-   aiospamc.headers
-   aiospamc.options
-   aiospamc.parser
-   aiospamc.requests
-   aiospamc.responses
+
+Submodules
+----------
+
+aiospamc.client module
+----------------------
+
+.. automodule:: aiospamc.client
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.common module
+----------------------
+
+.. automodule:: aiospamc.common
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.exceptions module
+--------------------------
+
+.. automodule:: aiospamc.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.headers module
+-----------------------
+
+.. automodule:: aiospamc.headers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.options module
+-----------------------
+
+.. automodule:: aiospamc.options
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.parser module
+----------------------
+
+.. automodule:: aiospamc.parser
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.requests module
+------------------------
+
+.. automodule:: aiospamc.requests
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.responses module
+-------------------------
+
+.. automodule:: aiospamc.responses
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------
 
 .. automodule:: aiospamc
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
