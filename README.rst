@@ -2,11 +2,15 @@
 aiospamc
 ========
 
-.. image:: https://travis-ci.org/mjcaley/aiospamc.svg?branch=master
-    :target: https://travis-ci.org/mjcaley/aiospamc
-.. image:: https://codecov.io/gh/mjcaley/aiospamc/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/mjcaley/aiospamc
-    
+.. image:: https://img.shields.io/azure-devops/build/mjcaley/aiospamc/2/master
+    :target: https://dev.azure.com/mjcaley/aiospamc/_build
+.. image:: https://img.shields.io/azure-devops/coverage/mjcaley/aiospamc/2/master
+    :target: https://dev.azure.com/mjcaley/aiospamc/_build
+.. image:: https://img.shields.io/readthedocs/aiospamc
+    :target: https://aiospamc.readthedocs.io/en/latest/
+.. image:: https://img.shields.io/pypi/v/aiospamc
+    :target: https://pypi.org/project/aiospamc/
+
 -----------
 Description
 -----------
