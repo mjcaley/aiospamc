@@ -3,8 +3,9 @@
 '''Contains classes used for responses.'''
 
 import enum
+import zlib
 
-from aiospamc.common import RequestResponseBase
+from aiospamc.common import RequestResponseBase, SpamcBody, SpamcHeaders
 from aiospamc.exceptions import (UsageException, DataErrorException, NoInputException, NoUserException,
                                  NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
                                  OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
@@ -48,7 +49,7 @@ class Status(enum.IntEnum):
     EX_TIMEOUT      = 79, TimeoutException, 'Read timeout'
 
 
-class Response(RequestResponseBase):
+class Response(SpamcBody):
     '''Class to encapsulate response.
 
     Attributes
@@ -83,18 +84,17 @@ class Response(RequestResponseBase):
             compressed.
         '''
 
+        self.headers = SpamcHeaders(headers=headers)
         self.version = version
         self.status_code = status_code
         self.message = message
-        super().__init__(body, headers)
+        super().__init__(body=body)
 
     def __bytes__(self):
-        if self._compressed_body:
-            body = self._compressed_body
-        elif self.body:
-            body = self.body.encode()
+        if 'Compress' in self.headers:
+            body = zlib.compress(self.body)
         else:
-            body = b''
+            body = self.body
 
         return (b'SPAMD/%(version)b '
                 b'%(status)d '
@@ -103,5 +103,5 @@ class Response(RequestResponseBase):
                 b'%(body)b') % {b'version': b'1.5',
                                 b'status': self.status_code.value,
                                 b'message': self.message.encode(),
-                                b'headers': b''.join(map(bytes, self._headers.values())),
+                                b'headers': b''.join(map(bytes, self.headers.values())),
                                 b'body': body}

@@ -22,8 +22,8 @@ def test_response_instantiates():
 
 @pytest.mark.parametrize('version,status,message,body,headers', [
     ('1.5', Status.EX_OK, 'EX_OK', None, []),
-    ('1.5', Status.EX_OK, 'EX_OK', 'Test body\n', []),
-    ('1.5', Status.EX_OK, 'EX_OK', 'Test body\n', [Compress()]),
+    ('1.5', Status.EX_OK, 'EX_OK', b'Test body\n', []),
+    ('1.5', Status.EX_OK, 'EX_OK', b'Test body\n', [Compress()]),
 ])
 def test_response_bytes(version, status, message, body, headers):
     response = Response(version=version,
@@ -38,6 +38,6 @@ def test_response_bytes(version, status, message, body, headers):
     assert all(bytes(header) in bytes(response) for header in headers)
     if body:
         if any(isinstance(header, Compress) for header in headers):
-            assert bytes(response).endswith(zlib.compress(body.encode()))
+            assert bytes(response).endswith(zlib.compress(body))
         else:
-            assert bytes(response).endswith(body.encode())
+            assert bytes(response).endswith(body)
