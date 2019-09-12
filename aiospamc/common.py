@@ -2,6 +2,12 @@
 
 '''Common classes for the project.'''
 
+from collections.abc import Mapping
+try:
+    from collections.abc import Collection
+except ImportError:
+    from collections.abc import Sequence as Collection
+from typing import Optional, SupportsBytes, Union
 import zlib
 
 from aiospamc.headers import ContentLength
@@ -152,3 +158,67 @@ class RequestResponseBase:
         if header_name == 'Compress' and self.body:
             self._decompress_body()
         self._headers.pop(header_name)
+
+
+class SpamcBody:
+    def __init__(self, *, body: Union[bytes, SupportsBytes] = None, **_):
+        '''
+        Provides an interface for the body of a message.
+
+        Attributes
+        ----------
+        body
+            A bytes-like object.
+        '''
+
+        if body:
+            self._body = body
+        else:
+            self._body = b''
+
+    def __bytes__(self):
+        return self.body
+
+    @property
+    def body(self) -> bytes:
+        return bytes(self._body)
+
+    @body.setter
+    def body(self, value):
+        self._body = value
+
+
+class SpamcHeaders(Mapping):
+    '''
+    Provides a dictionary-like interface for headers.
+    '''
+
+    def __init__(self, *, headers: Optional[Collection] = None, **_):
+        if headers:
+            self._headers = {value.field_name(): value for value in headers}
+        else:
+            self._headers = {}
+
+    def __bytes__(self):
+        return b''.join([bytes(header) for header in self._headers.values()])
+
+    def __getitem__(self, key):
+        return self._headers[key]
+
+    def __setitem__(self, key, value):
+        self._headers[key] = value
+
+    def __iter__(self):
+        return iter(self._headers)
+
+    def __len__(self):
+        return len(self._headers)
+
+    def keys(self):
+        return self._headers.keys()
+
+    def items(self):
+        return self._headers.items()
+
+    def values(self):
+        return self._headers.values()
