@@ -18,8 +18,8 @@ def test_request_instantiates():
 @pytest.mark.parametrize('verb,body,headers', [
     ('TEST', None, []),
     ('TEST', None, [XHeader('X-Tests-Head', 'Tests value')]),
-    ('TEST', 'Test body\n', [ContentLength(length=10)]),
-    ('TEST', 'Test body\n', [ContentLength(length=10), Compress()])
+    ('TEST', b'Test body\n', [ContentLength(length=10)]),
+    ('TEST', b'Test body\n', [ContentLength(length=10), Compress()])
 ])
 def test_request_bytes(verb, body, headers):
     request = Request(verb=verb, body=body, headers=headers)
@@ -29,6 +29,6 @@ def test_request_bytes(verb, body, headers):
     assert all(bytes(header) in bytes(request) for header in headers)
     if body:
         if any(isinstance(header, Compress) for header in headers):
-            assert bytes(request).endswith(zlib.compress(body.encode()))
+            assert bytes(request).endswith(zlib.compress(body))
         else:
-            assert bytes(request).endswith(body.encode())
+            assert bytes(request).endswith(body)

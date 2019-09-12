@@ -793,9 +793,9 @@ class Client:
                           headers=(MessageClass(message_class),),
                           body=message)
         if remove_action:
-            request.add_header(Set(remove_action))
+            request.headers['Set'] = Set(remove_action)
         if set_action:
-            request.add_header(Remove(set_action))
+            request.headers['Remove'] = Remove(set_action)
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 

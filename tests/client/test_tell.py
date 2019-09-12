@@ -60,11 +60,11 @@ async def test_tell_valid_request(mock_connection,
     assert isinstance(request, Request)
     assert request.verb == 'TELL'
     assert request.body
-    assert request.get_header('Message-class').value == message_class
+    assert request.headers['Message-class'].value == message_class
     if set_:
-        assert request.get_header('Set').action is set_
+        assert request.headers['Set'].action is set_
     if remove:
-        assert request.get_header('Remove').action is remove
+        assert request.headers['Remove'].action is remove
 
 
 @pytest.mark.asyncio

@@ -2,10 +2,12 @@
 
 '''Contains all requests that can be made to the SPAMD service.'''
 
-from aiospamc.common import RequestResponseBase
+import zlib
+
+from aiospamc.common import RequestResponseBase, SpamcBody, SpamcHeaders
 
 
-class Request(RequestResponseBase):
+class Request(SpamcBody):
     '''SPAMC request object.
 
     Attributes
@@ -37,17 +39,16 @@ class Request(RequestResponseBase):
             compressed.
         '''
 
+        self.headers = SpamcHeaders(headers=headers)
         self.verb = verb
         self.version = version
-        super().__init__(body, headers)
+        super().__init__(body=body)
 
     def __bytes__(self):
-        if self._compressed_body:
-            body = self._compressed_body
-        elif self.body:
-            body = self.body.encode()
+        if 'Compress' in self.headers.keys():
+            body = zlib.compress(self.body)
         else:
-            body = b''
+            body = self.body
 
         request = (b'%(verb)b '
                    b'SPAMC/%(version)b'
@@ -57,5 +58,5 @@ class Request(RequestResponseBase):
 
         return request % {b'verb': self.verb.encode(),
                           b'version': self.version.encode(),
-                          b'headers': b''.join(map(bytes, self._headers.values())),
+                          b'headers': b''.join(map(bytes, self.headers.values())),
                           b'body': body}
