@@ -9,26 +9,58 @@ from aiospamc.headers import Compress, ContentLength, XHeader
 from aiospamc.requests import Request
 
 
-def test_request_instantiates():
-    request = Request('TEST')
+def test_init_verb():
+    r = Request(verb='TEST')
 
-    assert 'request' in locals()
+    assert r.verb == 'TEST'
 
 
-@pytest.mark.parametrize('verb,body,headers', [
-    ('TEST', None, []),
-    ('TEST', None, [XHeader('X-Tests-Head', 'Tests value')]),
-    ('TEST', b'Test body\n', [ContentLength(length=10)]),
-    ('TEST', b'Test body\n', [ContentLength(length=10), Compress()])
-])
-def test_request_bytes(verb, body, headers):
-    request = Request(verb=verb, body=body, headers=headers)
+def test_init_version():
+    r = Request(verb='TEST', version='4.2')
 
-    assert bytes(request).startswith(verb.encode())
-    assert bytes(b'SPAMC/1.5\r\n') in bytes(request)
-    assert all(bytes(header) in bytes(request) for header in headers)
-    if body:
-        if any(isinstance(header, Compress) for header in headers):
-            assert bytes(request).endswith(zlib.compress(body))
-        else:
-            assert bytes(request).endswith(body)
+    assert r.version == '4.2'
+
+
+def test_init_headers():
+    r = Request(verb='TEST')
+
+    assert hasattr(r, 'headers')
+
+
+def test_bytes_starts_with_verb():
+    r = Request(verb='TEST')
+    result = bytes(r)
+
+    assert result.startswith(b'TEST')
+
+
+def test_bytes_protocol():
+    r = Request(verb='TEST', version='4.2')
+    result = bytes(r).split(b'\r\n', 1)[0]
+
+    assert result.endswith(b' SPAMC/4.2')
+
+
+def test_bytes_headers(x_headers):
+    r = Request(verb='TEST', headers=x_headers)
+    result = bytes(r).split(b'\r\n')[1:-2]      # strip end of headers, body and first line
+    expected = [bytes(header).rstrip(b'\r\n') for header in x_headers]
+
+    for header_bytes in result:
+        assert header_bytes in expected
+
+
+def test_bytes_body():
+    test_input = b'Test body\n'
+    r = Request(verb='TEST', body=test_input)
+    result = bytes(r).split(b'\r\n', 3)[-1]
+
+    assert result == test_input
+
+
+def test_bytes_body_compressed():
+    test_input = b'Test body\n'
+    r = Request(verb='TEST', headers=[Compress()], body=test_input)
+    result = bytes(r).split(b'\r\n', 3)[-1]
+
+    assert result == zlib.compress(test_input)

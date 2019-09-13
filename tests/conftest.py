@@ -13,6 +13,13 @@ if sys.platform == 'win32':
 
 
 @pytest.fixture
+def x_headers():
+    from aiospamc.headers import XHeader
+
+    return [XHeader(name='A', value='a'), XHeader(name='B', value='b')]
+
+
+@pytest.fixture
 def spam():
     '''Example spam message using SpamAssassin's GTUBE message.'''
 
