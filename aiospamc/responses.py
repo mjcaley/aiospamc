@@ -100,7 +100,7 @@ class Response(SpamcBody):
                 b'%(status)d '
                 b'%(message)b\r\n'
                 b'%(headers)b\r\n'
-                b'%(body)b') % {b'version': b'1.5',
+                b'%(body)b') % {b'version': self.version.encode(),
                                 b'status': self.status_code.value,
                                 b'message': self.message.encode(),
                                 b'headers': b''.join(map(bytes, self.headers.values())),
