@@ -7,7 +7,7 @@ import zlib
 from aiospamc.common import RequestResponseBase, SpamcBody, SpamcHeaders
 
 
-class Request(SpamcBody):
+class Request:
     '''SPAMC request object.
 
     Attributes
@@ -42,7 +42,10 @@ class Request(SpamcBody):
         self.headers = SpamcHeaders(headers=headers)
         self.verb = verb
         self.version = version
-        super().__init__(body=body)
+        if body:
+            self.body = body
+        else:
+            self.body = b''
 
     def __bytes__(self):
         if 'Compress' in self.headers.keys():
@@ -60,3 +63,5 @@ class Request(SpamcBody):
                           b'version': self.version.encode(),
                           b'headers': b''.join(map(bytes, self.headers.values())),
                           b'body': body}
+
+    body = SpamcBody()

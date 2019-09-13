@@ -49,7 +49,7 @@ class Status(enum.IntEnum):
     EX_TIMEOUT      = 79, TimeoutException, 'Read timeout'
 
 
-class Response(SpamcBody):
+class Response:
     '''Class to encapsulate response.
 
     Attributes
@@ -88,7 +88,10 @@ class Response(SpamcBody):
         self.version = version
         self.status_code = status_code
         self.message = message
-        super().__init__(body=body)
+        if body:
+            self.body = body
+        else:
+            self.body = b''
 
     def __bytes__(self):
         if 'Compress' in self.headers:
@@ -105,3 +108,5 @@ class Response(SpamcBody):
                                 b'message': self.message.encode(),
                                 b'headers': b''.join(map(bytes, self.headers.values())),
                                 b'body': body}
+
+    body = SpamcBody()

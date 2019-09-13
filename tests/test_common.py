@@ -102,33 +102,14 @@ def test_common_delete_header():
     assert 'Content-length' not in req_resp_base._headers.keys()
 
 
-def test_body_default_value():
-    b = SpamcBody()
-
-    assert b.body == b''
-
-
-def test_body_set_value(mocker):
+def test_body_get_set_value(mocker):
+    class Stub:
+        body = SpamcBody()
+    stub = Stub()
     bytes_mock = mocker.MagicMock()
-    b = SpamcBody()
-    b.body = bytes_mock
+    stub.body = bytes_mock
 
-    assert b.body == bytes(bytes_mock)
-
-
-def test_body_get_value(mocker):
-    bytes_mock = mocker.MagicMock()
-    b = SpamcBody(body=bytes_mock)
-
-    assert b.body == bytes(bytes_mock)
-
-
-def test_body_bytes(mocker):
-    bytes_mock = mocker.MagicMock()
-    b = SpamcBody(body=bytes_mock)
-    result = bytes(b)
-
-    assert result == bytes(bytes_mock)
+    assert stub.body == bytes(bytes_mock)
 
 
 def test_headers_instantiates_none():

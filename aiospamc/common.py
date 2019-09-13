@@ -161,31 +161,15 @@ class RequestResponseBase:
 
 
 class SpamcBody:
-    def __init__(self, *, body: Union[bytes, SupportsBytes] = None, **_):
-        '''
-        Provides an interface for the body of a message.
+    '''
+    Provides a descriptor for a bytes-like object.
+    '''
 
-        Attributes
-        ----------
-        body
-            A bytes-like object.
-        '''
+    def __get__(self, instance, owner):
+        return instance._body
 
-        if body:
-            self._body = body
-        else:
-            self._body = b''
-
-    def __bytes__(self):
-        return self.body
-
-    @property
-    def body(self) -> bytes:
-        return bytes(self._body)
-
-    @body.setter
-    def body(self, value):
-        self._body = value
+    def __set__(self, instance, value):
+        instance._body = bytes(value)
 
 
 class SpamcHeaders(Mapping):
