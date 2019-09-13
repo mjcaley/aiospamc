@@ -28,7 +28,7 @@ characters (in upper case and with no white spaces and line breaks):
 XJS*C4JDBQADN1.NSBN3*2IDNEN*GTUBE-STANDARD-ANTI-UBE-TEST-EMAIL*C.34X
 
 You should send this test mail from an account outside of your network.
-'''
+'''.encode('ascii')
 # Note: Mail data must end with \n.
 # If the data does not end with \n spamd will not return results.
 
