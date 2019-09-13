@@ -331,8 +331,8 @@ class Client:
 
         Parameters
         ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        message : :obj:`bytes`
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -453,8 +453,8 @@ class Client:
 
         Parameters
         ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        message : :obj:`bytes`
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -519,8 +519,8 @@ class Client:
 
         Parameters
         ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        message : :obj:`bytes`
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -586,8 +586,8 @@ class Client:
 
         Parameters
         ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        message : :obj:`bytes`
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -656,8 +656,8 @@ class Client:
 
         Parameters
         ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        message : :obj:`bytes`
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
@@ -729,8 +729,8 @@ class Client:
         ----------
         message_class : :class:`aiospamc.options.MessageClassOption`
             An enumeration to classify the message as 'spam' or 'ham.'
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        message : :obj:`bytes`
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
