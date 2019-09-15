@@ -5,16 +5,18 @@
 import asyncio
 from functools import wraps
 import logging
+from typing import SupportsBytes, Union
 
-from aiospamc.exceptions import (BadResponse, ResponseException,
-                                 UsageException, DataErrorException, NoInputException, NoUserException,
-                                 NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
-                                 OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
-                                 ProtocolException, NoPermissionException, ConfigException, TimeoutException)
-from aiospamc.headers import Compress, MessageClass, Remove, Set, User
-from aiospamc.parser import parse, ParseError
-from aiospamc.requests import Request
-from aiospamc.responses import Status
+from .options import MessageClassOption, ActionOption
+from .exceptions import (BadResponse, ResponseException,
+                         UsageException, DataErrorException, NoInputException, NoUserException,
+                         NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
+                         OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
+                         ProtocolException, NoPermissionException, ConfigException, TimeoutException)
+from .headers import Compress, MessageClass, Remove, Set, User
+from .parser import parse, ParseError
+from .requests import Request
+from .responses import Status, Response
 
 
 def _add_compress_header(func):
@@ -54,43 +56,43 @@ class Client:
 
     Attributes
     ----------
-    connection : :class:`aiospamc.connections.ConnectionManager`
+    connection
         Manager instance to open connections.
-    user : :obj:`str`
+    user
         Name of the user that SPAMD will run the checks under.
-    compress : :obj:`bool`
+    compress
         If true, the request body will be compressed.
-    loop : :class:`asyncio.AbstractEventLoop`
+    loop
         The asyncio event loop.
-    logger : :class:`logging.Logger`
+    logger
         Logging instance, logs to 'aiospamc.client'
     '''
 
     def __init__(self,
-                 socket_path='/var/run/spamassassin/spamd.sock',
-                 host=None,
-                 port=783,
-                 user=None,
-                 compress=False,
-                 ssl=False,
-                 loop=None):
+                 socket_path: str = '/var/run/spamassassin/spamd.sock',
+                 host: str = None,
+                 port: int = 783,
+                 user: str = None,
+                 compress: bool = False,
+                 ssl: bool = False,
+                 loop: asyncio.AbstractEventLoop = None) -> None:
         '''Client constructor.
 
         Parameters
         ----------
-        socket_path : :obj:`str`, optional
+        socket_path
             The path to the Unix socket for the SPAMD service.
-        host : :obj:`str`, optional
+        host
             Hostname or IP address of the SPAMD service, defaults to localhost.
-        port : :obj:`int`, optional
+        port
             Port number for the SPAMD service, defaults to 783.
-        user : :obj:`str`, optional
+        user
             Name of the user that SPAMD will run the checks under.
-        compress : :obj:`bool`, optional
+        compress
             If true, the request body will be compressed.
-        ssl : :obj:`bool`, optional
+        ssl
             If true, will enable SSL/TLS for the connection.
-        loop : :class:`asyncio.AbstractEventLoop`
+        loop
             The asyncio event loop.
 
         Raises
@@ -122,7 +124,7 @@ class Client:
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Created instance of %r', self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         client_fmt = ('{}(socket_path={}, '
                       'host={}, '
                       'port={}, '
@@ -138,7 +140,7 @@ class Client:
                                  repr(self._ssl))
 
     @staticmethod
-    def _raise_response_exception(response):
+    def _raise_response_exception(response) -> None:
         if response.status_code is Status.EX_OK:
             return
         elif response.status_code is Status.EX_USAGE:
@@ -178,19 +180,15 @@ class Client:
 
     @_add_compress_header
     @_add_user_header
-    async def send(self, request):
+    async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.
 
-        If the SPAMD service gives a temporary failure response, then
+        If the SPAMD service gives a temporary failure response, then its retried.
 
         Parameters
         ----------
-        request : :class:`aiospamc.requests.Request`
+        request
             Request object to send.
-
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
 
         Raises
         ------
@@ -252,11 +250,11 @@ class Client:
             raise
 
         self.logger.debug('Received response (%s) for request (%s)',
-            id(response),
-            id(request))
+                          id(response),
+                          id(request))
         return response
 
-    async def check(self, message):
+    async def check(self, message: Union[bytes, SupportsBytes]) -> Response:
         '''Request the SPAMD service to check a message with a CHECK request.
 
         The response will contain a 'Spam' header if the message is marked
@@ -267,17 +265,10 @@ class Client:
 
         Parameters
         ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
-
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-            The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
 
         Raises
         ------
@@ -326,12 +317,12 @@ class Client:
 
         return response
 
-    async def headers(self, message):
+    async def headers(self, message: Union[bytes, SupportsBytes]) -> Response:
         '''Request the SPAMD service to check a message with a HEADERS request.
 
         Parameters
         ----------
-        message : :obj:`bytes`
+        message
             A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -339,7 +330,6 @@ class Client:
 
         Returns
         -------
-        :class:`aiospamc.responses.Response`
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -392,13 +382,12 @@ class Client:
 
         return response
 
-    async def ping(self):
+    async def ping(self) -> Response:
         '''Sends a ping request to the SPAMD service and will receive a
         response if the serivce is alive.
 
         Returns
         -------
-        :class:`aiospamc.responses.Response`
             Response message will contain 'PONG' if successful.
 
         Raises
@@ -448,12 +437,12 @@ class Client:
 
         return response
 
-    async def process(self, message):
+    async def process(self, message: Union[bytes, SupportsBytes]) -> Response:
         '''Request the SPAMD service to check a message with a PROCESS request.
 
         Parameters
         ----------
-        message : :obj:`bytes`
+        message
             A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -461,7 +450,6 @@ class Client:
 
         Returns
         -------
-        :class:`aiospamc.responses.Response`
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -514,12 +502,12 @@ class Client:
 
         return response
 
-    async def report(self, message):
+    async def report(self, message: Union[bytes, SupportsBytes]) -> Response:
         '''Request the SPAMD service to check a message with a REPORT request.
 
         Parameters
         ----------
-        message : :obj:`bytes`
+        message
             A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -527,7 +515,6 @@ class Client:
 
         Returns
         -------
-        :class:`aiospamc.responses.Response`
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -580,13 +567,13 @@ class Client:
 
         return response
 
-    async def report_if_spam(self, message):
+    async def report_if_spam(self, message: Union[bytes, SupportsBytes]) -> Response:
         '''Request the SPAMD service to check a message with a REPORT_IFSPAM
         request.
 
         Parameters
         ----------
-        message : :obj:`bytes`
+        message
             A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -594,7 +581,6 @@ class Client:
 
         Returns
         -------
-        :class:`aiospamc.responses.Response`
             The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
@@ -648,7 +634,7 @@ class Client:
 
         return response
 
-    async def symbols(self, message):
+    async def symbols(self, message: Union[bytes, SupportsBytes]) -> Response:
         '''Request the SPAMD service to check a message with a SYMBOLS request.
 
         The response will contain a 'Spam' header if the message is marked
@@ -656,7 +642,7 @@ class Client:
 
         Parameters
         ----------
-        message : :obj:`bytes`
+        message
             A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
@@ -664,7 +650,6 @@ class Client:
 
         Returns
         -------
-        :class:`aiospamc.responses.Response`
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
@@ -718,30 +703,29 @@ class Client:
         return response
 
     async def tell(self,
-                   message_class,
-                   message,
-                   remove_action=None,
-                   set_action=None,
-                  ):
+                   message_class: MessageClassOption,
+                   message: Union[bytes, SupportsBytes],
+                   remove_action: ActionOption = None,
+                   set_action: ActionOption = None,
+                   ):
         '''Instruct the SPAMD service to to mark the message
 
         Parameters
         ----------
-        message_class : :class:`aiospamc.options.MessageClassOption`
+        message_class
             An enumeration to classify the message as 'spam' or 'ham.'
-        message : :obj:`bytes`
+        message
             A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
-        remove_action : :class:`aiospamc.options.ActionOption`
+        remove_action
             Remove message class for message in database.
-        set_action : :class:`aiospamc.options.ActionOption`
+        set_action
             Set message class for message in database.
 
         Returns
         -------
-        :class:`aiospamc.responses.Response`
             Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 

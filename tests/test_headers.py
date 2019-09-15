@@ -14,6 +14,11 @@ class TestHeader:
         with pytest.raises(NotImplementedError):
             bytes(header)
 
+    def test_len(self):
+        header = Header()
+        with pytest.raises(NotImplementedError):
+            len(header)
+
     def test_field_name(self):
         header = Header()
         with pytest.raises(NotImplementedError):

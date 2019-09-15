@@ -3,10 +3,11 @@
 '''Unix domain socket connection and manager.'''
 
 import asyncio
+from typing import Tuple
 
-from aiospamc.connections import Connection
-from aiospamc.connections import ConnectionManager
-from aiospamc.exceptions import AIOSpamcConnectionFailed
+from . import Connection
+from . import ConnectionManager
+from ..exceptions import AIOSpamcConnectionFailed
 
 
 class UnixConnectionManager(ConnectionManager):
@@ -14,28 +15,28 @@ class UnixConnectionManager(ConnectionManager):
 
     Attributes
     ----------
-    path : str
+    path
         Path of the socket.
     '''
 
-    def __init__(self, path, loop=None):
+    def __init__(self, path: str, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for UnixConnectionManager.
 
         Parameters
         ----------
-        path : str
+        path
             Path of the socket.
-        loop : asyncio.AbstractEventLoop
+        loop
             The asyncio event loop.
         '''
 
         self.path = path
         super().__init__(loop)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'UnixConnectionManager(path={})'.format(repr(self.path))
 
-    def new_connection(self):
+    def new_connection(self) -> 'UnixConnection':
         '''Creates a new Unix domain socket connection.
 
         Raises
@@ -51,13 +52,13 @@ class UnixConnection(Connection):
 
     Attributes
     ----------
-    path : str
+    path
         Path of the socket.
-    loop : asyncio.AbstractEventLoop
+    loopAbstractEventLoop
         The asyncio event loop.
     '''
 
-    def __init__(self, path, loop=None):
+    def __init__(self, path: str, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for UnixConnection.
 
         Parameters
@@ -71,16 +72,11 @@ class UnixConnection(Connection):
         self.path = path
         super().__init__(loop)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'UnixConnection(path={})'.format(repr(self.path))
 
-    async def open(self):
+    async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Opens a connection.
-
-        Returns
-        -------
-        asyncio.StreamReader
-        asyncio.StreamWriter
 
         Raises
         ------
@@ -98,13 +94,7 @@ class UnixConnection(Connection):
         return reader, writer
 
     @property
-    def connection_string(self):
-        '''String representation of the connection.
-
-        Returns
-        -------
-        str
-            Path to the Unix domain socket.
-        '''
+    def connection_string(self) -> str:
+        '''String representation of the connection.'''
 
         return self.path

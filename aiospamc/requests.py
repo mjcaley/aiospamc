@@ -2,9 +2,11 @@
 
 '''Contains all requests that can be made to the SPAMD service.'''
 
+from typing import Iterator, SupportsBytes, Union
 import zlib
 
-from aiospamc.common import RequestResponseBase, SpamcBody, SpamcHeaders
+from .common import SpamcBody, SpamcHeaders
+from .headers import Header
 
 
 class Request:
@@ -12,31 +14,35 @@ class Request:
 
     Attributes
     ----------
-    verb : :obj:`str`
+    verb
         Method name of the request.
-    version : :obj:`str`
+    version
         Protocol version.
-    body : :obj:`str` or :obj:`bytes`
-        String representation of the body.  An instance of the
-        :class:`aiospamc.headers.ContentLength` will be automatically added.
+    headers
+        Collection of headers to be added.
+    body
+        Byte string representation of the body.
     '''
 
-    def __init__(self, verb, version='1.5', headers=None, body=None):
+    def __init__(
+        self,
+        verb: str,
+        version: str = '1.5',
+        headers: Iterator[Header] = None,
+        body: Union[bytes, SupportsBytes] = None
+    ) -> None:
         '''Request constructor.
 
         Parameters
         ----------
-        verb : :obj:`str`
+        verb
             Method name of the request.
-        version: :obj:`str`
+        version
             Version of the protocol.
-        body : :obj:`str` or :obj:`bytes`, optional
-            String representation of the body.  An instance of the
-            :class:`aiospamc.headers.ContentLength` will be automatically added.
-        headers : tuple of :class:`aiospamc.headers.Header`, optional
-            Collection of headers to be added.  If it contains an instance of
-            :class:`aiospamc.headers.Compress` then the body is automatically
-            compressed.
+        headers
+            Collection of headers to be added.
+        body
+            Byte string representation of the body.
         '''
 
         self.headers = SpamcHeaders(headers=headers)
@@ -47,7 +53,7 @@ class Request:
         else:
             self.body = b''
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         if 'Compress' in self.headers.keys():
             body = zlib.compress(self.body)
         else:
@@ -64,4 +70,4 @@ class Request:
                           b'headers': b''.join(map(bytes, self.headers.values())),
                           b'body': body}
 
-    body = SpamcBody()
+    body = SpamcBody()  # type: Union[ByteString, SupportsBytes]

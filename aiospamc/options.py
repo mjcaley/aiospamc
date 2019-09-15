@@ -12,6 +12,7 @@ class MessageClassOption(IntEnum):
     spam = 1
     ham = 2
 
+
 ActionOption = namedtuple('ActionOption', ['local', 'remote'])
 '''Option to be used in the DidRemove, DidSet, Set, and Remove headers.
 

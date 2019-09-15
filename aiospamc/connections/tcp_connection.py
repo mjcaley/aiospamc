@@ -3,10 +3,11 @@
 '''TCP socket connection and manager.'''
 
 import asyncio
+from typing import Tuple
 
-from aiospamc.connections import Connection
-from aiospamc.connections import ConnectionManager
-from aiospamc.exceptions import AIOSpamcConnectionFailed
+from . import Connection
+from . import ConnectionManager
+from ..exceptions import AIOSpamcConnectionFailed
 
 
 class TcpConnectionManager(ConnectionManager):
@@ -14,26 +15,26 @@ class TcpConnectionManager(ConnectionManager):
 
     Attributes
     ----------
-    host : str
+    host
         Hostname or IP address of server.
-    port : str
+    port
         Port number.
-    ssl : bool
+    ssl
         Whether to use SSL/TLS.
     '''
 
-    def __init__(self, host, port, ssl=False, loop=None):
+    def __init__(self, host: str, port: int, ssl: bool = False, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for TcpConnectionManager.
 
         Parameters
         ----------
-        host : str
+        host
             Hostname or IP address of server.
-        port : str
+        port
             Port number
-        ssl : :obj:`bool` or optional
+        ssl
             SSL/TLS enabled.
-        loop : asyncio.AbstractEventLoop
+        loop
             The asyncio event loop.
         '''
 
@@ -42,13 +43,13 @@ class TcpConnectionManager(ConnectionManager):
         self.ssl = ssl
         super().__init__(loop)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(host={}, port={}, ssl={})'.format(self.__class__.__name__,
                                                      repr(self.host),
                                                      repr(self.port),
                                                      self.ssl)
 
-    def new_connection(self):
+    def new_connection(self) -> 'TcpConnection':
         '''Creates a new TCP connection.
 
         Raises
@@ -64,26 +65,26 @@ class TcpConnection(Connection):
 
     Attributes
     ----------
-    host : str
+    host
         Hostname or IP address of server.
-    port : str
+    port
         Port number
-    ssl : bool
+    ssl
         Whether to use SSL/TLS.
-    loop : asyncio.AbstratEventLoop
+    loop
         The asyncio event loop.
     '''
 
-    def __init__(self, host, port, ssl, loop=None):
+    def __init__(self, host: str, port: int, ssl: str, loop: asyncio.AbstractEventLoop = None):
         '''Constructor for TcpConnection.
 
         Attributes
         ----------
-        host : str
+        host
             Hostname or IP address of server.
-        port : str
+        port
             Port number
-        ssl :  :obj:`bool` or optional
+        ssl
             SSL/TLS enabled.
         '''
 
@@ -92,19 +93,14 @@ class TcpConnection(Connection):
         self.ssl = ssl
         super().__init__(loop)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(host={}, port={}, ssl={})'.format(self.__class__.__name__,
                                                      repr(self.host),
                                                      repr(self.port),
                                                      self.ssl)
 
-    async def open(self):
+    async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Opens a connection.
-
-        Returns
-        -------
-        asyncio.StreamReader
-        asyncio.StreamWriter
 
         Raises
         ------
@@ -127,13 +123,7 @@ class TcpConnection(Connection):
         return reader, writer
 
     @property
-    def connection_string(self):
-        '''String representation of the connection.
-
-        Returns
-        -------
-        str
-            Hostname and port.
-        '''
+    def connection_string(self) -> str:
+        '''String representation of the connection.'''
 
         return ':'.join([self.host, str(self.port)])

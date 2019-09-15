@@ -4,25 +4,20 @@
 
 import getpass
 
-from aiospamc.options import ActionOption, MessageClassOption
+from .options import ActionOption, MessageClassOption
 
 
 class Header:
     '''Header base class.'''
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         raise NotImplementedError
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(bytes(self))
 
-    def field_name(self):
-        '''Returns the the field name for the header.
-
-        Returns
-        -------
-        str
-        '''
+    def field_name(self) -> str:
+        '''Returns the the field name for the header.'''
 
         raise NotImplementedError
 
@@ -33,20 +28,20 @@ class Compress(Header):
 
     Attributes
     ----------
-    zlib : bool
+    zlib
         True if the zlib compression algorithm is used.
     '''
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.zlib = True
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}()'.format(self.__class__.__name__)
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b'%b: zlib\r\n' % (self.field_name().encode())
 
-    def field_name(self):
+    def field_name(self) -> str:
         return 'Compress'
 
 
@@ -55,29 +50,30 @@ class ContentLength(Header):
 
     Attributes
     ----------
-    length : int
+    length
         Length of the body.
     '''
 
-    def __init__(self, length=0):
+    def __init__(self, length: int = 0) -> None:
         '''ContentLength constructor.
 
         Parameters
         ----------
-        length : :obj:`int`, optional
+        length
             Length of the body.
         '''
         self.length = length
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b'%b: %d\r\n' % (self.field_name().encode(),
                                 self.length)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(length={})'.format(self.__class__.__name__, self.length)
 
-    def field_name(self):
+    def field_name(self) -> str:
         return 'Content-length'
+
 
 class MessageClass(Header):
     '''MessageClass header.  Used to specify whether a message is 'spam' or
@@ -85,29 +81,29 @@ class MessageClass(Header):
 
     Attributes
     ----------
-    value : :class:`aiospamc.options.MessageClassOption`
+    value
         Specifies the classification of the message.
     '''
 
-    def __init__(self, value=None):
+    def __init__(self, value: MessageClassOption = None) -> None:
         '''MessageClass constructor.
 
         Parameters
         ----------
-        value : :class:`aiospamc.options.MessageClassOption`, optional
+        value
             Specifies the classification of the message.
         '''
 
         self.value = value or MessageClassOption.ham
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b'%b: %b\r\n' % (self.field_name().encode(),
                                 self.value.name.encode())
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(value={})'.format(self.__class__.__name__, str(self.value))
 
-    def field_name(self):
+    def field_name(self) -> str:
         return 'Message-class'
 
 
@@ -116,22 +112,22 @@ class _SetRemoveBase(Header):
 
     Attributes
     ----------
-    action : :class:`aiospamc.options.ActionOption`
+    action
         Actions to be done on local or remote.
     '''
 
-    def __init__(self, action=None):
+    def __init__(self, action: ActionOption = None) -> None:
         '''_SetRemoveBase constructor.
 
         Parameters
         ----------
-        action : :class:`aiospamc.options.ActionOption`, optional
+        action
             Actions to be done on local or remote.
         '''
 
         self.action = action or ActionOption(local=False, remote=False)
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         if not self.action.local and not self.action.remote:
             # if nothing is set, then return a blank string so the request
             # doesn't get tainted
@@ -146,7 +142,7 @@ class _SetRemoveBase(Header):
         return b'%b: %b\r\n' % (self.field_name().encode(),
                                 b', '.join(values))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(action={})'.format(self.__class__.__name__,
                                       repr(self.action))
 
@@ -157,11 +153,11 @@ class DidRemove(_SetRemoveBase):
 
     Attributes
     ----------
-    action : :class:`aiospamc.options.ActionOption`
+    action
         Actions to be done on local or remote.
     '''
 
-    def field_name(self):
+    def field_name(self) -> str:
         return 'DidRemove'
 
 
@@ -171,11 +167,11 @@ class DidSet(_SetRemoveBase):
 
     Attributes
     ----------
-    action : :class:`aiospamc.options.ActionOption`
+    action
         Actions to be done on local or remote.
     '''
 
-    def field_name(self):
+    def field_name(self) -> str:
         return 'DidSet'
 
 
@@ -201,11 +197,11 @@ class Set(_SetRemoveBase):
 
     Attributes
     ----------
-    action : :class:`aiospamc.options.ActionOption`
+    action
         Actions to be done on local or remote.
     '''
 
-    def field_name(self):
+    def field_name(self) -> str:
         return 'Set'
 
 
@@ -215,24 +211,24 @@ class Spam(Header):
 
     Attributes
     ----------
-    value : :obj:`bool`
+    value
             True if the message is spam, False if not.
-    score : :obj:`float`
+    score
         Score of the message after being scanned.
-    threshold : :obj:`float`
+    threshold
         Threshold of which the message would have been marked as spam.
     '''
 
-    def __init__(self, value=False, score=0.0, threshold=0.0):
+    def __init__(self, value: bool = False, score: float = 0.0, threshold: float = 0.0) -> None:
         '''Spam header constructor.
 
         Parameters
         ----------
-        value : :obj:`bool`, optional
+        value
             True if the message is spam, False if not.
-        score : :obj:`float`, optional
+        score
             Score of the message after being scanned.
-        threshold : :obj:`float`, optional
+        threshold
             Threshold of which the message would have been marked as spam.
         '''
 
@@ -240,19 +236,19 @@ class Spam(Header):
         self.score = score
         self.threshold = threshold
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b'%b: %b ; %.1f / %.1f\r\n' % (self.field_name().encode(),
                                               str(self.value).encode(),
                                               self.score,
                                               self.threshold)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(value={}, score={}, threshold={})'.format(self.__class__.__name__,
                                                              self.value,
                                                              self.score,
                                                              self.threshold)
 
-    def field_name(self):
+    def field_name(self) -> str:
         return 'Spam'
 
 
@@ -262,29 +258,29 @@ class User(Header):
 
     Attributes
     ----------
-    name : :obj:`str`
+    name
         Name of the user account.
     '''
 
-    def __init__(self, name=None):
+    def __init__(self, name: str = None) -> None:
         '''User constructor.
 
         Parameters
         ----------
-        name : :obj:`str`, optional
+        name
             Name of the user account.
         '''
 
         self.name = name or getpass.getuser()
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b'%b: %b\r\n' % (self.field_name().encode(),
                                 self.name.encode())
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(name={})'.format(self.__class__.__name__, repr(self.name))
 
-    def field_name(self):
+    def field_name(self) -> str:
         return 'User'
 
 
@@ -294,34 +290,34 @@ class XHeader(Header):
 
     Attributes
     ----------
-    name : :obj:`str`
+    name
         Name of the header.
-    value : :obj:`str`
+    value
         Contents of the value.
     '''
 
-    def __init__(self, name, value):
+    def __init__(self, name: str, value: str) -> None:
         '''XHeader constructor.
 
         Parameters
         ----------
-        name : :obj:`str`
+        name
             Name of the header.
-        value : :obj:`str`
+        value
             Contents of the value.
         '''
 
         self.name = name
         self.value = value
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return b'%b: %b\r\n' % (self.field_name().encode(),
                                 self.value.encode())
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(name={}, value={})'.format(self.__class__.__name__,
                                               repr(self.name),
                                               repr(self.value))
 
-    def field_name(self):
+    def field_name(self) -> str:
         return self.name
