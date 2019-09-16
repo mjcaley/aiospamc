@@ -11,23 +11,13 @@ from ..exceptions import AIOSpamcConnectionFailed
 
 
 class UnixConnectionManager(ConnectionManager):
-    '''Creates new connections based on Unix domain socket path provided.
-
-    Attributes
-    ----------
-    path
-        Path of the socket.
-    '''
+    '''Creates new connections based on Unix domain socket path provided.'''
 
     def __init__(self, path: str, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for UnixConnectionManager.
 
-        Parameters
-        ----------
-        path
-            Path of the socket.
-        loop
-            The asyncio event loop.
+        :param path: Path of the socket.
+        :param loop: The asyncio event loop.
         '''
 
         self.path = path
@@ -39,34 +29,20 @@ class UnixConnectionManager(ConnectionManager):
     def new_connection(self) -> 'UnixConnection':
         '''Creates a new Unix domain socket connection.
 
-        Raises
-        ------
-        AIOSpamcConnectionFailed
+        :raises AIOSpamcConnectionFailed:
         '''
 
         return UnixConnection(self.path, self.loop)
 
 
 class UnixConnection(Connection):
-    '''Manages a Unix domain socket connection.
-
-    Attributes
-    ----------
-    path
-        Path of the socket.
-    loopAbstractEventLoop
-        The asyncio event loop.
-    '''
+    '''Manages a Unix domain socket connection.'''
 
     def __init__(self, path: str, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for UnixConnection.
 
-        Parameters
-        ----------
-        path : str
-            Path of the socket.
-        loop : asyncio.AbstractEventLoop
-            The asyncio event loop.
+        :param path: Path of the socket.
+        :param loop: The asyncio event loop.
         '''
 
         self.path = path
@@ -78,9 +54,7 @@ class UnixConnection(Connection):
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Opens a connection.
 
-        Raises
-        ------
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :raises AIOSpamcConnectionFailed:
         '''
 
         try:

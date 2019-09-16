@@ -42,11 +42,11 @@ class SpamcHeaders(Mapping):
     def __len__(self) -> int:
         return len(self._headers)
 
-    def keys(self) -> KeysView:
+    def keys(self) -> KeysView[str]:
         return self._headers.keys()
 
-    def items(self) -> ItemsView:
+    def items(self) -> ItemsView[str, Header]:
         return self._headers.items()
 
-    def values(self) -> ValuesView:
+    def values(self) -> ValuesView[Header]:
         return self._headers.values()

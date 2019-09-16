@@ -11,31 +11,15 @@ from ..exceptions import AIOSpamcConnectionFailed
 
 
 class TcpConnectionManager(ConnectionManager):
-    '''Creates new connections based on host and port provided.
-
-    Attributes
-    ----------
-    host
-        Hostname or IP address of server.
-    port
-        Port number.
-    ssl
-        Whether to use SSL/TLS.
-    '''
+    '''Creates new connections based on host and port provided.'''
 
     def __init__(self, host: str, port: int, ssl: bool = False, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for TcpConnectionManager.
 
-        Parameters
-        ----------
-        host
-            Hostname or IP address of server.
-        port
-            Port number
-        ssl
-            SSL/TLS enabled.
-        loop
-            The asyncio event loop.
+        :param host: Hostname or IP address of server.
+        :param port: Port number
+        :param ssl: SSL/TLS enabled.
+        :param loop: The asyncio event loop.
         '''
 
         self.host = host
@@ -52,40 +36,21 @@ class TcpConnectionManager(ConnectionManager):
     def new_connection(self) -> 'TcpConnection':
         '''Creates a new TCP connection.
 
-        Raises
-        ------
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :raises AIOSpamcConnectionFailed:
         '''
 
         return TcpConnection(self.host, self.port, self.ssl, self.loop)
 
 
 class TcpConnection(Connection):
-    '''Manages a TCP connection.
+    '''Manages a TCP connection.'''
 
-    Attributes
-    ----------
-    host
-        Hostname or IP address of server.
-    port
-        Port number
-    ssl
-        Whether to use SSL/TLS.
-    loop
-        The asyncio event loop.
-    '''
-
-    def __init__(self, host: str, port: int, ssl: str, loop: asyncio.AbstractEventLoop = None):
+    def __init__(self, host: str, port: int, ssl: bool, loop: asyncio.AbstractEventLoop = None):
         '''Constructor for TcpConnection.
 
-        Attributes
-        ----------
-        host
-            Hostname or IP address of server.
-        port
-            Port number
-        ssl
-            SSL/TLS enabled.
+        :param host: Hostname or IP address of server.
+        :param port: Port number
+        :param ssl: SSL/TLS enabled.
         '''
 
         self.host = host
@@ -102,9 +67,7 @@ class TcpConnection(Connection):
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Opens a connection.
 
-        Raises
-        ------
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :raises AIOSpamcConnectionFailed:
         '''
 
         try:

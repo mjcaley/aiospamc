@@ -50,19 +50,7 @@ class Status(enum.IntEnum):
 
 
 class Response:
-    '''Class to encapsulate response.
-
-    Attributes
-    ----------
-    version
-        Protocol version given by the response.
-    status_code
-        Status code give by the response.
-    message
-        Message accompanying the status code.
-    body
-        Byte string representation of the response body.
-    '''
+    '''Class to encapsulate response.'''
 
     def __init__(
             self,
@@ -74,18 +62,11 @@ class Response:
     ):
         '''Response constructor.
 
-        Parameters
-        ----------
-        version
-            Version reported by the SPAMD service response.
-        status_code
-            Success or error code.
-        message
-            Message associated with status code.
-        body
-            Byte string representation of the body.
-        headers
-            Collection of headers to be added.
+        :param version: Version reported by the SPAMD service response.
+        :param status_code: Success or error code.
+        :param message: Message associated with status code.
+        :param body: Byte string representation of the body.
+        :param headers: Collection of headers to be added.
         '''
 
         self.headers = SpamcHeaders(headers=headers)
@@ -113,4 +94,4 @@ class Response:
                               b'headers': b''.join(map(bytes, self.headers.values())),
                               b'body': body}
 
-    body = SpamcBody()  # type: Union[ByteString, SupportsBytes]
+    body = SpamcBody()  # type: Union[bytes, SupportsBytes]

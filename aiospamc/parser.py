@@ -14,25 +14,13 @@ from . import headers
 
 
 class ParseError(Exception):
-    '''An exception occurring when parsing.
-
-    Attributes
-    ----------
-    index
-        Index in the stream the exception occurred.
-    message
-        User readable message.
-    '''
+    '''An exception occurring when parsing.'''
 
     def __init__(self, index: int, message: str):
         '''ParseError constructor.
 
-        Parameters
-        ----------
-        index : :obj:`int`
-            Index in the stream the exception occurred.
-        message : :obj:`str`
-            User readable message.
+        :param index: Index in the stream the exception occurred.
+        :param message: User readable message.
         '''
         self.index = index
         self.message = message
@@ -58,10 +46,7 @@ class Parser:
     def __init__(self, string: bytes = None) -> None:
         '''Parser constructor.
 
-        Parameters
-        ----------
-        string
-            The byte string to parse.
+        :param string: The byte string to parse.
         '''
         self.string = string or b''
         self.index = 0
@@ -69,10 +54,7 @@ class Parser:
     def advance(self, by: int) -> None:
         '''Advance the current index by number of bytes.
 
-        Parameters
-        ----------
-        by
-            Number of bytes in the stream to advance.
+        :param by: Number of bytes in the stream to advance.
         '''
 
         self.index += by
@@ -90,10 +72,7 @@ class Parser:
     def match(self, pattern: bytes) -> Optional[Match[bytes]]:
         '''Returns the regular expression matches string at the current index.
 
-        Parameters
-        ----------
-        pattern
-            Regular expression pattern.
+        :param pattern: Regular expression pattern.
         '''
 
         success = re.match(pattern, self.current())
@@ -106,14 +85,9 @@ class Parser:
         '''If the pattern matches, advances the index the length of the match.
         Returns the regular expression match.
 
-        Parameters
-        ----------
-        pattern
-            Regular expression pattern.
+        :param pattern: Regular expression pattern.
 
-        Raises
-        ------
-        :class:`aiospamc.parser.ParseError`
+        :raises ParseError:
         '''
 
         match = self.match(pattern)
@@ -128,10 +102,7 @@ class Parser:
         '''Makes the parser function optional by ignore whether it raises a
         :class:`aiospamc.parser.ParseError` exception or not.
 
-        Parameters
-        ----------
-        func : function
-            Function to execute.
+        :param func: Function to execute.
         '''
 
         try:

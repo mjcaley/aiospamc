@@ -10,19 +10,7 @@ from .headers import Header
 
 
 class Request:
-    '''SPAMC request object.
-
-    Attributes
-    ----------
-    verb
-        Method name of the request.
-    version
-        Protocol version.
-    headers
-        Collection of headers to be added.
-    body
-        Byte string representation of the body.
-    '''
+    '''SPAMC request object.'''
 
     def __init__(
         self,
@@ -33,16 +21,10 @@ class Request:
     ) -> None:
         '''Request constructor.
 
-        Parameters
-        ----------
-        verb
-            Method name of the request.
-        version
-            Version of the protocol.
-        headers
-            Collection of headers to be added.
-        body
-            Byte string representation of the body.
+        :param verb: Method name of the request.
+        :param version: Version of the protocol.
+        :param headers: Collection of headers to be added.
+        :param body: Byte string representation of the body.
         '''
 
         self.headers = SpamcHeaders(headers=headers)
@@ -70,4 +52,4 @@ class Request:
                           b'headers': b''.join(map(bytes, self.headers.values())),
                           b'body': body}
 
-    body = SpamcBody()  # type: Union[ByteString, SupportsBytes]
+    body = SpamcBody()  # type: Union[bytes, SupportsBytes]

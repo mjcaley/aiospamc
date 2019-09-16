@@ -8,25 +8,12 @@ from typing import Tuple, Union, SupportsBytes
 
 
 class Connection:
-    '''Base class for connection objects.
-
-    Attributes
-    ----------
-    connected
-        Status on if the connection is established.
-    loop
-        The asyncio event loop.
-    logger
-        Logging instance.  Logs to 'aiospamc.connections'.
-    '''
+    '''Base class for connection objects.'''
 
     def __init__(self, loop: asyncio.AbstractEventLoop = None):
         '''Connection constructor.
 
-        Parameters
-        ----------
-        loop
-            The asyncio event loop.
+        :param loop: The asyncio event loop.
         '''
 
         self.connected = False
@@ -48,10 +35,7 @@ class Connection:
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Connect to a service.
 
-        Raises
-        ------
-        aiospamc.exceptions.AIOSpamcConnectionFailed
-            If connection failed for some reason.
+        :raises AIOSpamcConnectionFailed:
         '''
 
         raise NotImplementedError
