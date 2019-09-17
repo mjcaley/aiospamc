@@ -19,38 +19,6 @@ from .requests import Request
 from .responses import Status, Response
 
 
-def _add_compress_header(func):
-    '''If the class instance's :attribute:`compress` boolean is `True` then the
-    :class:`aiospamc.headers.Compress` header is added to the
-    :class:`aiospamc.requests.Request` object.'''
-
-    @wraps(func)
-    async def wrapper(cls, request):
-        if cls.compress and cls.body:
-            cls.logger.debug('Added Compress header to request (%s)', id(request))
-            request.add_header(Compress())
-        return await func(cls, request)
-
-    return wrapper
-
-
-def _add_user_header(func):
-    '''If the class instance's :attribute:`user` boolean is `True` then the
-    :class:`aiospamc.headers.User` header is added to the
-    :class:`aiospamc.requests.Request` object.'''
-
-    @wraps(func)
-    async def wrapper(cls, request):
-        if cls.user:
-            cls.logger.debug('Added user header for \'%s\' to request (%s)',
-                             cls.user,
-                             id(request))
-            request.add_header(User(cls.user))
-        return await func(cls, request)
-
-    return wrapper
-
-
 class Client:
     '''Client object for interacting with SPAMD.'''
 
@@ -151,8 +119,6 @@ class Client:
         else:
             raise ResponseException(response)
 
-    @_add_compress_header
-    @_add_user_header
     async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.
 
@@ -180,6 +146,11 @@ class Client:
         :raises TimeoutException: Timeout during connection.
         '''
 
+        if self.compress:
+            request.headers['Compress'] = Compress()
+        if self.user:
+            request.headers['User'] = User(name=self.user)
+
         self.logger.debug('Sending request (%s)', id(request))
         async with self.connection.new_connection() as connection:
             await connection.send(bytes(request))
@@ -191,7 +162,7 @@ class Client:
                 response = self.parser(data)
             except ParseError:
                 raise BadResponse
-            self._raise_response_exception(response)
+            response.raise_for_status()
         except ResponseException as error:
             self.logger.exception('Exception for request (%s)when composing response: %s',
                                   id(request),

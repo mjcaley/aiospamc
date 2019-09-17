@@ -4,7 +4,6 @@ import pytest
 from asynctest import CoroutineMock, Mock
 
 from aiospamc import Client
-from aiospamc.client import _add_user_header, _add_compress_header
 from aiospamc.connections.tcp_connection import TcpConnectionManager
 from aiospamc.connections.unix_connection import UnixConnectionManager
 from aiospamc.exceptions import (BadResponse, ResponseException,
@@ -44,51 +43,6 @@ def test_value_error():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('compress,body,called,expected', [
-    (None, None, False, None),
-    (True, None, False, None),
-    (True, 'Body', True, Compress),
-])
-async def test_compress_decorator(compress,
-                                  body,
-                                  called,
-                                  expected):
-    cls = Mock()
-    request = Mock()
-    cls.compress = compress
-    cls.body = body
-    cls.func = CoroutineMock()
-    cls.func = _add_compress_header(cls.func)
-
-    await cls.func(cls, request)
-
-    assert request.add_header.called is called
-    if request.add_header.call_args:
-        assert isinstance(request.add_header.call_args[0][0], expected)
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize('user,called,expected', [
-    (None, False, None),
-    ('username', True, User),
-])
-async def test_user_decorator(user,
-                              called,
-                              expected):
-    cls = Mock()
-    request = Mock()
-    cls.user = user
-    cls.func = CoroutineMock()
-    cls.func = _add_user_header(cls.func)
-
-    await cls.func(cls, request)
-
-    assert request.add_header.called is called
-    if request.add_header.call_args:
-        assert isinstance(request.add_header.call_args[0][0], expected)
-
-
-@pytest.mark.asyncio
 async def test_send(mock_connection, request_ping, response_pong):
     mock_connection.side_effect = [response_pong, ]
     client = Client(host='localhost')
@@ -96,6 +50,32 @@ async def test_send(mock_connection, request_ping, response_pong):
     response = await client.send(request_ping)
 
     assert isinstance(response, Response)
+
+
+@pytest.mark.asyncio
+async def test_send_with_user(stub_connection_manager, response_with_body, spam, mocker):
+    client = Client(host='localhost', user='testuser')
+    client.connection = stub_connection_manager(return_value=response_with_body)
+    send_spy = mocker.spy(client.connection.connection_stub, 'send')
+    await client.check(spam)
+    headers = send_spy.call_args[0][0].split(b'\r\n')[1:-1]
+
+    has_user_header = [header.startswith(b'User') for header in headers]
+
+    assert any(has_user_header)
+
+
+@pytest.mark.asyncio
+async def test_send_with_compress(stub_connection_manager, response_with_body, spam, mocker):
+    client = Client(host='localhost', compress=True)
+    client.connection = stub_connection_manager(return_value=response_with_body)
+    send_spy = mocker.spy(client.connection.connection_stub, 'send')
+    await client.check(spam)
+    headers = send_spy.call_args[0][0].split(b'\r\n')[1:-1]
+
+    has_user_header = [header.startswith(b'Compress') for header in headers]
+
+    assert any(has_user_header)
 
 
 def test_response_exception_ok():
