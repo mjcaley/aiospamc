@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
+import pytest
+
 import zlib
 
+from aiospamc.exceptions import ResponseException
 from aiospamc.headers import Compress
 from aiospamc.responses import Response, Status
 
@@ -50,3 +53,41 @@ def test_bytes_body_compressed():
     result = bytes(r).split(b'\r\n', 3)[-1]
 
     assert result == zlib.compress(test_input)
+
+
+def test_raise_for_status_ok():
+    r = Response(version='1.5', status_code=Status.EX_OK, message='')
+
+    assert r.raise_for_status() is None
+
+
+@pytest.mark.parametrize('test_input', [
+    Status.EX_USAGE,
+    Status.EX_DATAERR,
+    Status.EX_NOINPUT,
+    Status.EX_NOUSER,
+    Status.EX_NOHOST,
+    Status.EX_UNAVAILABLE,
+    Status.EX_SOFTWARE,
+    Status.EX_OSERR,
+    Status.EX_OSFILE,
+    Status.EX_CANTCREAT,
+    Status.EX_IOERR,
+    Status.EX_TEMPFAIL,
+    Status.EX_PROTOCOL,
+    Status.EX_NOPERM,
+    Status.EX_CONFIG,
+    Status.EX_TIMEOUT,
+])
+def test_raise_for_status(test_input):
+    r = Response(version='1.5', status_code=test_input, message='')
+
+    with pytest.raises(test_input.exception):
+        r.raise_for_status()
+
+
+def test_raise_for_undefined_status():
+    r = Response(version='1.5', status_code=999, message='')
+
+    with pytest.raises(ResponseException):
+        r.raise_for_status()

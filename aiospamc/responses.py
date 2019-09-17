@@ -10,7 +10,7 @@ from .common import SpamcBody, SpamcHeaders
 from .exceptions import (UsageException, DataErrorException, NoInputException, NoUserException,
                          NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
                          OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
-                         ProtocolException, NoPermissionException, ConfigException, TimeoutException)
+                         ProtocolException, NoPermissionException, ConfigException, TimeoutException, ResponseException)
 from .headers import Header
 
 
@@ -95,3 +95,11 @@ class Response:
                               b'body': body}
 
     body = SpamcBody()  # type: Union[bytes, SupportsBytes]
+
+    def raise_for_status(self) -> None:
+        if isinstance(self.status_code, Status):
+            if self.status_code.exception:
+                raise self.status_code.exception
+            return
+        else:
+            raise ResponseException
