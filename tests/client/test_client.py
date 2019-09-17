@@ -59,7 +59,6 @@ async def test_send_with_user(stub_connection_manager, response_with_body, spam,
     send_spy = mocker.spy(client.connection.connection_stub, 'send')
     await client.check(spam)
     headers = send_spy.call_args[0][0].split(b'\r\n')[1:-1]
-
     has_user_header = [header.startswith(b'User') for header in headers]
 
     assert any(has_user_header)
@@ -72,10 +71,9 @@ async def test_send_with_compress(stub_connection_manager, response_with_body, s
     send_spy = mocker.spy(client.connection.connection_stub, 'send')
     await client.check(spam)
     headers = send_spy.call_args[0][0].split(b'\r\n')[1:-1]
+    has_compress_header = [header.startswith(b'Compress') for header in headers]
 
-    has_user_header = [header.startswith(b'Compress') for header in headers]
-
-    assert any(has_user_header)
+    assert any(has_compress_header)
 
 
 def test_response_exception_ok():
