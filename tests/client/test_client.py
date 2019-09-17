@@ -11,8 +11,7 @@ from aiospamc.exceptions import (BadResponse, ResponseException,
                                  NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
                                  OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
                                  ProtocolException, NoPermissionException, ConfigException, TimeoutException)
-from aiospamc.headers import Compress, User
-from aiospamc.responses import Response, Status
+from aiospamc.responses import Response
 
 
 def test_client_repr():
@@ -43,9 +42,9 @@ def test_value_error():
 
 
 @pytest.mark.asyncio
-async def test_send(mock_connection, request_ping, response_pong):
-    mock_connection.side_effect = [response_pong, ]
-    client = Client(host='localhost')
+async def test_send(stub_connection_manager, request_ping, response_pong):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=response_pong)
 
     response = await client.send(request_ping)
 
@@ -76,52 +75,163 @@ async def test_send_with_compress(stub_connection_manager, response_with_body, s
     assert any(has_compress_header)
 
 
-def test_response_exception_ok():
-    response = Response(version='1.5', status_code=Status.EX_OK, message='')
+@pytest.mark.asyncio
+async def test_raises_usage_exception(stub_connection_manager, ex_usage, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_usage)
 
-    assert Client._raise_response_exception(response) is None
-
-
-@pytest.mark.parametrize('test_input,expected', [
-    (Status.EX_USAGE, UsageException),
-    (Status.EX_DATAERR, DataErrorException),
-    (Status.EX_NOINPUT, NoInputException),
-    (Status.EX_NOUSER, NoUserException),
-    (Status.EX_NOHOST, NoHostException),
-    (Status.EX_UNAVAILABLE, UnavailableException),
-    (Status.EX_SOFTWARE, InternalSoftwareException),
-    (Status.EX_OSERR, OSErrorException),
-    (Status.EX_OSFILE, OSFileException),
-    (Status.EX_CANTCREAT, CantCreateException),
-    (Status.EX_IOERR, IOErrorException),
-    (Status.EX_TEMPFAIL, TemporaryFailureException),
-    (Status.EX_PROTOCOL, ProtocolException),
-    (Status.EX_NOPERM, NoPermissionException),
-    (Status.EX_CONFIG, ConfigException),
-    (Status.EX_TIMEOUT, TimeoutException),
-    (999, ResponseException)
-])
-def test_response_exception(test_input, expected):
-    response = Response(version='1.5', status_code=test_input, message='')
-    response.status_code = test_input
-
-    with pytest.raises(expected):
-        Client._raise_response_exception(response)
+    with pytest.raises(UsageException):
+        await client.send(spam)
 
 
 @pytest.mark.asyncio
-async def test_bad_response_exception(mock_connection, request_ping):
-    mock_connection.side_effect = [b'invalid']
-    c = Client(host='localhost')
+async def test_raises_data_err_exception(stub_connection_manager, ex_data_err, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_data_err)
+
+    with pytest.raises(DataErrorException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_no_input_exception(stub_connection_manager, ex_no_input, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_no_input)
+
+    with pytest.raises(NoInputException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_no_user_exception(stub_connection_manager, ex_no_user, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_no_user)
+
+    with pytest.raises(NoUserException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_no_host_exception(stub_connection_manager, ex_no_host, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_no_host)
+
+    with pytest.raises(NoHostException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_unavailable_exception(stub_connection_manager, ex_unavailable, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_unavailable)
+
+    with pytest.raises(UnavailableException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_software_exception(stub_connection_manager, ex_software, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_software)
+
+    with pytest.raises(InternalSoftwareException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_os_error_exception(stub_connection_manager, ex_os_err, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_os_err)
+
+    with pytest.raises(OSErrorException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_os_file_exception(stub_connection_manager, ex_os_file, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_os_file)
+
+    with pytest.raises(OSFileException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_cant_create_exception(stub_connection_manager, ex_cant_create, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_cant_create)
+
+    with pytest.raises(CantCreateException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_io_error_exception(stub_connection_manager, ex_io_err, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_io_err)
+
+    with pytest.raises(IOErrorException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_temp_fail_exception(stub_connection_manager, ex_temp_fail, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_temp_fail)
+
+    with pytest.raises(TemporaryFailureException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_protocol_exception(stub_connection_manager, ex_protocol, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_protocol)
+
+    with pytest.raises(ProtocolException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_no_perm_exception(stub_connection_manager, ex_no_perm, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_no_perm)
+
+    with pytest.raises(NoPermissionException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_config_exception(stub_connection_manager, ex_config, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_config)
+
+    with pytest.raises(ConfigException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_raises_timeout_exception(stub_connection_manager, ex_timeout, spam):
+    client = Client()
+    client.connection = stub_connection_manager(return_value=ex_timeout)
+
+    with pytest.raises(TimeoutException):
+        await client.send(spam)
+
+
+@pytest.mark.asyncio
+async def test_bad_response_exception(stub_connection_manager, request_ping):
+    c = Client()
+    c.connection = stub_connection_manager(return_value=b'invalid')
 
     with pytest.raises(BadResponse):
         await c.send(request_ping)
 
 
 @pytest.mark.asyncio
-async def test_response_general_exception(mock_connection, request_ping):
-    mock_connection.side_effect = [b'SPAMD/1.5 999 PONG\r\n']
-    c = Client(host='localhost')
+async def test_response_general_exception(stub_connection_manager, ex_undefined, request_ping):
+    c = Client()
+    c.connection = stub_connection_manager(return_value=ex_undefined)
 
     with pytest.raises(ResponseException):
         await c.send(request_ping)

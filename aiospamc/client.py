@@ -8,15 +8,11 @@ import logging
 from typing import SupportsBytes, Union
 
 from .options import MessageClassOption, ActionOption
-from .exceptions import (BadResponse, ResponseException,
-                         UsageException, DataErrorException, NoInputException, NoUserException,
-                         NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
-                         OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
-                         ProtocolException, NoPermissionException, ConfigException, TimeoutException)
+from .exceptions import BadResponse, ResponseException
 from .headers import Compress, MessageClass, Remove, Set, User
 from .parser import parse, ParseError
 from .requests import Request
-from .responses import Status, Response
+from .responses import Response
 
 
 class Client:
@@ -79,45 +75,6 @@ class Client:
                                  repr(self.user),
                                  repr(self.compress),
                                  repr(self._ssl))
-
-    @staticmethod
-    def _raise_response_exception(response) -> None:
-        if response.status_code is Status.EX_OK:
-            return
-        elif response.status_code is Status.EX_USAGE:
-            raise UsageException(response)
-        elif response.status_code is Status.EX_DATAERR:
-            raise DataErrorException(response)
-        elif response.status_code is Status.EX_NOINPUT:
-            raise NoInputException(response)
-        elif response.status_code is Status.EX_NOUSER:
-            raise NoUserException(response)
-        elif response.status_code is Status.EX_NOHOST:
-            raise NoHostException(response)
-        elif response.status_code is Status.EX_UNAVAILABLE:
-            raise UnavailableException(response)
-        elif response.status_code is Status.EX_SOFTWARE:
-            raise InternalSoftwareException(response)
-        elif response.status_code is Status.EX_OSERR:
-            raise OSErrorException(response)
-        elif response.status_code is Status.EX_OSFILE:
-            raise OSFileException(response)
-        elif response.status_code is Status.EX_CANTCREAT:
-            raise CantCreateException(response)
-        elif response.status_code is Status.EX_IOERR:
-            raise IOErrorException(response)
-        elif response.status_code is Status.EX_TEMPFAIL:
-            raise TemporaryFailureException(response)
-        elif response.status_code is Status.EX_PROTOCOL:
-            raise ProtocolException(response)
-        elif response.status_code is Status.EX_NOPERM:
-            raise NoPermissionException(response)
-        elif response.status_code is Status.EX_CONFIG:
-            raise ConfigException(response)
-        elif response.status_code is Status.EX_TIMEOUT:
-            raise TimeoutException(response)
-        else:
-            raise ResponseException(response)
 
     async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.

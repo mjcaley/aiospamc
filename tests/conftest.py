@@ -195,6 +195,12 @@ def ex_timeout():
     return b'SPAMD/1.5 79 EX_TIMEOUT\r\n\r\n'
 
 
+@pytest.fixture
+def ex_undefined():
+    '''Undefined exception in bytes.'''
+    return b'SPAMD/1.5 999 EX_UNDEFINED\r\n\r\n'
+
+
 # Mock fixtures for asyncio objects/functions
 
 @pytest.fixture
