@@ -1,43 +1,93 @@
 #!/usr/bin/env python3
 
+import pytest
+
 import zlib
 
-import pytest
-# from conftest import *
-
-# from aiospamc.exceptions import (BadResponse,
-#                                  UsageException, DataErrorException, NoInputException, NoUserException,
-#                                  NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
-#                                  OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
-#                                  ProtocolException, NoPermissionException, ConfigException, TimeoutException)
+from aiospamc.exceptions import ResponseException
 from aiospamc.headers import Compress
 from aiospamc.responses import Response, Status
 
 
-def test_response_instantiates():
-    response = Response('1.5', Status.EX_OK, 'EX_OK')
+def test_init_version():
+    r = Response(version='4.2', status_code=Status.EX_OK, message='EX_OK')
+    result = bytes(r).split(b' ')[0]
 
-    assert 'response' in locals()
+    assert result == b'SPAMD/4.2'
 
 
-@pytest.mark.parametrize('version,status,message,body,headers', [
-    ('1.5', Status.EX_OK, 'EX_OK', None, []),
-    ('1.5', Status.EX_OK, 'EX_OK', 'Test body\n', []),
-    ('1.5', Status.EX_OK, 'EX_OK', 'Test body\n', [Compress()]),
+def test_init_status_code():
+    r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK')
+    result = bytes(r).split(b' ')[1]
+
+    assert result == str(Status.EX_OK.value).encode()
+
+
+def test_init_message():
+    r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK')
+    result = bytes(r).split(b'\r\n')[0]
+
+    assert result.endswith(Status.EX_OK.name.encode())
+
+
+def test_bytes_headers(x_headers):
+    r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK')
+    result = bytes(r).split(b'\r\n')[1:-2]      # strip end of headers, body and first line
+    expected = [bytes(header).rstrip(b'\r\n') for header in x_headers]
+
+    for header_bytes in result:
+        assert header_bytes in expected
+
+
+def test_bytes_body():
+    test_input = b'Test body\n'
+    r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK', body=test_input)
+    result = bytes(r).split(b'\r\n', 3)[-1]
+
+    assert result == test_input
+
+
+def test_bytes_body_compressed():
+    test_input = b'Test body\n'
+    r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK', headers=[Compress()], body=test_input)
+    result = bytes(r).split(b'\r\n', 3)[-1]
+
+    assert result == zlib.compress(test_input)
+
+
+def test_raise_for_status_ok():
+    r = Response(version='1.5', status_code=Status.EX_OK, message='')
+
+    assert r.raise_for_status() is None
+
+
+@pytest.mark.parametrize('test_input', [
+    Status.EX_USAGE,
+    Status.EX_DATAERR,
+    Status.EX_NOINPUT,
+    Status.EX_NOUSER,
+    Status.EX_NOHOST,
+    Status.EX_UNAVAILABLE,
+    Status.EX_SOFTWARE,
+    Status.EX_OSERR,
+    Status.EX_OSFILE,
+    Status.EX_CANTCREAT,
+    Status.EX_IOERR,
+    Status.EX_TEMPFAIL,
+    Status.EX_PROTOCOL,
+    Status.EX_NOPERM,
+    Status.EX_CONFIG,
+    Status.EX_TIMEOUT,
 ])
-def test_response_bytes(version, status, message, body, headers):
-    response = Response(version=version,
-                        status_code=status,
-                        message=message,
-                        body=body,
-                        headers=headers)
+def test_raise_for_status(test_input):
+    r = Response(version='1.5', status_code=test_input, message='')
 
-    assert bytes(response).startswith(b'SPAMD/%b' % version.encode())
-    assert b' %d ' % status.value in bytes(response)
-    assert b' %b\r\n' % message.encode() in bytes(response)
-    assert all(bytes(header) in bytes(response) for header in headers)
-    if body:
-        if any(isinstance(header, Compress) for header in headers):
-            assert bytes(response).endswith(zlib.compress(body.encode()))
-        else:
-            assert bytes(response).endswith(body.encode())
+    with pytest.raises(test_input.exception):
+        r.raise_for_status()
+
+
+def test_raise_for_undefined_status():
+    r = Response(version='1.5', status_code=999, message='')
+
+    with pytest.raises(ResponseException):
+        r.raise_for_status()

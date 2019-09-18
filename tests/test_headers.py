@@ -14,6 +14,11 @@ class TestHeader:
         with pytest.raises(NotImplementedError):
             bytes(header)
 
+    def test_len(self):
+        header = Header()
+        with pytest.raises(NotImplementedError):
+            len(header)
+
     def test_field_name(self):
         header = Header()
         with pytest.raises(NotImplementedError):
@@ -116,26 +121,26 @@ class TestMessageClass:
         assert message_class.field_name() == 'Message-class'
 
 
-class Test_SetRemoveBase:
-    def test_instantiates(self):
-        _set_remove = _SetRemoveBase()
-
-        assert '_set_remove' in locals()
-
-    def test_default_value(self):
-        _set_remove = _SetRemoveBase()
-
-        assert _set_remove.action == ActionOption(False, False)
-
-    def test_user_value(self):
-        _set_remove = _SetRemoveBase(ActionOption(True, True))
-
-        assert _set_remove.action == ActionOption(True, True)
-
-    def test_field_name(self):
-        _set_remove = _SetRemoveBase()
-        with pytest.raises(NotImplementedError):
-            _set_remove.field_name()
+# class Test_SetRemoveBase:
+#     def test_instantiates(self):
+#         _set_remove = _SetRemoveBase()
+#
+#         assert '_set_remove' in locals()
+#
+#     def test_default_value(self):
+#         _set_remove = _SetRemoveBase()
+#
+#         assert _set_remove.action == ActionOption(False, False)
+#
+#     def test_user_value(self):
+#         _set_remove = _SetRemoveBase(ActionOption(True, True))
+#
+#         assert _set_remove.action == ActionOption(True, True)
+#
+#     def test_field_name(self):
+#         _set_remove = _SetRemoveBase()
+#         with pytest.raises(NotImplementedError):
+#             _set_remove.field_name()
 
 
 class TestDidRemove:

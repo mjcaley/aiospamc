@@ -57,7 +57,7 @@ An example using the :meth:`aiospamc.client.Client.check` method:
                        'Message-ID: <1234@local.machine.example>'
                        ''
                        'This is a message just to say hello.'
-                       'So, "Hello".')
+                       'So, "Hello".').encode('ascii')
     
     loop = asyncio.get_event_loop()
     client = aiospamc.Client()
@@ -107,7 +107,7 @@ For example:
                        'Message-ID: <1234@local.machine.example>'
                        ''
                        'This is a message just to say hello.'
-                       'So, "Hello".')
+                       'So, "Hello".').encode('ascii')
 
     loop = asyncio.get_event_loop()
     client = aiospamc.Client(host='localhost')

@@ -32,10 +32,7 @@ needs_sphinx = '2.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.napoleon']
-
-napoleon_include_init_with_doc = True
+              'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -87,7 +84,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'pyramid'
+html_theme = 'classic'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -158,3 +155,8 @@ texinfo_documents = [
      author, 'aiospamc', 'One line description of project.',
      'Miscellaneous'),
 ]
+
+# -- Options for sphinx-autodoc-typehints ---------------------------------
+
+set_type_checking_flag = True
+always_document_param_types = True

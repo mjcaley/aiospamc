@@ -4,28 +4,16 @@
 
 import asyncio
 import logging
+from typing import Tuple, Union, SupportsBytes
 
 
 class Connection:
-    '''Base class for connection objects.
+    '''Base class for connection objects.'''
 
-    Attributes
-    ----------
-    connected : bool
-        Status on if the connection is established.
-    loop : asyncio.AbstratEventLoop
-        The asyncio event loop.
-    logger : logging.Logger
-        Logging instance.  Logs to 'aiospamc.connections'
-    '''
-
-    def __init__(self, loop=None):
+    def __init__(self, loop: asyncio.AbstractEventLoop = None):
         '''Connection constructor.
 
-        Parameters
-        ----------
-        loop : asyncio.AbstractEventLoop
-            The asyncio event loop.
+        :param loop: The asyncio event loop.
         '''
 
         self.connected = False
@@ -44,86 +32,47 @@ class Connection:
         self.close()
         self.logger.debug('Closed connection to %s', self.connection_string)
 
-    async def open(self):
+    async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Connect to a service.
 
-        Returns
-        -------
-        asyncio.StreamReader
-            Instance of stream reader.
-        asyncio.StreamWriter
-            Instance of stream writer.
-
-        Raises
-        ------
-        aiospamc.exceptions.AIOSpamcConnectionFailed
-            If connection failed for some reason.
+        :raises AIOSpamcConnectionFailed:
         '''
 
         raise NotImplementedError
 
     @property
-    def connection_string(self):
-        '''String representation of the connection.
-
-        Returns
-        -------
-        str
-            String of the connection address.
-        '''
+    def connection_string(self) -> str:
+        '''String representation of the connection.'''
 
         raise NotImplementedError
 
-    def close(self):
+    def close(self) -> None:
         '''Closes the connection.'''
 
         self.writer.close()
         self.connected = False
         del self.reader, self.writer
 
-    async def send(self, data):
-        '''Sends data through the connection.
-
-        Parameters
-        ----------
-        data : bytes
-            Data to send.
-        '''
+    async def send(self, data: Union[bytes, SupportsBytes]) -> None:
+        '''Sends data through the connection.'''
 
         self.writer.write(data)
         await self.writer.drain()
+        self.writer.write_eof()
 
-    async def receive(self):
-        '''Receives data from the connection.
-
-        Returns
-        -------
-        bytes
-            Data received.
-        '''
+    async def receive(self) -> bytes:
+        '''Receives data from the connection.'''
 
         return await self.reader.read()
 
 
 class ConnectionManager:
-    '''Stores connection parameters and creates connections.
-    
-    Attributes
-    ----------
-    loop : asyncio.AbstratEventLoop
-        The asyncio event loop.
-    '''
+    '''Stores connection parameters and creates connections.'''
 
-    def __init__(self, loop=None):
+    def __init__(self, loop: asyncio.AbstractEventLoop = None):
         self.loop = loop or asyncio.get_event_loop()
 
-    def new_connection(self):
-        '''Creates a connection object.
-
-        Returns
-        -------
-        Connection
-            Instance of a Connection object.
-        '''
+    def new_connection(self) -> Connection:
+        '''Creates a connection object.'''
 
         raise NotImplementedError

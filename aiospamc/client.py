@@ -3,101 +3,39 @@
 '''Contains the Client class that is used to interact with SPAMD.'''
 
 import asyncio
-from functools import wraps
 import logging
+from typing import SupportsBytes, Union
 
-from aiospamc.exceptions import (BadResponse, ResponseException,
-                                 UsageException, DataErrorException, NoInputException, NoUserException,
-                                 NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
-                                 OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
-                                 ProtocolException, NoPermissionException, ConfigException, TimeoutException)
-from aiospamc.headers import Compress, MessageClass, Remove, Set, User
-from aiospamc.parser import parse, ParseError
-from aiospamc.requests import Request
-from aiospamc.responses import Status
-
-
-def _add_compress_header(func):
-    '''If the class instance's :attribute:`compress` boolean is `True` then the
-    :class:`aiospamc.headers.Compress` header is added to the
-    :class:`aiospamc.requests.Request` object.'''
-
-    @wraps(func)
-    async def wrapper(cls, request):
-        if cls.compress and cls.body:
-            cls.logger.debug('Added Compress header to request (%s)', id(request))
-            request.add_header(Compress())
-        return await func(cls, request)
-
-    return wrapper
-
-
-def _add_user_header(func):
-    '''If the class instance's :attribute:`user` boolean is `True` then the
-    :class:`aiospamc.headers.User` header is added to the
-    :class:`aiospamc.requests.Request` object.'''
-
-    @wraps(func)
-    async def wrapper(cls, request):
-        if cls.user:
-            cls.logger.debug('Added user header for \'%s\' to request (%s)',
-                             cls.user,
-                             id(request))
-            request.add_header(User(cls.user))
-        return await func(cls, request)
-
-    return wrapper
+from .options import MessageClassOption, ActionOption
+from .exceptions import BadResponse, ResponseException
+from .headers import Compress, MessageClass, Remove, Set, User
+from .parser import parse, ParseError
+from .requests import Request
+from .responses import Response
 
 
 class Client:
-    '''Client object for interacting with SPAMD.
-
-    Attributes
-    ----------
-    connection : :class:`aiospamc.connections.ConnectionManager`
-        Manager instance to open connections.
-    user : :obj:`str`
-        Name of the user that SPAMD will run the checks under.
-    compress : :obj:`bool`
-        If true, the request body will be compressed.
-    loop : :class:`asyncio.AbstractEventLoop`
-        The asyncio event loop.
-    logger : :class:`logging.Logger`
-        Logging instance, logs to 'aiospamc.client'
-    '''
+    '''Client object for interacting with SPAMD.'''
 
     def __init__(self,
-                 socket_path='/var/run/spamassassin/spamd.sock',
-                 host=None,
-                 port=783,
-                 user=None,
-                 compress=False,
-                 ssl=False,
-                 loop=None):
+                 socket_path: str = '/var/run/spamassassin/spamd.sock',
+                 host: str = None,
+                 port: int = 783,
+                 user: str = None,
+                 compress: bool = False,
+                 ssl: bool = False,
+                 loop: asyncio.AbstractEventLoop = None) -> None:
         '''Client constructor.
 
-        Parameters
-        ----------
-        socket_path : :obj:`str`, optional
-            The path to the Unix socket for the SPAMD service.
-        host : :obj:`str`, optional
-            Hostname or IP address of the SPAMD service, defaults to localhost.
-        port : :obj:`int`, optional
-            Port number for the SPAMD service, defaults to 783.
-        user : :obj:`str`, optional
-            Name of the user that SPAMD will run the checks under.
-        compress : :obj:`bool`, optional
-            If true, the request body will be compressed.
-        ssl : :obj:`bool`, optional
-            If true, will enable SSL/TLS for the connection.
-        loop : :class:`asyncio.AbstractEventLoop`
-            The asyncio event loop.
+        :param socket_path: The path to the Unix socket for the SPAMD service.
+        :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
+        :param port: Port number for the SPAMD service, defaults to 783.
+        :param user: Name of the user that SPAMD will run the checks under.
+        :param compress: If true, the request body will be compressed.
+        :param ssl: If true, will enable SSL/TLS for the connection.
+        :param loop: The asyncio event loop.
 
-        Raises
-        ------
-        ValueError
-            Raised if the constructor can't tell if it's using a TCP or a Unix
-            domain socket connection.
+        :raises ValueError: Raised if the constructor can't tell if it's using a TCP or a Unix domain socket connection.
         '''
 
         if host and port:
@@ -122,7 +60,7 @@ class Client:
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Created instance of %r', self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         client_fmt = ('{}(socket_path={}, '
                       'host={}, '
                       'port={}, '
@@ -137,101 +75,37 @@ class Client:
                                  repr(self.compress),
                                  repr(self._ssl))
 
-    @staticmethod
-    def _raise_response_exception(response):
-        if response.status_code is Status.EX_OK:
-            return
-        elif response.status_code is Status.EX_USAGE:
-            raise UsageException(response)
-        elif response.status_code is Status.EX_DATAERR:
-            raise DataErrorException(response)
-        elif response.status_code is Status.EX_NOINPUT:
-            raise NoInputException(response)
-        elif response.status_code is Status.EX_NOUSER:
-            raise NoUserException(response)
-        elif response.status_code is Status.EX_NOHOST:
-            raise NoHostException(response)
-        elif response.status_code is Status.EX_UNAVAILABLE:
-            raise UnavailableException(response)
-        elif response.status_code is Status.EX_SOFTWARE:
-            raise InternalSoftwareException(response)
-        elif response.status_code is Status.EX_OSERR:
-            raise OSErrorException(response)
-        elif response.status_code is Status.EX_OSFILE:
-            raise OSFileException(response)
-        elif response.status_code is Status.EX_CANTCREAT:
-            raise CantCreateException(response)
-        elif response.status_code is Status.EX_IOERR:
-            raise IOErrorException(response)
-        elif response.status_code is Status.EX_TEMPFAIL:
-            raise TemporaryFailureException(response)
-        elif response.status_code is Status.EX_PROTOCOL:
-            raise ProtocolException(response)
-        elif response.status_code is Status.EX_NOPERM:
-            raise NoPermissionException(response)
-        elif response.status_code is Status.EX_CONFIG:
-            raise ConfigException(response)
-        elif response.status_code is Status.EX_TIMEOUT:
-            raise TimeoutException(response)
-        else:
-            raise ResponseException(response)
-
-    @_add_compress_header
-    @_add_user_header
-    async def send(self, request):
+    async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.
 
-        If the SPAMD service gives a temporary failure response, then
+        If the SPAMD service gives a temporary failure response, then its retried.
 
-        Parameters
-        ----------
-        request : :class:`aiospamc.requests.Request`
-            Request object to send.
+        :param request: Request object to send.
 
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-
-        Raises
-        ------
-        :class:`aiospamc.exceptions.BadResponse`
-            If the response from SPAMD is ill-formed this exception will be
-            raised.
-        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
-            Raised if an error occurred when trying to connect.
-        :class:`aiospamc.exceptions.UsageException`
-            Error in command line usage.
-        :class:`aiospamc.exceptions.DataErrorException`
-            Error with data format.
-        :class:`aiospamc.exceptions.NoInputException`
-            Cannot open input.
-        :class:`aiospamc.exceptions.NoUserException`
-            Addressee unknown.
-        :class:`aiospamc.exceptions.NoHostException`
-            Hostname unknown.
-        :class:`aiospamc.exceptions.UnavailableException`
-            Service unavailable.
-        :class:`aiospamc.exceptions.InternalSoftwareException`
-            Internal software error.
-        :class:`aiospamc.exceptions.OSErrorException`
-            System error.
-        :class:`aiospamc.exceptions.OSFileException`
-            Operating system file missing.
-        :class:`aiospamc.exceptions.CantCreateException`
-            Cannot create output file.
-        :class:`aiospamc.exceptions.IOErrorException`
-            Input/output error.
-        :class:`aiospamc.exceptions.TemporaryFailureException`
-            Temporary failure, may reattempt.
-        :class:`aiospamc.exceptions.ProtocolException`
-            Error in the protocol.
-        :class:`aiospamc.exceptions.NoPermissionException`
-            Permission denied.
-        :class:`aiospamc.exceptions.ConfigException`
-            Error in configuration.
-        :class:`aiospamc.exceptions.TimeoutException`
-            Timeout during connection.
+        :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+        :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
+        :raises UsageException: Error in command line usage.
+        :raises DataErrorException: Error with data format.
+        :raises NoInputException: Cannot open input.
+        :raises NoUserException: Addressee unknown.
+        :raises NoHostException: Hostname unknown.
+        :raises UnavailableException: Service unavailable.
+        :raises InternalSoftwareException: Internal software error.
+        :raises OSErrorException: System error.
+        :raises OSFileException: Operating system file missing.
+        :raises CantCreateException: Cannot create output file.
+        :raises IOErrorException: Input/output error.
+        :raises TemporaryFailureException: Temporary failure, may reattempt.
+        :raises ProtocolException: Error in the protocol.
+        :raises NoPermissionException: Permission denied.
+        :raises ConfigException: Error in configuration.
+        :raises TimeoutException: Timeout during connection.
         '''
+
+        if self.compress:
+            request.headers['Compress'] = Compress()
+        if self.user:
+            request.headers['User'] = User(name=self.user)
 
         self.logger.debug('Sending request (%s)', id(request))
         async with self.connection.new_connection() as connection:
@@ -244,7 +118,7 @@ class Client:
                 response = self.parser(data)
             except ParseError:
                 raise BadResponse
-            self._raise_response_exception(response)
+            response.raise_for_status()
         except ResponseException as error:
             self.logger.exception('Exception for request (%s)when composing response: %s',
                                   id(request),
@@ -252,72 +126,40 @@ class Client:
             raise
 
         self.logger.debug('Received response (%s) for request (%s)',
-            id(response),
-            id(request))
+                          id(response),
+                          id(request))
         return response
 
-    async def check(self, message):
-        '''Request the SPAMD service to check a message with a CHECK request.
+    async def check(self, message: Union[bytes, SupportsBytes]) -> Response:
+        '''Request the SPAMD service to check a message with a HEADERS request.
 
-        The response will contain a 'Spam' header if the message is marked
-        as spam as well as the score and threshold.
-
-        SPAMD will perform a scan on the included message.  SPAMD expects an
-        RFC 822 or RFC 2822 formatted email.
-
-        Parameters
-        ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        :param message:
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-            The response will contain a 'Spam' header if the message is marked
+        :return: The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
-        Raises
-        ------
-        :class:`aiospamc.exceptions.BadResponse`
-            If the response from SPAMD is ill-formed this exception will be
-            raised.
-        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
-            Raised if an error occurred when trying to connect.
-        :class:`aiospamc.exceptions.UsageException`
-            Error in command line usage.
-        :class:`aiospamc.exceptions.DataErrorException`
-            Error with data format.
-        :class:`aiospamc.exceptions.NoInputException`
-            Cannot open input.
-        :class:`aiospamc.exceptions.NoUserException`
-            Addressee unknown.
-        :class:`aiospamc.exceptions.NoHostException`
-            Hostname unknown.
-        :class:`aiospamc.exceptions.UnavailableException`
-            Service unavailable.
-        :class:`aiospamc.exceptions.InternalSoftwareException`
-            Internal software error.
-        :class:`aiospamc.exceptions.OSErrorException`
-            System error.
-        :class:`aiospamc.exceptions.OSFileException`
-            Operating system file missing.
-        :class:`aiospamc.exceptions.CantCreateException`
-            Cannot create output file.
-        :class:`aiospamc.exceptions.IOErrorException`
-            Input/output error.
-        :class:`aiospamc.exceptions.TemporaryFailureException`
-            Temporary failure, may reattempt.
-        :class:`aiospamc.exceptions.ProtocolException`
-            Error in the protocol.
-        :class:`aiospamc.exceptions.NoPermissionException`
-            Permission denied.
-        :class:`aiospamc.exceptions.ConfigException`
-            Error in configuration.
-        :class:`aiospamc.exceptions.TimeoutException`
-            Timeout during connection.
+        :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+        :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
+        :raises UsageException: Error in command line usage.
+        :raises DataErrorException: Error with data format.
+        :raises NoInputException: Cannot open input.
+        :raises NoUserException: Addressee unknown.
+        :raises NoHostException: Hostname unknown.
+        :raises UnavailableException: Service unavailable.
+        :raises InternalSoftwareException: Internal software error.
+        :raises OSErrorException: System error.
+        :raises OSFileException: Operating system file missing.
+        :raises CantCreateException: Cannot create output file.
+        :raises IOErrorException: Input/output error.
+        :raises TemporaryFailureException: Temporary failure, may reattempt.
+        :raises ProtocolException: Error in the protocol.
+        :raises NoPermissionException: Permission denied.
+        :raises ConfigException: Error in configuration.
+        :raises TimeoutException: Timeout during connection.
         '''
 
         request = Request('CHECK', body=message)
@@ -326,64 +168,38 @@ class Client:
 
         return response
 
-    async def headers(self, message):
+    async def headers(self, message: Union[bytes, SupportsBytes]) -> Response:
         '''Request the SPAMD service to check a message with a HEADERS request.
 
-        Parameters
-        ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        :param message:
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-            The response will contain a 'Spam' header if the message is marked
+        :return: The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
             The body will contain the modified headers of the message.
 
-        Raises
-        ------
-        :class:`aiospamc.exceptions.BadResponse`
-            If the response from SPAMD is ill-formed this exception will be
-            raised.
-        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
-            Raised if an error occurred when trying to connect.
-        :class:`aiospamc.exceptions.UsageException`
-            Error in command line usage.
-        :class:`aiospamc.exceptions.DataErrorException`
-            Error with data format.
-        :class:`aiospamc.exceptions.NoInputException`
-            Cannot open input.
-        :class:`aiospamc.exceptions.NoUserException`
-            Addressee unknown.
-        :class:`aiospamc.exceptions.NoHostException`
-            Hostname unknown.
-        :class:`aiospamc.exceptions.UnavailableException`
-            Service unavailable.
-        :class:`aiospamc.exceptions.InternalSoftwareException`
-            Internal software error.
-        :class:`aiospamc.exceptions.OSErrorException`
-            System error.
-        :class:`aiospamc.exceptions.OSFileException`
-            Operating system file missing.
-        :class:`aiospamc.exceptions.CantCreateException`
-            Cannot create output file.
-        :class:`aiospamc.exceptions.IOErrorException`
-            Input/output error.
-        :class:`aiospamc.exceptions.TemporaryFailureException`
-            Temporary failure, may reattempt.
-        :class:`aiospamc.exceptions.ProtocolException`
-            Error in the protocol.
-        :class:`aiospamc.exceptions.NoPermissionException`
-            Permission denied.
-        :class:`aiospamc.exceptions.ConfigException`
-            Error in configuration.
-        :class:`aiospamc.exceptions.TimeoutException`
-            Timeout during connection.
+        :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+        :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
+        :raises UsageException: Error in command line usage.
+        :raises DataErrorException: Error with data format.
+        :raises NoInputException: Cannot open input.
+        :raises NoUserException: Addressee unknown.
+        :raises NoHostException: Hostname unknown.
+        :raises UnavailableException: Service unavailable.
+        :raises InternalSoftwareException: Internal software error.
+        :raises OSErrorException: System error.
+        :raises OSFileException: Operating system file missing.
+        :raises CantCreateException: Cannot create output file.
+        :raises IOErrorException: Input/output error.
+        :raises TemporaryFailureException: Temporary failure, may reattempt.
+        :raises ProtocolException: Error in the protocol.
+        :raises NoPermissionException: Permission denied.
+        :raises ConfigException: Error in configuration.
+        :raises TimeoutException: Timeout during connection.
         '''
 
         request = Request('HEADERS', body=message)
@@ -392,54 +208,30 @@ class Client:
 
         return response
 
-    async def ping(self):
+    async def ping(self) -> Response:
         '''Sends a ping request to the SPAMD service and will receive a
-        response if the serivce is alive.
+        response if the service is alive.
 
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-            Response message will contain 'PONG' if successful.
+        :return: Response message will contain 'PONG' if successful.
 
-        Raises
-        ------
-        :class:`aiospamc.exceptions.BadResponse`
-            If the response from SPAMD is ill-formed this exception will be
-            raised.
-        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
-            Raised if an error occurred when trying to connect.
-        :class:`aiospamc.exceptions.UsageException`
-            Error in command line usage.
-        :class:`aiospamc.exceptions.DataErrorException`
-            Error with data format.
-        :class:`aiospamc.exceptions.NoInputException`
-            Cannot open input.
-        :class:`aiospamc.exceptions.NoUserException`
-            Addressee unknown.
-        :class:`aiospamc.exceptions.NoHostException`
-            Hostname unknown.
-        :class:`aiospamc.exceptions.UnavailableException`
-            Service unavailable.
-        :class:`aiospamc.exceptions.InternalSoftwareException`
-            Internal software error.
-        :class:`aiospamc.exceptions.OSErrorException`
-            System error.
-        :class:`aiospamc.exceptions.OSFileException`
-            Operating system file missing.
-        :class:`aiospamc.exceptions.CantCreateException`
-            Cannot create output file.
-        :class:`aiospamc.exceptions.IOErrorException`
-            Input/output error.
-        :class:`aiospamc.exceptions.TemporaryFailureException`
-            Temporary failure, may reattempt.
-        :class:`aiospamc.exceptions.ProtocolException`
-            Error in the protocol.
-        :class:`aiospamc.exceptions.NoPermissionException`
-            Permission denied.
-        :class:`aiospamc.exceptions.ConfigException`
-            Error in configuration.
-        :class:`aiospamc.exceptions.TimeoutException`
-            Timeout during connection.
+        :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+        :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
+        :raises UsageException: Error in command line usage.
+        :raises DataErrorException: Error with data format.
+        :raises NoInputException: Cannot open input.
+        :raises NoUserException: Addressee unknown.
+        :raises NoHostException: Hostname unknown.
+        :raises UnavailableException: Service unavailable.
+        :raises InternalSoftwareException: Internal software error.
+        :raises OSErrorException: System error.
+        :raises OSFileException: Operating system file missing.
+        :raises CantCreateException: Cannot create output file.
+        :raises IOErrorException: Input/output error.
+        :raises TemporaryFailureException: Temporary failure, may reattempt.
+        :raises ProtocolException: Error in the protocol.
+        :raises NoPermissionException: Permission denied.
+        :raises ConfigException: Error in configuration.
+        :raises TimeoutException: Timeout during connection.
         '''
 
         request = Request('PING')
@@ -448,64 +240,38 @@ class Client:
 
         return response
 
-    async def process(self, message):
-        '''Request the SPAMD service to check a message with a PROCESS request.
+    async def process(self, message: Union[bytes, SupportsBytes]) -> Response:
+        '''Request the SPAMD service to check a message with a HEADERS request.
 
-        Parameters
-        ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        :param message:
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-            The response will contain a 'Spam' header if the message is marked
+        :return: The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
             The body will contain a modified version of the message.
 
-        Raises
-        ------
-        :class:`aiospamc.exceptions.BadResponse`
-            If the response from SPAMD is ill-formed this exception will be
-            raised.
-        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
-            Raised if an error occurred when trying to connect.
-        :class:`aiospamc.exceptions.UsageException`
-            Error in command line usage.
-        :class:`aiospamc.exceptions.DataErrorException`
-            Error with data format.
-        :class:`aiospamc.exceptions.NoInputException`
-            Cannot open input.
-        :class:`aiospamc.exceptions.NoUserException`
-            Addressee unknown.
-        :class:`aiospamc.exceptions.NoHostException`
-            Hostname unknown.
-        :class:`aiospamc.exceptions.UnavailableException`
-            Service unavailable.
-        :class:`aiospamc.exceptions.InternalSoftwareException`
-            Internal software error.
-        :class:`aiospamc.exceptions.OSErrorException`
-            System error.
-        :class:`aiospamc.exceptions.OSFileException`
-            Operating system file missing.
-        :class:`aiospamc.exceptions.CantCreateException`
-            Cannot create output file.
-        :class:`aiospamc.exceptions.IOErrorException`
-            Input/output error.
-        :class:`aiospamc.exceptions.TemporaryFailureException`
-            Temporary failure, may reattempt.
-        :class:`aiospamc.exceptions.ProtocolException`
-            Error in the protocol.
-        :class:`aiospamc.exceptions.NoPermissionException`
-            Permission denied.
-        :class:`aiospamc.exceptions.ConfigException`
-            Error in configuration.
-        :class:`aiospamc.exceptions.TimeoutException`
-            Timeout during connection.
+        :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+        :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
+        :raises UsageException: Error in command line usage.
+        :raises DataErrorException: Error with data format.
+        :raises NoInputException: Cannot open input.
+        :raises NoUserException: Addressee unknown.
+        :raises NoHostException: Hostname unknown.
+        :raises UnavailableException: Service unavailable.
+        :raises InternalSoftwareException: Internal software error.
+        :raises OSErrorException: System error.
+        :raises OSFileException: Operating system file missing.
+        :raises CantCreateException: Cannot create output file.
+        :raises IOErrorException: Input/output error.
+        :raises TemporaryFailureException: Temporary failure, may reattempt.
+        :raises ProtocolException: Error in the protocol.
+        :raises NoPermissionException: Permission denied.
+        :raises ConfigException: Error in configuration.
+        :raises TimeoutException: Timeout during connection.
         '''
 
         request = Request('PROCESS', body=message)
@@ -514,64 +280,38 @@ class Client:
 
         return response
 
-    async def report(self, message):
-        '''Request the SPAMD service to check a message with a REPORT request.
+    async def report(self, message: Union[bytes, SupportsBytes]) -> Response:
+        '''Request the SPAMD service to check a message with a HEADERS request.
 
-        Parameters
-        ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        :param message:
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-            The response will contain a 'Spam' header if the message is marked
+        :return: The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
             The body will contain a report composed by the SPAMD service.
 
-        Raises
-        ------
-        :class:`aiospamc.exceptions.BadResponse`
-            If the response from SPAMD is ill-formed this exception will be
-            raised.
-        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
-            Raised if an error occurred when trying to connect.
-        :class:`aiospamc.exceptions.UsageException`
-            Error in command line usage.
-        :class:`aiospamc.exceptions.DataErrorException`
-            Error with data format.
-        :class:`aiospamc.exceptions.NoInputException`
-            Cannot open input.
-        :class:`aiospamc.exceptions.NoUserException`
-            Addressee unknown.
-        :class:`aiospamc.exceptions.NoHostException`
-            Hostname unknown.
-        :class:`aiospamc.exceptions.UnavailableException`
-            Service unavailable.
-        :class:`aiospamc.exceptions.InternalSoftwareException`
-            Internal software error.
-        :class:`aiospamc.exceptions.OSErrorException`
-            System error.
-        :class:`aiospamc.exceptions.OSFileException`
-            Operating system file missing.
-        :class:`aiospamc.exceptions.CantCreateException`
-            Cannot create output file.
-        :class:`aiospamc.exceptions.IOErrorException`
-            Input/output error.
-        :class:`aiospamc.exceptions.TemporaryFailureException`
-            Temporary failure, may reattempt.
-        :class:`aiospamc.exceptions.ProtocolException`
-            Error in the protocol.
-        :class:`aiospamc.exceptions.NoPermissionException`
-            Permission denied.
-        :class:`aiospamc.exceptions.ConfigException`
-            Error in configuration.
-        :class:`aiospamc.exceptions.TimeoutException`
-            Timeout during connection.
+        :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+        :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
+        :raises UsageException: Error in command line usage.
+        :raises DataErrorException: Error with data format.
+        :raises NoInputException: Cannot open input.
+        :raises NoUserException: Addressee unknown.
+        :raises NoHostException: Hostname unknown.
+        :raises UnavailableException: Service unavailable.
+        :raises InternalSoftwareException: Internal software error.
+        :raises OSErrorException: System error.
+        :raises OSFileException: Operating system file missing.
+        :raises CantCreateException: Cannot create output file.
+        :raises IOErrorException: Input/output error.
+        :raises TemporaryFailureException: Temporary failure, may reattempt.
+        :raises ProtocolException: Error in the protocol.
+        :raises NoPermissionException: Permission denied.
+        :raises ConfigException: Error in configuration.
+        :raises TimeoutException: Timeout during connection.
         '''
 
         request = Request('REPORT', body=message)
@@ -580,66 +320,39 @@ class Client:
 
         return response
 
-    async def report_if_spam(self, message):
-        '''Request the SPAMD service to check a message with a REPORT_IFSPAM
-        request.
+    async def report_if_spam(self, message: Union[bytes, SupportsBytes]) -> Response:
+        '''Request the SPAMD service to check a message with a HEADERS request.
 
-        Parameters
-        ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        :param message:
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-            The response will contain a 'Spam' header if the message is marked
+        :return: The response will contain a 'Spam' header if the message is marked
             as spam as well as the score and threshold.
 
-            The body will contain a report composed by the SPAMD service only if
+            The body will contain a report composed by the SPAMD service only if the
             message is marked as being spam.
 
-        Raises
-        ------
-        :class:`aiospamc.exceptions.BadResponse`
-            If the response from SPAMD is ill-formed this exception will be
-            raised.
-        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
-            Raised if an error occurred when trying to connect.
-        :class:`aiospamc.exceptions.UsageException`
-            Error in command line usage.
-        :class:`aiospamc.exceptions.DataErrorException`
-            Error with data format.
-        :class:`aiospamc.exceptions.NoInputException`
-            Cannot open input.
-        :class:`aiospamc.exceptions.NoUserException`
-            Addressee unknown.
-        :class:`aiospamc.exceptions.NoHostException`
-            Hostname unknown.
-        :class:`aiospamc.exceptions.UnavailableException`
-            Service unavailable.
-        :class:`aiospamc.exceptions.InternalSoftwareException`
-            Internal software error.
-        :class:`aiospamc.exceptions.OSErrorException`
-            System error.
-        :class:`aiospamc.exceptions.OSFileException`
-            Operating system file missing.
-        :class:`aiospamc.exceptions.CantCreateException`
-            Cannot create output file.
-        :class:`aiospamc.exceptions.IOErrorException`
-            Input/output error.
-        :class:`aiospamc.exceptions.TemporaryFailureException`
-            Temporary failure, may reattempt.
-        :class:`aiospamc.exceptions.ProtocolException`
-            Error in the protocol.
-        :class:`aiospamc.exceptions.NoPermissionException`
-            Permission denied.
-        :class:`aiospamc.exceptions.ConfigException`
-            Error in configuration.
-        :class:`aiospamc.exceptions.TimeoutException`
-            Timeout during connection.
+        :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+        :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
+        :raises UsageException: Error in command line usage.
+        :raises DataErrorException: Error with data format.
+        :raises NoInputException: Cannot open input.
+        :raises NoUserException: Addressee unknown.
+        :raises NoHostException: Hostname unknown.
+        :raises UnavailableException: Service unavailable.
+        :raises InternalSoftwareException: Internal software error.
+        :raises OSErrorException: System error.
+        :raises OSFileException: Operating system file missing.
+        :raises CantCreateException: Cannot create output file.
+        :raises IOErrorException: Input/output error.
+        :raises TemporaryFailureException: Temporary failure, may reattempt.
+        :raises ProtocolException: Error in the protocol.
+        :raises NoPermissionException: Permission denied.
+        :raises ConfigException: Error in configuration.
+        :raises TimeoutException: Timeout during connection.
         '''
 
         request = Request('REPORT_IFSPAM', body=message)
@@ -648,67 +361,38 @@ class Client:
 
         return response
 
-    async def symbols(self, message):
-        '''Request the SPAMD service to check a message with a SYMBOLS request.
+    async def symbols(self, message: Union[bytes, SupportsBytes]) -> Response:
+        '''Request the SPAMD service to check a message with a HEADERS request.
 
-        The response will contain a 'Spam' header if the message is marked
-        as spam as well as the score and threshold.
-
-        Parameters
-        ----------
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        :param message:
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-            Will contain a 'Spam' header if the message is marked as spam as
-            well as the score and threshold.
+        :return: The response will contain a 'Spam' header if the message is marked
+            as spam as well as the score and threshold.
 
             The body will contain a comma separated list of all the rule names.
 
-        Raises
-        ------
-        :class:`aiospamc.exceptions.BadResponse`
-            If the response from SPAMD is ill-formed this exception will be
-            raised.
-        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
-            Raised if an error occurred when trying to connect.
-        :class:`aiospamc.exceptions.UsageException`
-            Error in command line usage.
-        :class:`aiospamc.exceptions.DataErrorException`
-            Error with data format.
-        :class:`aiospamc.exceptions.NoInputException`
-            Cannot open input.
-        :class:`aiospamc.exceptions.NoUserException`
-            Addressee unknown.
-        :class:`aiospamc.exceptions.NoHostException`
-            Hostname unknown.
-        :class:`aiospamc.exceptions.UnavailableException`
-            Service unavailable.
-        :class:`aiospamc.exceptions.InternalSoftwareException`
-            Internal software error.
-        :class:`aiospamc.exceptions.OSErrorException`
-            System error.
-        :class:`aiospamc.exceptions.OSFileException`
-            Operating system file missing.
-        :class:`aiospamc.exceptions.CantCreateException`
-            Cannot create output file.
-        :class:`aiospamc.exceptions.IOErrorException`
-            Input/output error.
-        :class:`aiospamc.exceptions.TemporaryFailureException`
-            Temporary failure, may reattempt.
-        :class:`aiospamc.exceptions.ProtocolException`
-            Error in the protocol.
-        :class:`aiospamc.exceptions.NoPermissionException`
-            Permission denied.
-        :class:`aiospamc.exceptions.ConfigException`
-            Error in configuration.
-        :class:`aiospamc.exceptions.TimeoutException`
-            Timeout during connection.
+        :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+        :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
+        :raises UsageException: Error in command line usage.
+        :raises DataErrorException: Error with data format.
+        :raises NoInputException: Cannot open input.
+        :raises NoUserException: Addressee unknown.
+        :raises NoHostException: Hostname unknown.
+        :raises UnavailableException: Service unavailable.
+        :raises InternalSoftwareException: Internal software error.
+        :raises OSErrorException: System error.
+        :raises OSFileException: Operating system file missing.
+        :raises CantCreateException: Cannot create output file.
+        :raises IOErrorException: Input/output error.
+        :raises TemporaryFailureException: Temporary failure, may reattempt.
+        :raises ProtocolException: Error in the protocol.
+        :raises NoPermissionException: Permission denied.
+        :raises ConfigException: Error in configuration.
+        :raises TimeoutException: Timeout during connection.
         '''
 
         request = Request('SYMBOLS', body=message)
@@ -718,84 +402,58 @@ class Client:
         return response
 
     async def tell(self,
-                   message_class,
-                   message,
-                   remove_action=None,
-                   set_action=None,
-                  ):
+                   message_class: MessageClassOption,
+                   message: Union[bytes, SupportsBytes],
+                   remove_action: ActionOption = None,
+                   set_action: ActionOption = None,
+                   ):
         '''Instruct the SPAMD service to to mark the message
 
-        Parameters
-        ----------
-        message_class : :class:`aiospamc.options.MessageClassOption`
+        :param message_class:
             An enumeration to classify the message as 'spam' or 'ham.'
-        message : :obj:`str`
-            A string containing the contents of the message to be scanned.
+        :param message:
+            A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
-        remove_action : :class:`aiospamc.options.ActionOption`
+        :param remove_action:
             Remove message class for message in database.
-        set_action : :class:`aiospamc.options.ActionOption`
+        :param set_action:
             Set message class for message in database.
 
-        Returns
-        -------
-        :class:`aiospamc.responses.Response`
-            Will contain a 'Spam' header if the message is marked as spam as
+        :return: Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
 
             The body will contain a report composed by the SPAMD service only if
             message is marked as being spam.
 
-        Raises
-        ------
-        :class:`aiospamc.exceptions.BadResponse`
-            If the response from SPAMD is ill-formed this exception will be
-            raised.
-        :class:`aiospamc.exceptions.AIOSpamcConnectionFailed`
-            Raised if an error occurred when trying to connect.
-        :class:`aiospamc.exceptions.UsageException`
-            Error in command line usage.
-        :class:`aiospamc.exceptions.DataErrorException`
-            Error with data format.
-        :class:`aiospamc.exceptions.NoInputException`
-            Cannot open input.
-        :class:`aiospamc.exceptions.NoUserException`
-            Addressee unknown.
-        :class:`aiospamc.exceptions.NoHostException`
-            Hostname unknown.
-        :class:`aiospamc.exceptions.UnavailableException`
-            Service unavailable.
-        :class:`aiospamc.exceptions.InternalSoftwareException`
-            Internal software error.
-        :class:`aiospamc.exceptions.OSErrorException`
-            System error.
-        :class:`aiospamc.exceptions.OSFileException`
-            Operating system file missing.
-        :class:`aiospamc.exceptions.CantCreateException`
-            Cannot create output file.
-        :class:`aiospamc.exceptions.IOErrorException`
-            Input/output error.
-        :class:`aiospamc.exceptions.TemporaryFailureException`
-            Temporary failure, may reattempt.
-        :class:`aiospamc.exceptions.ProtocolException`
-            Error in the protocol.
-        :class:`aiospamc.exceptions.NoPermissionException`
-            Permission denied.
-        :class:`aiospamc.exceptions.ConfigException`
-            Error in configuration.
-        :class:`aiospamc.exceptions.TimeoutException`
-            Timeout during connection.
+        :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+        :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
+        :raises UsageException: Error in command line usage.
+        :raises DataErrorException: Error with data format.
+        :raises NoInputException: Cannot open input.
+        :raises NoUserException: Addressee unknown.
+        :raises NoHostException: Hostname unknown.
+        :raises UnavailableException: Service unavailable.
+        :raises InternalSoftwareException: Internal software error.
+        :raises OSErrorException: System error.
+        :raises OSFileException: Operating system file missing.
+        :raises CantCreateException: Cannot create output file.
+        :raises IOErrorException: Input/output error.
+        :raises TemporaryFailureException: Temporary failure, may reattempt.
+        :raises ProtocolException: Error in the protocol.
+        :raises NoPermissionException: Permission denied.
+        :raises ConfigException: Error in configuration.
+        :raises TimeoutException: Timeout during connection.
         '''
 
         request = Request(verb='TELL',
-                          headers=(MessageClass(message_class),),
+                          headers=[MessageClass(message_class)],
                           body=message)
         if remove_action:
-            request.add_header(Set(remove_action))
+            request.headers['Remove'] = Remove(remove_action)
         if set_action:
-            request.add_header(Remove(set_action))
+            request.headers['Set'] = Set(set_action)
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 

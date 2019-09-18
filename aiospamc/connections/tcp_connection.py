@@ -3,38 +3,23 @@
 '''TCP socket connection and manager.'''
 
 import asyncio
+from typing import Tuple
 
-from aiospamc.connections import Connection
-from aiospamc.connections import ConnectionManager
-from aiospamc.exceptions import AIOSpamcConnectionFailed
+from . import Connection
+from . import ConnectionManager
+from ..exceptions import AIOSpamcConnectionFailed
 
 
 class TcpConnectionManager(ConnectionManager):
-    '''Creates new connections based on host and port provided.
+    '''Creates new connections based on host and port provided.'''
 
-    Attributes
-    ----------
-    host : str
-        Hostname or IP address of server.
-    port : str
-        Port number.
-    ssl : bool
-        Whether to use SSL/TLS.
-    '''
-
-    def __init__(self, host, port, ssl=False, loop=None):
+    def __init__(self, host: str, port: int, ssl: bool = False, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for TcpConnectionManager.
 
-        Parameters
-        ----------
-        host : str
-            Hostname or IP address of server.
-        port : str
-            Port number
-        ssl : :obj:`bool` or optional
-            SSL/TLS enabled.
-        loop : asyncio.AbstractEventLoop
-            The asyncio event loop.
+        :param host: Hostname or IP address of server.
+        :param port: Port number
+        :param ssl: SSL/TLS enabled.
+        :param loop: The asyncio event loop.
         '''
 
         self.host = host
@@ -42,49 +27,30 @@ class TcpConnectionManager(ConnectionManager):
         self.ssl = ssl
         super().__init__(loop)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(host={}, port={}, ssl={})'.format(self.__class__.__name__,
                                                      repr(self.host),
                                                      repr(self.port),
                                                      self.ssl)
 
-    def new_connection(self):
+    def new_connection(self) -> 'TcpConnection':
         '''Creates a new TCP connection.
 
-        Raises
-        ------
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :raises AIOSpamcConnectionFailed:
         '''
 
         return TcpConnection(self.host, self.port, self.ssl, self.loop)
 
 
 class TcpConnection(Connection):
-    '''Manages a TCP connection.
+    '''Manages a TCP connection.'''
 
-    Attributes
-    ----------
-    host : str
-        Hostname or IP address of server.
-    port : str
-        Port number
-    ssl : bool
-        Whether to use SSL/TLS.
-    loop : asyncio.AbstratEventLoop
-        The asyncio event loop.
-    '''
-
-    def __init__(self, host, port, ssl, loop=None):
+    def __init__(self, host: str, port: int, ssl: bool, loop: asyncio.AbstractEventLoop = None):
         '''Constructor for TcpConnection.
 
-        Attributes
-        ----------
-        host : str
-            Hostname or IP address of server.
-        port : str
-            Port number
-        ssl :  :obj:`bool` or optional
-            SSL/TLS enabled.
+        :param host: Hostname or IP address of server.
+        :param port: Port number
+        :param ssl: SSL/TLS enabled.
         '''
 
         self.host = host
@@ -92,23 +58,16 @@ class TcpConnection(Connection):
         self.ssl = ssl
         super().__init__(loop)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '{}(host={}, port={}, ssl={})'.format(self.__class__.__name__,
                                                      repr(self.host),
                                                      repr(self.port),
                                                      self.ssl)
 
-    async def open(self):
+    async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Opens a connection.
 
-        Returns
-        -------
-        asyncio.StreamReader
-        asyncio.StreamWriter
-
-        Raises
-        ------
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :raises AIOSpamcConnectionFailed:
         '''
 
         try:
@@ -127,13 +86,7 @@ class TcpConnection(Connection):
         return reader, writer
 
     @property
-    def connection_string(self):
-        '''String representation of the connection.
-
-        Returns
-        -------
-        str
-            Hostname and port.
-        '''
+    def connection_string(self) -> str:
+        '''String representation of the connection.'''
 
         return ':'.join([self.host, str(self.port)])

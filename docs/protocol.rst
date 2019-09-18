@@ -26,6 +26,7 @@ The current requests are :ref:`check_request`, :ref:`headers_request`,
     \r\n
     REQUEST_BODY
 
+
 The structure of responses are also similar to HTTP responses.  The protocol
 name, version, status code, and message are listed on the first line.  Any
 headers are also listed and all are separated by newline characters.  Following
