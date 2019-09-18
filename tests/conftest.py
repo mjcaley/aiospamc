@@ -3,7 +3,7 @@
 import asyncio
 import sys
 
-from asynctest import patch, MagicMock
+from asynctest import CoroutineMock, MagicMock, Mock, patch
 
 import pytest
 
@@ -238,3 +238,33 @@ def mock_connection(response_ok):
     else:
         with conn_string, conn_open, tcp_open, unix_open:
             yield reader.read
+
+
+@pytest.fixture
+def stub_connection():
+    def inner(return_value=None, side_effect=None):
+        connection = Mock()
+        connection.send = CoroutineMock()
+        connection.receive = CoroutineMock(return_value=return_value, side_effect=side_effect)
+
+        return connection
+    return inner
+
+
+@pytest.fixture
+def stub_connection_manager(stub_connection):
+    def inner(return_value=None, side_effect=None):
+        stub = stub_connection(return_value=return_value, side_effect=side_effect)
+        context_manager = MagicMock()
+        context_manager.__aenter__ = CoroutineMock(
+            return_value=stub
+        )
+        context_manager.__aexit__ = CoroutineMock()
+
+        manager = MagicMock()
+        manager.new_connection = Mock(return_value=context_manager)
+        manager.connection_stub = stub
+
+        return manager
+
+    return inner
