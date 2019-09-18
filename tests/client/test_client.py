@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import pytest
-from asynctest import CoroutineMock, Mock
+from asynctest import CoroutineMock
 
-from aiospamc import Client
+from aiospamc import Client, MessageClassOption, ActionOption
 from aiospamc.connections.tcp_connection import TcpConnectionManager
 from aiospamc.connections.unix_connection import UnixConnectionManager
 from aiospamc.exceptions import (BadResponse, ResponseException,
@@ -235,3 +235,61 @@ async def test_response_general_exception(stub_connection_manager, ex_undefined,
 
     with pytest.raises(ResponseException):
         await c.send(request_ping)
+
+
+@pytest.mark.parametrize('verb,method', [
+    ['CHECK', 'check'],
+    ['HEADERS', 'headers'],
+    ['PROCESS', 'process'],
+    ['REPORT', 'report'],
+    ['REPORT_IFSPAM', 'report_if_spam'],
+    ['SYMBOLS', 'symbols'],
+])
+@pytest.mark.asyncio
+async def test_requests_with_body(verb, method, spam, mocker):
+    c = Client()
+    c.send = CoroutineMock()
+    mocker.spy(c, 'send')
+    await getattr(c, method)(spam)
+    request = c.send.call_args[0][0]
+
+    assert request.verb == verb
+    assert request.body == spam
+
+
+@pytest.mark.asyncio
+async def test_request_ping(mocker):
+    c = Client()
+    c.send = CoroutineMock()
+    mocker.spy(c, 'send')
+    await c.ping()
+    request = c.send.call_args[0][0]
+
+    assert request.verb == 'PING'
+
+
+@pytest.mark.parametrize('message_class,remove_action,set_action', [
+    [MessageClassOption.ham, None, None],
+    [MessageClassOption.spam, None, None],
+    [MessageClassOption.ham, ActionOption(local=True, remote=False), None],
+    [MessageClassOption.ham, ActionOption(local=True, remote=True), None],
+    [MessageClassOption.ham, ActionOption(local=False, remote=True), None],
+    [MessageClassOption.ham, None, ActionOption(local=True, remote=False)],
+    [MessageClassOption.ham, None, ActionOption(local=True, remote=True)],
+    [MessageClassOption.ham, None, ActionOption(local=False, remote=True)],
+    [MessageClassOption.ham, ActionOption(local=False, remote=True), ActionOption(local=False, remote=True)],
+])
+@pytest.mark.asyncio
+async def test_request_tell(message_class, remove_action, set_action, spam, mocker):
+    c = Client()
+    c.send = CoroutineMock()
+    mocker.spy(c, 'send')
+    await c.tell(message_class=message_class, message=spam, remove_action=remove_action, set_action=set_action)
+    request = c.send.call_args[0][0]
+
+    assert request.headers['Message-class'].value == message_class
+    if remove_action:
+        assert request.headers['Remove'].action == remove_action
+    if set_action:
+        assert request.headers['Set'].action == set_action
+    assert request.body == spam

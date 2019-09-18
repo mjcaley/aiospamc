@@ -3,7 +3,6 @@
 '''Contains the Client class that is used to interact with SPAMD.'''
 
 import asyncio
-from functools import wraps
 import logging
 from typing import SupportsBytes, Union
 
