@@ -29,8 +29,6 @@ XJS*C4JDBQADN1.NSBN3*2IDNEN*GTUBE-STANDARD-ANTI-UBE-TEST-EMAIL*C.34X
 
 You should send this test mail from an account outside of your network.
 '''.encode('ascii')
-# Note: Mail data must end with \n.
-# If the data does not end with \n spamd will not return results.
 
 loop = asyncio.get_event_loop()
 client = Client(host='localhost', loop=loop)
