@@ -46,7 +46,8 @@ SpamAssassin.
 
 An example using the :meth:`aiospamc.client.Client.check` method:
 
-.. highlight:: python
+.. code-block::
+
     import asyncio
     import aiospamc
     
@@ -92,7 +93,8 @@ headers if required.
 
 For example:
 
-.. highlight:: python
+.. code-block::
+
     import asyncio
 
     import aiospamc
