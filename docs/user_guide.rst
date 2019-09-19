@@ -46,7 +46,8 @@ SpamAssassin.
 
 An example using the :meth:`aiospamc.client.Client.check` method:
 
-.. highlight:: python
+.. code-block::
+
     import asyncio
     import aiospamc
     
@@ -77,13 +78,10 @@ A new request can be made by instantiating the
 :class:`aiospamc.requests.Request` class.  The
 :attr:`aiospamc.requests.Request.verb` defines the method/verb of the request.
 
-Standard headers or the :class:`aiospamc.headers.XHeader` extension header is
-available in the :mod:`aiospamc.headers` module. Headers are managed on the
-request object with the methods:
-
-* :meth:`aiospamc.requests.Request.add_header`
-* :meth:`aiospamc.requests.Request.get_header`
-* :meth:`aiospamc.requests.Request.delete_header`
+Standard headers or the :class:`aiospamc.headers.XHeader` extension header are
+available in the :mod:`aiospamc.headers` module. The
+:class:`aiospamc.requests.Request` class provides a headers attribute that has
+a dictionary-like interface.
 
 Once a request is composed, it can be sent through the
 :meth:`aiospamc.client.Client.send` method as-is.  The method will automatically
@@ -92,7 +90,8 @@ headers if required.
 
 For example:
 
-.. highlight:: python
+.. code-block::
+
     import asyncio
 
     import aiospamc
