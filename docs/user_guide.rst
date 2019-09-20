@@ -26,7 +26,10 @@ With GIT
 .. code-block:: bash
 
     git clone https://github.com/mjcaley/aiospamc.git
-    python3 aiospamc/setup.py install
+    poetry install
+
+.. note::
+    aiospamc's build system uses Poetry which you can get from here: https://poetry.eustace.io/
 
 *******************
 How to use aiospamc
