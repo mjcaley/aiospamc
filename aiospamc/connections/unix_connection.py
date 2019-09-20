@@ -3,88 +3,58 @@
 '''Unix domain socket connection and manager.'''
 
 import asyncio
+from typing import Tuple
 
-from aiospamc.connections import Connection
-from aiospamc.connections import ConnectionManager
-from aiospamc.exceptions import AIOSpamcConnectionFailed
+from . import Connection
+from . import ConnectionManager
+from ..exceptions import AIOSpamcConnectionFailed
 
 
 class UnixConnectionManager(ConnectionManager):
-    '''Creates new connections based on Unix domain socket path provided.
+    '''Creates new connections based on Unix domain socket path provided.'''
 
-    Attributes
-    ----------
-    path : str
-        Path of the socket.
-    '''
-
-    def __init__(self, path, loop=None):
+    def __init__(self, path: str, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for UnixConnectionManager.
 
-        Parameters
-        ----------
-        path : str
-            Path of the socket.
-        loop : asyncio.AbstractEventLoop
-            The asyncio event loop.
+        :param path: Path of the socket.
+        :param loop: The asyncio event loop.
         '''
 
         self.path = path
         super().__init__(loop)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'UnixConnectionManager(path={})'.format(repr(self.path))
 
-    def new_connection(self):
+    def new_connection(self) -> 'UnixConnection':
         '''Creates a new Unix domain socket connection.
 
-        Raises
-        ------
-        AIOSpamcConnectionFailed
+        :raises AIOSpamcConnectionFailed:
         '''
 
         return UnixConnection(self.path, self.loop)
 
 
 class UnixConnection(Connection):
-    '''Manages a Unix domain socket connection.
+    '''Manages a Unix domain socket connection.'''
 
-    Attributes
-    ----------
-    path : str
-        Path of the socket.
-    loop : asyncio.AbstractEventLoop
-        The asyncio event loop.
-    '''
-
-    def __init__(self, path, loop=None):
+    def __init__(self, path: str, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for UnixConnection.
 
-        Parameters
-        ----------
-        path : str
-            Path of the socket.
-        loop : asyncio.AbstractEventLoop
-            The asyncio event loop.
+        :param path: Path of the socket.
+        :param loop: The asyncio event loop.
         '''
 
         self.path = path
         super().__init__(loop)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'UnixConnection(path={})'.format(repr(self.path))
 
-    async def open(self):
+    async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Opens a connection.
 
-        Returns
-        -------
-        asyncio.StreamReader
-        asyncio.StreamWriter
-
-        Raises
-        ------
-        aiospamc.exceptions.AIOSpamcConnectionFailed
+        :raises AIOSpamcConnectionFailed:
         '''
 
         try:
@@ -98,13 +68,7 @@ class UnixConnection(Connection):
         return reader, writer
 
     @property
-    def connection_string(self):
-        '''String representation of the connection.
-
-        Returns
-        -------
-        str
-            Path to the Unix domain socket.
-        '''
+    def connection_string(self) -> str:
+        '''String representation of the connection.'''
 
         return self.path

@@ -26,7 +26,10 @@ With GIT
 .. code-block:: bash
 
     git clone https://github.com/mjcaley/aiospamc.git
-    python3 aiospamc/setup.py install
+    poetry install
+
+.. note::
+    aiospamc's build system uses Poetry which you can get from here: https://poetry.eustace.io/
 
 *******************
 How to use aiospamc
@@ -46,7 +49,8 @@ SpamAssassin.
 
 An example using the :meth:`aiospamc.client.Client.check` method:
 
-.. highlight:: python
+.. code-block::
+
     import asyncio
     import aiospamc
     
@@ -57,7 +61,7 @@ An example using the :meth:`aiospamc.client.Client.check` method:
                        'Message-ID: <1234@local.machine.example>'
                        ''
                        'This is a message just to say hello.'
-                       'So, "Hello".')
+                       'So, "Hello".').encode('ascii')
     
     loop = asyncio.get_event_loop()
     client = aiospamc.Client()
@@ -77,13 +81,10 @@ A new request can be made by instantiating the
 :class:`aiospamc.requests.Request` class.  The
 :attr:`aiospamc.requests.Request.verb` defines the method/verb of the request.
 
-Standard headers or the :class:`aiospamc.headers.XHeader` extension header is
-available in the :mod:`aiospamc.headers` module. Headers are managed on the
-request object with the methods:
-
-* :meth:`aiospamc.requests.Request.add_header`
-* :meth:`aiospamc.requests.Request.get_header`
-* :meth:`aiospamc.requests.Request.delete_header`
+Standard headers or the :class:`aiospamc.headers.XHeader` extension header are
+available in the :mod:`aiospamc.headers` module. The
+:class:`aiospamc.requests.Request` class provides a headers attribute that has
+a dictionary-like interface.
 
 Once a request is composed, it can be sent through the
 :meth:`aiospamc.client.Client.send` method as-is.  The method will automatically
@@ -92,7 +93,8 @@ headers if required.
 
 For example:
 
-.. highlight:: python
+.. code-block::
+
     import asyncio
 
     import aiospamc
@@ -107,7 +109,7 @@ For example:
                        'Message-ID: <1234@local.machine.example>'
                        ''
                        'This is a message just to say hello.'
-                       'So, "Hello".')
+                       'So, "Hello".').encode('ascii')
 
     loop = asyncio.get_event_loop()
     client = aiospamc.Client(host='localhost')

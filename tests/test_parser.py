@@ -222,6 +222,7 @@ def test_parser_set_remove_value_fail():
 
 
 @pytest.mark.parametrize('data,value,score,threshold', [
+    (b'True ; -4 / -2', True, -4.0, -2.0),
     (b'True ; 4 / 2', True, 4.0, 2.0),
     (b'False ; 4 / 2', False, 4.0, 2.0),
     (b'True ; 4.0 / 2.0', True, 4.0, 2.0)
