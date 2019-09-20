@@ -23,7 +23,7 @@ classifiers = [
 keywords = ["spam", "spamc", "spamassassin"]
 
 [tool.poetry.dependencies]
-python = "^3.5.2"
+python = "^3.5"
 
 [tool.poetry.dev-dependencies]
 asynctest = "^0.13.0"
