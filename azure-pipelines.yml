@@ -67,7 +67,7 @@ stages:
          displayName: 'Use Python $(python.version)'
 
        - script: |
-           sudo apt install spamassassin
+           sudo apt-get -y install spamassassin
          displayName: 'Install SpamAssassin'
 
        - script: |
