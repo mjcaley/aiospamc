@@ -89,12 +89,6 @@ stages:
            testResultsFiles: test-results.xml
            searchFolder: $(Build.StagingDirectory)
 
-       - task: PublishCodeCoverageResults@1
-         condition: succeededOrFailed()
-         inputs:
-           codeCoverageTool: cobertura
-           summaryFileLocation: $(Build.StagingDirectory)/coverage.xml
-
 - stage: package
   displayName: Package
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
