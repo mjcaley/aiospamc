@@ -4,8 +4,13 @@ from contextlib import contextmanager
 from pathlib import Path
 from shutil import which
 from subprocess import PIPE, STDOUT, TimeoutExpired, Popen
+import sys
 
 import pytest
+
+
+if sys.platform == 'win32':
+    collect_ignore = ["test_unix.py"]
 
 
 @pytest.fixture(scope='session')
@@ -46,9 +51,9 @@ def spamd_tcp(spamd):
 
 @pytest.fixture
 def spamd_unix(spamd, tmp_path):
-    socket_path = tmp_path / 'spamd.sock'
+    socket_path = str(tmp_path / 'spamd.sock')
 
-    with spamd('--local', '--allow-tell', '--socketpath=' + str(socket_path)):
+    with spamd('--local', '--allow-tell', '--socketpath=' + socket_path):
         yield socket_path
 
 
