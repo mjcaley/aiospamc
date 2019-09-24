@@ -180,7 +180,8 @@ class Parser:
         number = rb'(-?\d+(\.\d+)?)'
 
         self.skip(self.whitespace)
-        value = True if self.consume(rb'(True|False)').group() == b'True' else False
+        spam_value = self.consume(rb'(?i)(True|False|Yes|No)').group().lower()
+        value = True if spam_value == b'true' or spam_value == b'yes' else False
         self.skip(self.whitespace)
         self.consume(rb';')
         self.skip(self.whitespace)
