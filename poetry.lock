@@ -51,7 +51,7 @@ version = "2.7.0"
 pytz = ">=2015.7"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Python package for providing Mozilla's CA Bundle."
 name = "certifi"
 optional = false
@@ -414,8 +414,8 @@ version = "0.6.0"
 more-itertools = "*"
 
 [metadata]
-content-hash = "3c9c0099daf891c61ec53cba51e0a84ac6c915654500f38f1418d052c106ada8"
-python-versions = "^3.5.2"
+content-hash = "38c2e3470e272cd036019469818a24d48b490b4185f28665cc14856781e5fa6e"
+python-versions = "^3.5"
 
 [metadata.hashes]
 alabaster = ["446438bdcca0e05bd45ea2de1668c1d9b032e1a9154c2c259092d77031ddd359", "a661d72d58e6ea8a57f7a86e37d86716863ee5e92788398526d58b26a4e4dc02"]
