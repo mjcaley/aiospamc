@@ -8,8 +8,8 @@ from aiospamc.options import MessageClassOption
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_check(spamd_tcp, spam):
-    c = Client(host=spamd_tcp[0], port=spamd_tcp[1])
+async def test_check(spamd, spam):
+    c = Client(host=spamd['tcp']['host'], port=spamd['tcp']['port'])
     result = await c.check(spam)
 
     assert result
@@ -17,8 +17,8 @@ async def test_check(spamd_tcp, spam):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_headers(spamd_tcp, spam):
-    c = Client(host=spamd_tcp[0], port=spamd_tcp[1])
+async def test_headers(spamd, spam):
+    c = Client(host=spamd['tcp']['host'], port=spamd['tcp']['port'])
     result = await c.headers(spam)
 
     assert result
@@ -26,8 +26,8 @@ async def test_headers(spamd_tcp, spam):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_ping(spamd_tcp):
-    c = Client(host=spamd_tcp[0], port=spamd_tcp[1])
+async def test_ping(spamd):
+    c = Client(host=spamd['tcp']['host'], port=spamd['tcp']['port'])
     result = await c.ping()
 
     assert result
@@ -35,8 +35,8 @@ async def test_ping(spamd_tcp):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_process(spamd_tcp, spam):
-    c = Client(host=spamd_tcp[0], port=spamd_tcp[1])
+async def test_process(spamd, spam):
+    c = Client(host=spamd['tcp']['host'], port=spamd['tcp']['port'])
     result = await c.process(spam)
 
     assert result
@@ -44,8 +44,8 @@ async def test_process(spamd_tcp, spam):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_report(spamd_tcp, spam):
-    c = Client(host=spamd_tcp[0], port=spamd_tcp[1])
+async def test_report(spamd, spam):
+    c = Client(host=spamd['tcp']['host'], port=spamd['tcp']['port'])
     result = await c.report(spam)
 
     assert result
@@ -53,8 +53,8 @@ async def test_report(spamd_tcp, spam):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_report_if_spam(spamd_tcp, spam):
-    c = Client(host=spamd_tcp[0], port=spamd_tcp[1])
+async def test_report_if_spam(spamd, spam):
+    c = Client(host=spamd['tcp']['host'], port=spamd['tcp']['port'])
     result = await c.report_if_spam(spam)
 
     assert result
@@ -62,8 +62,8 @@ async def test_report_if_spam(spamd_tcp, spam):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_symbols(spamd_tcp, spam):
-    c = Client(host=spamd_tcp[0], port=spamd_tcp[1])
+async def test_symbols(spamd, spam):
+    c = Client(host=spamd['tcp']['host'], port=spamd['tcp']['port'])
     result = await c.symbols(spam)
 
     assert result
@@ -71,8 +71,8 @@ async def test_symbols(spamd_tcp, spam):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_tell(spamd_tcp, spam):
-    c = Client(host=spamd_tcp[0], port=spamd_tcp[1])
+async def test_tell(spamd, spam):
+    c = Client(host=spamd['tcp']['host'], port=spamd['tcp']['port'])
     result = await c.tell(message_class=MessageClassOption.spam, message=spam)
 
     assert result
