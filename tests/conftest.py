@@ -13,7 +13,7 @@ def pytest_addoption(parser):
 
 
 if sys.platform == 'win32':
-    collect_ignore = ["connections/test_unix_connection.py"]
+    collect_ignore = ['connections/test_unix_connection.py', 'connections/test_unix_connection_manager.py']
 
 
 @pytest.fixture
