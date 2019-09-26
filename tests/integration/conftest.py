@@ -133,7 +133,7 @@ def spamd(spamd_tcp_options, spamd_ssl_options, spamd_unix_options, tmp_path_fac
             raise TimeoutError
 
     running = False
-    with open(log_file, 'r') as log:
+    with open(str(log_file), 'r') as log:
         while not running:
             if datetime.datetime.utcnow() > timeout:
                 raise TimeoutError
