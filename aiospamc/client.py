@@ -73,15 +73,13 @@ class Client:
                       'host={}, '
                       'port={}, '
                       'user={}, '
-                      'compress={}, '
-                      'ssl={})')
+                      'compress={})')
         return client_fmt.format(self.__class__.__name__,
                                  repr(self._socket_path),
                                  repr(self._host),
                                  repr(self._port),
                                  repr(self.user),
-                                 repr(self.compress),
-                                 repr(self._ssl))
+                                 repr(self.compress))
 
     @staticmethod
     def new_ssl_context(value: Union[bool, str, Path]) -> ssl.SSLContext:

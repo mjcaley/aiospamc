@@ -25,8 +25,7 @@ def test_client_repr():
                             'host=\'localhost\', '
                             'port=783, '
                             'user=None, '
-                            'compress=False, '
-                            'ssl=None)')
+                            'compress=False)')
 
 
 def test_ssl_context_from_true(mocker):
