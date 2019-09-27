@@ -27,7 +27,7 @@ class Client:
                  port: int = 783,
                  user: str = None,
                  compress: bool = False,
-                 ssl: Union[bool, str, Path] = None,
+                 verify: Union[bool, str, Path] = None,
                  loop: asyncio.AbstractEventLoop = None) -> None:
         '''Client constructor.
 
@@ -36,7 +36,9 @@ class Client:
         :param port: Port number for the SPAMD service, defaults to 783.
         :param user: Name of the user that SPAMD will run the checks under.
         :param compress: If true, the request body will be compressed.
-        :param ssl: If true, will enable SSL/TLS for the connection.
+        :param verify: Use SSL for the connection.  If True, will use root certificates.
+            If False, will not verify the certificate.  If a string to a path or a Path
+            object, the connection will use the certificates found there.
         :param loop: The asyncio event loop.
 
         :raises ValueError: Raised if the constructor can't tell if it's using a TCP or a Unix domain socket connection.
@@ -44,8 +46,8 @@ class Client:
 
         if host and port:
             from aiospamc.connections.tcp_connection import TcpConnectionManager
-            if ssl is not None:
-                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(ssl))
+            if verify is not None:
+                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify))
             else:
                 self.connection = TcpConnectionManager(host, port)
         elif socket_path:
@@ -59,7 +61,6 @@ class Client:
         self._socket_path = socket_path
         self.user = user
         self.compress = compress
-        self._ssl = ssl
         self.loop = loop or asyncio.get_event_loop()
 
         self.parser = parse
@@ -84,6 +85,13 @@ class Client:
 
     @staticmethod
     def new_ssl_context(value: Union[bool, str, Path]) -> ssl.SSLContext:
+        '''Creates an SSL context based on the supplied parameter.
+
+        :param value: Use SSL for the connection.  If True, will use root certificates.
+            If False, will not verify the certificate.  If a string to a path or a Path
+            object, the connection will use the certificates found there.
+        '''
+
         if value is True:
             return ssl.create_default_context(cafile=certifi.where())
         elif value is False:

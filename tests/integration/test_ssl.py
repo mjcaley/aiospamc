@@ -9,7 +9,7 @@ from aiospamc.options import MessageClassOption
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_verify_false(spamd):
-    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=False)
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], verify=False)
     result = await c.ping()
 
     assert result
@@ -18,7 +18,7 @@ async def test_verify_false(spamd):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_check(spamd, spam):
-    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=spamd['ssl']['cert'])
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], verify=spamd['ssl']['cert'])
     result = await c.check(spam)
 
     assert result
@@ -27,7 +27,7 @@ async def test_check(spamd, spam):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_headers(spamd, spam):
-    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=spamd['ssl']['cert'])
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], verify=spamd['ssl']['cert'])
     result = await c.headers(spam)
 
     assert result
@@ -36,7 +36,7 @@ async def test_headers(spamd, spam):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_ping(spamd):
-    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=spamd['ssl']['cert'])
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], verify=spamd['ssl']['cert'])
     result = await c.ping()
 
     assert result
@@ -45,7 +45,7 @@ async def test_ping(spamd):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_process(spamd, spam):
-    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=spamd['ssl']['cert'])
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], verify=spamd['ssl']['cert'])
     result = await c.process(spam)
 
     assert result
@@ -54,7 +54,7 @@ async def test_process(spamd, spam):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_report(spamd, spam):
-    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=spamd['ssl']['cert'])
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], verify=spamd['ssl']['cert'])
     result = await c.report(spam)
 
     assert result
@@ -63,7 +63,7 @@ async def test_report(spamd, spam):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_report_if_spam(spamd, spam):
-    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=spamd['ssl']['cert'])
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], verify=spamd['ssl']['cert'])
     result = await c.report_if_spam(spam)
 
     assert result
@@ -72,7 +72,7 @@ async def test_report_if_spam(spamd, spam):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_symbols(spamd, spam):
-    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=spamd['ssl']['cert'])
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], verify=spamd['ssl']['cert'])
     result = await c.symbols(spam)
 
     assert result
@@ -81,7 +81,7 @@ async def test_symbols(spamd, spam):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_tell(spamd, spam):
-    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=spamd['ssl']['cert'])
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], verify=spamd['ssl']['cert'])
     result = await c.tell(message_class=MessageClassOption.spam, message=spam)
 
     assert result
