@@ -6,7 +6,7 @@ from typing import Iterator, SupportsBytes, Union
 import zlib
 
 from .common import SpamcBody, SpamcHeaders
-from .headers import Header
+from .headers import ContentLength, Header
 
 
 class Request:
@@ -40,6 +40,9 @@ class Request:
             body = zlib.compress(self.body)
         else:
             body = self.body
+
+        if len(body) > 0:
+            self.headers['Content-length'] = ContentLength(length=len(body))
 
         request = (b'%(verb)b '
                    b'SPAMC/%(version)b'

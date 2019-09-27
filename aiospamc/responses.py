@@ -11,7 +11,7 @@ from .exceptions import (UsageException, DataErrorException, NoInputException, N
                          NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
                          OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
                          ProtocolException, NoPermissionException, ConfigException, TimeoutException, ResponseException)
-from .headers import Header
+from .headers import ContentLength, Header
 
 
 class Status(enum.IntEnum):
@@ -83,6 +83,9 @@ class Response:
             body = zlib.compress(self.body)
         else:
             body = self.body
+
+        if len(body) > 0:
+            self.headers['Content-length'] = ContentLength(length=len(body))
 
         return b'SPAMD/%(version)b ' \
                b'%(status)d ' \

@@ -53,7 +53,7 @@ def test_bytes_headers(x_headers):
 def test_bytes_body():
     test_input = b'Test body\n'
     r = Request(verb='TEST', body=test_input)
-    result = bytes(r).split(b'\r\n', 3)[-1]
+    result = bytes(r).split(b'\r\n')[-1]
 
     assert result == test_input
 
@@ -61,6 +61,6 @@ def test_bytes_body():
 def test_bytes_body_compressed():
     test_input = b'Test body\n'
     r = Request(verb='TEST', headers=[Compress()], body=test_input)
-    result = bytes(r).split(b'\r\n', 3)[-1]
+    result = bytes(r).split(b'\r\n')[-1]
 
     assert result == zlib.compress(test_input)

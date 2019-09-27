@@ -8,8 +8,12 @@ from asynctest import CoroutineMock, MagicMock, Mock, patch
 import pytest
 
 
+def pytest_addoption(parser):
+    parser.addoption('--spamd-process-timeout', action='store', default=10, type=int)
+
+
 if sys.platform == 'win32':
-    collect_ignore = ["connections/test_unix_connection.py"]
+    collect_ignore = ['connections/test_unix_connection.py', 'connections/test_unix_connection_manager.py']
 
 
 @pytest.fixture

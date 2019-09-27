@@ -225,7 +225,13 @@ def test_parser_set_remove_value_fail():
     (b'True ; -4 / -2', True, -4.0, -2.0),
     (b'True ; 4 / 2', True, 4.0, 2.0),
     (b'False ; 4 / 2', False, 4.0, 2.0),
-    (b'True ; 4.0 / 2.0', True, 4.0, 2.0)
+    (b'True ; 4.0 / 2.0', True, 4.0, 2.0),
+    (b'Yes ; 4.0 / 2.0', True, 4.0, 2.0),
+    (b'No ; 4.0 / 2.0', False, 4.0, 2.0),
+    (b'true ; 4.0 / 2.0', True, 4.0, 2.0),
+    (b'false ; 4.0 / 2.0', False, 4.0, 2.0),
+    (b'yes ; 4.0 / 2.0', True, 4.0, 2.0),
+    (b'no ; 4.0 / 2.0', False, 4.0, 2.0),
 ])
 def test_parser_spam_value_success(data, value, score, threshold):
     p = Parser(data)

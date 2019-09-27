@@ -1,6 +1,7 @@
 stages:
-- stage: build
-  displayName: Build
+- stage: unittest
+  displayName: Unit Tests
+  dependsOn: []
   jobs:
   - job: Test
     pool:
@@ -44,14 +45,54 @@ stages:
         codeCoverageTool: cobertura
         summaryFileLocation: $(Build.StagingDirectory)/coverage.xml
 
-    - script: |
-        $HOME/.poetry/bin/poetry build
-      displayName: 'Package'
+- stage: integration
+  displayName: Integration Tests
+  dependsOn: []
+  jobs:
+    - job: Test
+      pool:
+       vmImage: 'ubuntu-latest'
+      strategy:
+       matrix:
+         Python35:
+           python.version: '3.5'
+         Python36:
+           python.version: '3.6'
+         Python37:
+           python.version: '3.7'
+      steps:
+       - task: UsePythonVersion@0
+         inputs:
+           versionSpec: '$(python.version)'
+         displayName: 'Use Python $(python.version)'
+
+       - script: |
+           sudo apt-get -y install spamassassin
+         displayName: 'Install SpamAssassin'
+
+       - script: |
+           curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+           $HOME/.poetry/bin/poetry config settings.virtualenvs.create false
+         displayName: 'Install Poetry'
+
+       - script: |
+           $HOME/.poetry/bin/poetry install
+         displayName: 'Install dependencies'
+
+       - script: |
+           pytest tests/ -m integration --junit-xml="$BUILD_STAGINGDIRECTORY/test-results.xml" --cov aiospamc --cov-report="xml:$BUILD_STAGINGDIRECTORY/coverage.xml"
+         displayName: 'pytest'
+
+       - task: PublishTestResults@2
+         inputs:
+           testResultsFormat: junit
+           testResultsFiles: test-results.xml
+           searchFolder: $(Build.StagingDirectory)
 
 - stage: package
   displayName: Package
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  dependsOn: build
+  dependsOn: [unittest, integration]
   jobs:
   - job: Package
     steps:

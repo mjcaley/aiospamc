@@ -3,6 +3,7 @@
 '''TCP socket connection and manager.'''
 
 import asyncio
+from ssl import SSLContext
 from typing import Tuple
 
 from . import Connection
@@ -13,12 +14,12 @@ from ..exceptions import AIOSpamcConnectionFailed
 class TcpConnectionManager(ConnectionManager):
     '''Creates new connections based on host and port provided.'''
 
-    def __init__(self, host: str, port: int, ssl: bool = False, loop: asyncio.AbstractEventLoop = None) -> None:
+    def __init__(self, host: str, port: int, ssl: SSLContext = None, loop: asyncio.AbstractEventLoop = None) -> None:
         '''Constructor for TcpConnectionManager.
 
         :param host: Hostname or IP address of server.
         :param port: Port number
-        :param ssl: SSL/TLS enabled.
+        :param ssl: SSL/TLS context.
         :param loop: The asyncio event loop.
         '''
 
@@ -45,12 +46,12 @@ class TcpConnectionManager(ConnectionManager):
 class TcpConnection(Connection):
     '''Manages a TCP connection.'''
 
-    def __init__(self, host: str, port: int, ssl: bool, loop: asyncio.AbstractEventLoop = None):
+    def __init__(self, host: str, port: int, ssl: SSLContext = None, loop: asyncio.AbstractEventLoop = None):
         '''Constructor for TcpConnection.
 
         :param host: Hostname or IP address of server.
         :param port: Port number
-        :param ssl: SSL/TLS enabled.
+        :param ssl: SSL/TLS context.
         '''
 
         self.host = host
@@ -71,6 +72,7 @@ class TcpConnection(Connection):
         '''
 
         try:
+
             reader, writer = await asyncio.open_connection(self.host,
                                                            self.port,
                                                            ssl=self.ssl,
