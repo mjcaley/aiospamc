@@ -25,7 +25,7 @@ def test_client_repr():
 
 
 def test_tcp_manager():
-    client = Client(host='127.0.0.1', port='783')
+    client = Client(host='127.0.0.1', port=783)
 
     assert isinstance(client.connection, TcpConnectionManager)
 
