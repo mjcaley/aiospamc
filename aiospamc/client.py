@@ -4,7 +4,11 @@
 
 import asyncio
 import logging
+from pathlib import Path
+import ssl
 from typing import SupportsBytes, Union
+
+import certifi
 
 from .options import MessageClassOption, ActionOption
 from .exceptions import BadResponse, ResponseException
@@ -23,7 +27,7 @@ class Client:
                  port: int = 783,
                  user: str = None,
                  compress: bool = False,
-                 ssl: bool = False,
+                 ssl: Union[bool, str, Path] = None,
                  loop: asyncio.AbstractEventLoop = None) -> None:
         '''Client constructor.
 
@@ -40,7 +44,10 @@ class Client:
 
         if host and port:
             from aiospamc.connections.tcp_connection import TcpConnectionManager
-            self.connection = TcpConnectionManager(host, port)
+            if ssl is not None:
+                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(ssl))
+            else:
+                self.connection = TcpConnectionManager(host, port)
         elif socket_path:
             from aiospamc.connections.unix_connection import UnixConnectionManager
             self.connection = UnixConnectionManager(socket_path)
@@ -74,6 +81,22 @@ class Client:
                                  repr(self.user),
                                  repr(self.compress),
                                  repr(self._ssl))
+
+    @staticmethod
+    def new_ssl_context(value: Union[bool, str, Path]) -> ssl.SSLContext:
+        if value is True:
+            return ssl.create_default_context(cafile=certifi.where())
+        elif value is False:
+            context = ssl.create_default_context(cafile=certifi.where())
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+            return context
+
+        cert_path = Path(value).absolute()
+        if cert_path.is_dir():
+            return ssl.create_default_context(capath=str(cert_path))
+        elif cert_path.is_file():
+            return ssl.create_default_context(cafile=str(cert_path))
 
     async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.

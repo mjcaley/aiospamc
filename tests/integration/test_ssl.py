@@ -8,6 +8,15 @@ from aiospamc.options import MessageClassOption
 
 @pytest.mark.integration
 @pytest.mark.asyncio
+async def test_verify_false(spamd):
+    c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=False)
+    result = await c.ping()
+
+    assert result
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
 async def test_check(spamd, spam):
     c = Client(host=spamd['ssl']['host'], port=spamd['ssl']['port'], ssl=spamd['ssl']['cert'])
     result = await c.check(spam)

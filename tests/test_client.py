@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
+from pathlib import Path
+import ssl
+
 import pytest
 from asynctest import CoroutineMock
+
+import certifi
 
 from aiospamc import Client, MessageClassOption, ActionOption
 from aiospamc.connections.tcp_connection import TcpConnectionManager
@@ -21,7 +26,46 @@ def test_client_repr():
                             'port=783, '
                             'user=None, '
                             'compress=False, '
-                            'ssl=False)')
+                            'ssl=None)')
+
+
+def test_ssl_context_from_true(mocker):
+    mocker.spy(ssl, 'create_default_context')
+    s = Client.new_ssl_context(True)
+
+    args, kwargs = ssl.create_default_context.call_args
+    assert kwargs['cafile'] == certifi.where()
+
+
+def test_ssl_context_from_false(mocker):
+    mocker.spy(ssl, 'create_default_context')
+    s = Client.new_ssl_context(False)
+
+    args, kwargs = ssl.create_default_context.call_args
+    assert kwargs['cafile'] == certifi.where()
+    assert s.check_hostname is False
+    assert s.verify_mode == ssl.CERT_NONE
+
+
+def test_ssl_context_from_dir(mocker, tmp_path):
+    mocker.spy(ssl, 'create_default_context')
+    temp = Path(str(tmp_path))
+    s = Client.new_ssl_context(temp)
+
+    args, kwargs = ssl.create_default_context.call_args
+    assert kwargs['capath'] == str(temp)
+
+
+def test_ssl_context_from_file(mocker, tmp_path):
+    mocker.spy(ssl, 'create_default_context')
+    file = tmp_path / 'certs.pem'
+    with open(str(file), 'wb') as dest:
+        with open(certifi.where(), 'rb') as source:
+            dest.writelines(source.readlines())
+    s = Client.new_ssl_context(str(file))
+
+    args, kwargs = ssl.create_default_context.call_args
+    assert kwargs['cafile'] == str(file)
 
 
 def test_tcp_manager():
