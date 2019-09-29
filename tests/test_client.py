@@ -73,6 +73,16 @@ def test_tcp_manager():
     assert isinstance(client.connection, TcpConnectionManager)
 
 
+@pytest.mark.parametrize('test_input', [
+    True, False, certifi.where()
+])
+def test_tcp_manager_with_ssl(test_input):
+    client = Client(host='127.0.0.1', port=783, verify=test_input)
+
+    assert isinstance(client.connection, TcpConnectionManager)
+    assert client.connection.ssl
+
+
 def test_unix_manager():
     client = Client(socket_path='/var/run/spamassassin/spamd.sock')
 
