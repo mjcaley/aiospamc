@@ -2,7 +2,7 @@
 
 from enum import Enum
 import re
-from typing import Any, Callable, Mapping, Tuple, Union
+from typing import Any, Callable, Mapping, Tuple, Union, Dict
 
 from aiospamc import ActionOption, MessageClassOption
 
@@ -32,14 +32,15 @@ class Parser:
                  delimiter: bytes,
                  status_parser: Callable[[bytes], Mapping[str, str]],
                  header_parser: Callable[[bytes], Tuple[str, Any]],
-                 body_parser: Callable[[bytes, int], bytes]) -> None:
+                 body_parser: Callable[[bytes, int], bytes],
+                 start: States = States.Status) -> None:
         self.delimiter = delimiter
         self.status_parser = status_parser
         self.header_parser = header_parser
         self.body_parser = body_parser
         self.result = {'status': {}, 'headers': {}, 'body': b''}
 
-        self._state = States.Status
+        self._state = start
         self.buffer = b''
 
         self._state_table = {
@@ -92,12 +93,13 @@ class Parser:
         content_length = self.result['headers'].get('Content-length', 0)
         try:
             self.result['body'] += self.body_parser(self.buffer, content_length)
+            self._state = States.Done
         except TooMuchDataError:
             self._state = States.Done
             raise
 
 
-def parse_request_status(stream: bytes) -> Mapping[str, str]:
+def parse_request_status(stream: bytes) -> Dict[str, str]:
     try:
         verb, protocol_version = stream.decode('ascii').split(' ')
         protocol, version = protocol_version.split('/')
@@ -113,7 +115,7 @@ def parse_request_status(stream: bytes) -> Mapping[str, str]:
     return {'verb': verb, 'protocol': protocol, 'version': version}
 
 
-def parse_response_status(stream: bytes) -> Mapping[str, str]:
+def parse_response_status(stream: bytes) -> Dict[str, str]:
     try:
         protocol_version, status_code, message = list(filter(None, stream.decode('ascii').split(' ')))
         protocol, version = protocol_version.split('/')
@@ -147,6 +149,10 @@ def parse_message_class_value(stream: str) -> MessageClassOption:
         raise ParseError('Unable to parse Message-class header value')
 
 
+def parse_compress_value(stream: str) -> str:
+    return stream.strip()
+
+
 def parse_set_remove_value(stream: str) -> ActionOption:
     stream = stream.replace(' ', '')
     values = stream.split(',')
@@ -164,12 +170,20 @@ def parse_set_remove_value(stream: str) -> ActionOption:
     return ActionOption(local=local, remote=remote)
 
 
-def parse_spam_value(stream: str) -> Mapping[str, Union[bool, float]]:
+def parse_spam_value(stream: str) -> Dict[str, Union[bool, float]]:
     stream = stream.replace(' ', '')
-    found, score, threshold = re.split('[;/]', stream)
+    try:
+        found, score, threshold = re.split('[;/]', stream)
+    except ValueError:
+        raise ParseError('Spam header in unrecognizable format')
 
     found = found.lower()
-    value = True if found == 'true' or found == 'yes' else False
+    if found in ['true', 'yes']:
+        value = True
+    elif found in ['false', 'no']:
+        value = False
+    else:
+        raise ParseError('Spam header is not a true or false value')
 
     try:
         score = float(score)
@@ -185,11 +199,11 @@ def parse_spam_value(stream: str) -> Mapping[str, Union[bool, float]]:
 
 
 def parse_user_value(stream: str) -> str:
-    return stream
+    return stream.strip()
 
 
-def parse_xheader(stream: bytes) -> bytes:
-    return stream
+def parse_xheader_value(stream: bytes) -> bytes:
+    return stream.strip()
 
 
 def parse_header(stream: bytes) -> Tuple[str, Any]:
@@ -198,7 +212,7 @@ def parse_header(stream: bytes) -> Tuple[str, Any]:
     if header in header_value_parsers:
         value = header_value_parsers[header](value.decode('ascii'))
     else:
-        value = parse_xheader(value)
+        value = parse_xheader_value(value)
 
     return header, value
 
@@ -213,7 +227,7 @@ def parse_body(stream: bytes, content_length: int) -> bytes:
 
 
 header_value_parsers = {
-    'Compress': str,
+    'Compress': parse_compress_value,
     'Content-length': int,
     'DidRemove': parse_set_remove_value,
     'DidSet': parse_set_remove_value,
