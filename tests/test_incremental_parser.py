@@ -193,6 +193,17 @@ def test_parse_response_status_raises_parseerror(test_input):
         parse_response_status(test_input)
 
 
+def test_parse_content_length_value_success():
+    result = parse_content_length_value('42')
+
+    assert result['length'] == 42
+
+
+def test_parse_content_length_value_raises_parse_error():
+    with pytest.raises(ParseError):
+        parse_content_length_value('Invalid')
+
+
 @pytest.mark.parametrize('test_input,expected', [
     ['ham', MessageClassOption.ham],
     ['spam', MessageClassOption.spam]
@@ -200,7 +211,7 @@ def test_parse_response_status_raises_parseerror(test_input):
 def test_parse_message_class_value_success(test_input, expected):
     result = parse_message_class_value(test_input)
 
-    assert result == expected
+    assert result['value'] == expected
 
 
 def test_parse_message_class_value_raises_parseerror():
@@ -218,8 +229,8 @@ def test_parse_message_class_value_raises_parseerror():
 def test_parse_set_remove_value_success(test_input, local_expected, remote_expected):
     result = parse_set_remove_value(test_input)
 
-    assert result.local == local_expected
-    assert result.remote == remote_expected
+    assert result['action'].local == local_expected
+    assert result['action'].remote == remote_expected
 
 
 @pytest.mark.parametrize('test_input,value,score,threshold', [
@@ -255,20 +266,20 @@ def test_parse_spam_value_raises_parseerror(test_input):
 def test_parse_xheader_success():
     result = parse_xheader_value(b'value')
 
-    assert result == b'value'
+    assert result['value'] == b'value'
 
 
 @pytest.mark.parametrize('test_input,header,value', [
-    [b'Compress: zlib', 'Compress', 'zlib'],
-    [b'Content-length: 42', 'Content-length', 42],
-    [b'DidRemove: local, remote', 'DidRemove', ActionOption(local=True, remote=True)],
-    [b'DidSet: local, remote', 'DidSet', ActionOption(local=True, remote=True)],
-    [b'Message-class: spam', 'Message-class', MessageClassOption.spam],
-    [b'Remove: local, remote', 'Remove', ActionOption(local=True, remote=True)],
-    [b'Set: local, remote', 'Set', ActionOption(local=True, remote=True),],
+    [b'Compress: zlib', 'Compress', {'algorithm': 'zlib'}],
+    [b'Content-length: 42', 'Content-length', {'length': 42}],
+    [b'DidRemove: local, remote', 'DidRemove', {'action': ActionOption(local=True, remote=True)}],
+    [b'DidSet: local, remote', 'DidSet', {'action': ActionOption(local=True, remote=True)}],
+    [b'Message-class: spam', 'Message-class', {'value': MessageClassOption.spam}],
+    [b'Remove: local, remote', 'Remove', {'action': ActionOption(local=True, remote=True)}],
+    [b'Set: local, remote', 'Set', {'action': ActionOption(local=True, remote=True)}],
     [b'Spam: True ; 40 / 20', 'Spam', {'value': True, 'score': 40, 'threshold': 20}],
-    [b'User: username', 'User', 'username'],
-    [b'XHeader: x value', 'XHeader', b'x value']
+    [b'User: username', 'User', {'name': 'username'}],
+    [b'XHeader: x value', 'XHeader', {'value': b'x value'}]
 ])
 def test_parse_header_success(test_input, header, value):
     result = parse_header(test_input)

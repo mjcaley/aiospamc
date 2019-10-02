@@ -4,7 +4,7 @@ from enum import Enum
 import re
 from typing import Any, Callable, Mapping, Tuple, Union, Dict
 
-from aiospamc import ActionOption, MessageClassOption
+from aiospamc.options import ActionOption, MessageClassOption
 
 
 class NotEnoughDataError(Exception):
@@ -138,19 +138,28 @@ def parse_response_status(stream: bytes) -> Dict[str, str]:
     }
 
 
-def parse_message_class_value(stream: str) -> MessageClassOption:
+def parse_message_class_value(stream: str) -> Dict[str, MessageClassOption]:
     stream = stream.strip()
 
     if stream == 'ham':
-        return MessageClassOption.ham
+        return {'value': MessageClassOption.ham}
     elif stream == 'spam':
-        return MessageClassOption.spam
+        return {'value': MessageClassOption.spam}
     else:
         raise ParseError('Unable to parse Message-class header value')
 
 
-def parse_compress_value(stream: str) -> str:
-    return stream.strip()
+def parse_content_length_value(stream: str) -> Dict[str, int]:
+    try:
+        value = int(stream)
+    except ValueError:
+        raise ParseError('Unable to parse Content-length value, must be integer')
+
+    return {'length': value}
+
+
+def parse_compress_value(stream: str) -> Dict[str, str]:
+    return {'algorithm': stream.strip()}
 
 
 def parse_set_remove_value(stream: str) -> ActionOption:
@@ -167,7 +176,7 @@ def parse_set_remove_value(stream: str) -> ActionOption:
     else:
         remote = False
 
-    return ActionOption(local=local, remote=remote)
+    return {'action': ActionOption(local=local, remote=remote)}
 
 
 def parse_spam_value(stream: str) -> Dict[str, Union[bool, float]]:
@@ -198,12 +207,12 @@ def parse_spam_value(stream: str) -> Dict[str, Union[bool, float]]:
     return {'value': value, 'score': score, 'threshold': threshold}
 
 
-def parse_user_value(stream: str) -> str:
-    return stream.strip()
+def parse_user_value(stream: str) -> Dict[str, str]:
+    return {'name': stream.strip()}
 
 
-def parse_xheader_value(stream: bytes) -> bytes:
-    return stream.strip()
+def parse_xheader_value(stream: bytes) -> Dict[str, bytes]:
+    return {'value': stream.strip()}
 
 
 def parse_header(stream: bytes) -> Tuple[str, Any]:
@@ -228,7 +237,7 @@ def parse_body(stream: bytes, content_length: int) -> bytes:
 
 header_value_parsers = {
     'Compress': parse_compress_value,
-    'Content-length': int,
+    'Content-length': parse_content_length_value,
     'DidRemove': parse_set_remove_value,
     'DidSet': parse_set_remove_value,
     'Message-class': parse_message_class_value,
