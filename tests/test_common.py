@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 
-import zlib
-
-import pytest
-
 from aiospamc.common import SpamcBody, SpamcHeaders
-from aiospamc.headers import Compress, ContentLength, XHeader
+from aiospamc.header_values import CompressValue, ContentLengthValue, HeaderValue
 
 
 def test_body_get_set_value(mocker):
@@ -24,81 +20,81 @@ def test_headers_instantiates_none():
     assert 'h' in locals()
 
 
-def test_headers_instantiates_list():
-    h = SpamcHeaders(headers=[])
+def test_headers_instantiates_dict():
+    h = SpamcHeaders(headers={})
 
     assert 'h' in locals()
 
 
-def test_headers_instantiate_list():
-    h = SpamcHeaders(headers=[Compress(), ContentLength(length=42)])
+def test_headers_instantiate_dict_headers():
+    h = SpamcHeaders(headers={'Compress': CompressValue(), 'Content-length': ContentLengthValue(length=42)})
+
+    assert 'h' in locals()
+
+
+def test_headers_instantiates_dict_str_and_int():
+    h = SpamcHeaders(headers={'Compress': 'zlib', 'Content-length': 42})
 
     assert 'h' in locals()
 
 
 def test_headers_get_item():
-    header1 = Compress()
-    h = SpamcHeaders(headers=[header1])
-    result = h[header1.field_name()]
+    header1 = CompressValue()
+    h = SpamcHeaders(headers={'Compress': header1})
+    result = h['Compress']
 
     assert result is header1
 
 
 def test_headers_set_item():
-    header1 = Compress()
+    header1 = CompressValue()
     h = SpamcHeaders()
-    h[header1.field_name()] = header1
+    h['Compress'] = header1
 
-    assert h[header1.field_name()] is header1
+    assert h['Compress'] is header1
 
 
 def test_headers_iter():
-    headers = [XHeader(name='A', value='a'), XHeader(name='B', value='b')]
-    h = SpamcHeaders(headers=headers)
-    header_fields = [header.field_name() for header in headers]
+    h = SpamcHeaders(headers={'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')})
 
     for test_result in iter(h):
-        assert test_result in header_fields
+        assert test_result in ['A', 'B']
 
 
 def test_headers_keys():
-    headers = [XHeader(name='A', value='a'), XHeader(name='B', value='b')]
-    h = SpamcHeaders(headers=headers)
-    header_fields = [header.field_name() for header in headers]
+    h = SpamcHeaders(headers={'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')})
 
     for test_result in h.keys():
-        assert test_result in header_fields
+        assert test_result in ['A', 'B']
 
 
 def test_headers_items():
-    headers = [XHeader(name='A', value='a'), XHeader(name='B', value='b')]
+    headers = {'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')}
     h = SpamcHeaders(headers=headers)
-    header_tuples = [(header.field_name(), header) for header in headers]
 
-    for test_result in h.items():
-        assert test_result in header_tuples
+    for test_key, test_value in h.items():
+        assert test_key in headers
+        assert headers[test_key] is test_value
 
 
 def test_headers_values():
-    headers = [XHeader(name='A', value='a'), XHeader(name='B', value='b')]
-    h = SpamcHeaders(headers=headers)
+    values = [HeaderValue(value='a'), HeaderValue(value='b')]
+    h = SpamcHeaders(headers={'A': values[0], 'B': values[1]})
 
     for test_result in h.values():
-        assert test_result in headers
+        assert test_result in values
 
 
 def test_headers_len():
-    headers = [Compress(), ContentLength(length=10)]
-    h = SpamcHeaders(headers=headers)
+    h = SpamcHeaders(headers={'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')})
 
     assert len(h) == 2
 
 
 def test_headers_bytes():
-    headers = [XHeader(name='A', value='a'), XHeader(name='B', value='b')]
-    h = SpamcHeaders(headers=headers)
+    h = SpamcHeaders(headers={'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')})
     result = bytes(h)
 
-    header_bytes = [bytes(header) for header in headers]
+    header_bytes = [b': '.join([name.encode('ascii'), bytes(value)])for name, value in h.items()]
     for header in header_bytes:
         assert header in result
