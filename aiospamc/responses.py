@@ -93,9 +93,11 @@ class Response:
             self.headers['Content-length'] = ContentLengthValue(length=len(body))
 
         if isinstance(self.status_code, Status):
-            status = self.status_code
+            status = self.status_code.value
+            message = str(self.status_code).encode('ascii')
         else:
-            status = b' '.join([str(self.status_code).encode('ascii'), self.message.encode('ascii')])
+            status = self.status_code
+            message = self.message.encode('ascii')
 
         return b'SPAMD/%(version)b ' \
                b'%(status)d ' \
@@ -103,7 +105,7 @@ class Response:
                b'%(headers)b\r\n' \
                b'%(body)b' % {b'version': self.version.encode('ascii'),
                               b'status': status,
-                              b'message': self.message.encode('ascii'),
+                              b'message': message,
                               b'headers': bytes(self.headers),
                               b'body': body}
 

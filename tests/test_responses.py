@@ -5,7 +5,7 @@ import pytest
 import zlib
 
 from aiospamc.exceptions import ResponseException
-from aiospamc.headers import Compress
+from aiospamc.incremental_parser import ResponseParser
 from aiospamc.responses import Response, Status
 
 
@@ -28,6 +28,13 @@ def test_init_message():
     result = bytes(r).split(b'\r\n')[0]
 
     assert result.endswith(Status.EX_OK.name.encode())
+
+
+def test_bytes_status():
+    r = Response(status_code=999, message='Test message')
+    result = bytes(r).partition(b'\r\n')[0]
+
+    assert b'999 Test message' in result
 
 
 def test_bytes_headers(x_headers):
@@ -91,3 +98,10 @@ def test_raise_for_undefined_status():
 
     with pytest.raises(ResponseException):
         r.raise_for_status()
+
+
+def test_response_from_parser_result(response_with_body):
+    p = ResponseParser().parse(response_with_body)
+    r = Response(**p)
+
+    assert r is not None

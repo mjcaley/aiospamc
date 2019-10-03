@@ -17,7 +17,8 @@ class Request:
         verb: str = None,
         version: str = '1.5',
         headers: Mapping[str, HeaderValue] = None,
-        body: Union[bytes, SupportsBytes] = b''
+        body: Union[bytes, SupportsBytes] = b'',
+        **kwargs
     ) -> None:
         '''Request constructor.
 

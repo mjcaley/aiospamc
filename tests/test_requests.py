@@ -3,6 +3,7 @@
 import zlib
 
 from aiospamc.header_values import CompressValue
+from aiospamc.incremental_parser import RequestParser
 from aiospamc.requests import Request
 
 
@@ -61,3 +62,10 @@ def test_bytes_body_compressed():
     result = bytes(r).rpartition(b'\r\n')[2]
 
     assert result == zlib.compress(test_input)
+
+
+def test_request_from_parser_result(request_with_body):
+    p = RequestParser().parse(request_with_body)
+    r = Request(**p)
+
+    assert r is not None
