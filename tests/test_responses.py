@@ -31,26 +31,26 @@ def test_init_message():
 
 
 def test_bytes_headers(x_headers):
-    r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK')
-    result = bytes(r).split(b'\r\n')[1:-2]      # strip end of headers, body and first line
-    expected = [bytes(header).rstrip(b'\r\n') for header in x_headers]
+    r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK', headers=x_headers)
+    result = bytes(r).partition(b'\r\n')[2]
+    expected = bytes(r.headers)
 
-    for header_bytes in result:
-        assert header_bytes in expected
+    assert result.startswith(expected)
+    assert result.endswith(b'\r\n\r\n')
 
 
 def test_bytes_body():
     test_input = b'Test body\n'
     r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK', body=test_input)
-    result = bytes(r).split(b'\r\n')[-1]
+    result = bytes(r).rpartition(b'\r\n')[2]
 
     assert result == test_input
 
 
 def test_bytes_body_compressed():
     test_input = b'Test body\n'
-    r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK', headers=[Compress()], body=test_input)
-    result = bytes(r).split(b'\r\n')[-1]
+    r = Response(version='1.5', status_code=Status.EX_OK, message='EX_OK', headers={'Compress': 'zlib'}, body=test_input)
+    result = bytes(r).rpartition(b'\r\n')[2]
 
     assert result == zlib.compress(test_input)
 

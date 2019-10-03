@@ -149,7 +149,7 @@ def parse_message_class_value(stream: str) -> Dict[str, MessageClassOption]:
         raise ParseError('Unable to parse Message-class header value')
 
 
-def parse_content_length_value(stream: str) -> Dict[str, int]:
+def parse_content_length_value(stream: Union[str, int]) -> Dict[str, int]:
     try:
         value = int(stream)
     except ValueError:
@@ -246,6 +246,10 @@ header_value_parsers = {
     'Spam': parse_spam_value,
     'User': parse_user_value
 }
+
+
+def get_header_value_parser(header: str) -> Callable:
+    return header_value_parsers.get(header, parse_xheader_value)
 
 
 class RequestParser(Parser):

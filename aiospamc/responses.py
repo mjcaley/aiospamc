@@ -3,7 +3,7 @@
 '''Contains classes used for responses.'''
 
 import enum
-from typing import Iterator, SupportsBytes, Union
+from typing import Mapping, SupportsBytes, Union
 import zlib
 
 from .common import SpamcBody, SpamcHeaders
@@ -11,7 +11,7 @@ from .exceptions import (UsageException, DataErrorException, NoInputException, N
                          NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
                          OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
                          ProtocolException, NoPermissionException, ConfigException, TimeoutException, ResponseException)
-from .headers import ContentLength, Header
+from .header_values import ContentLengthValue, HeaderValue
 
 
 class Status(enum.IntEnum):
@@ -54,11 +54,12 @@ class Response:
 
     def __init__(
             self,
-            version: str,
-            status_code: Status,
-            message: str,
-            headers: Iterator[Header] = None,
-            body=None
+            version: str = '1.5',
+            status_code: Union[Status, int] = 0,
+            message: str = '',
+            headers: Mapping[str, HeaderValue] = None,
+            body: bytes = b'',
+            **kwargs
     ):
         '''Response constructor.
 
@@ -69,14 +70,18 @@ class Response:
         :param headers: Collection of headers to be added.
         '''
 
-        self.headers = SpamcHeaders(headers=headers)
         self.version = version
-        self.status_code = status_code
+
+        self.headers = SpamcHeaders(headers=headers)
+
+        try:
+            self.status_code = Status(status_code)
+        except ValueError:
+            self.status_code = status_code
+
         self.message = message
-        if body:
-            self.body = body
-        else:
-            self.body = b''
+
+        self.body = body
 
     def __bytes__(self) -> bytes:
         if 'Compress' in self.headers:
@@ -85,16 +90,21 @@ class Response:
             body = self.body
 
         if len(body) > 0:
-            self.headers['Content-length'] = ContentLength(length=len(body))
+            self.headers['Content-length'] = ContentLengthValue(length=len(body))
+
+        if isinstance(self.status_code, Status):
+            status = self.status_code
+        else:
+            status = b' '.join([str(self.status_code).encode('ascii'), self.message.encode('ascii')])
 
         return b'SPAMD/%(version)b ' \
                b'%(status)d ' \
                b'%(message)b\r\n' \
                b'%(headers)b\r\n' \
-               b'%(body)b' % {b'version': self.version.encode(),
-                              b'status': self.status_code.value,
-                              b'message': self.message.encode(),
-                              b'headers': b''.join(map(bytes, self.headers.values())),
+               b'%(body)b' % {b'version': self.version.encode('ascii'),
+                              b'status': status,
+                              b'message': self.message.encode('ascii'),
+                              b'headers': bytes(self.headers),
                               b'body': body}
 
     body = SpamcBody()  # type: Union[bytes, SupportsBytes]

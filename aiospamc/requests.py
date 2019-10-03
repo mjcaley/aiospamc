@@ -2,11 +2,11 @@
 
 '''Contains all requests that can be made to the SPAMD service.'''
 
-from typing import Iterator, SupportsBytes, Union
+from typing import Mapping, SupportsBytes, Union
 import zlib
 
 from .common import SpamcBody, SpamcHeaders
-from .headers import ContentLength, Header
+from .header_values import ContentLengthValue, HeaderValue
 
 
 class Request:
@@ -14,10 +14,10 @@ class Request:
 
     def __init__(
         self,
-        verb: str,
+        verb: str = None,
         version: str = '1.5',
-        headers: Iterator[Header] = None,
-        body: Union[bytes, SupportsBytes] = None
+        headers: Mapping[str, HeaderValue] = None,
+        body: Union[bytes, SupportsBytes] = b''
     ) -> None:
         '''Request constructor.
 
@@ -27,13 +27,10 @@ class Request:
         :param body: Byte string representation of the body.
         '''
 
-        self.headers = SpamcHeaders(headers=headers)
         self.verb = verb
         self.version = version
-        if body:
-            self.body = body
-        else:
-            self.body = b''
+        self.headers = SpamcHeaders(headers=headers)
+        self.body = body
 
     def __bytes__(self) -> bytes:
         if 'Compress' in self.headers.keys():
@@ -42,7 +39,7 @@ class Request:
             body = self.body
 
         if len(body) > 0:
-            self.headers['Content-length'] = ContentLength(length=len(body))
+            self.headers['Content-length'] = ContentLengthValue(length=len(body))
 
         request = (b'%(verb)b '
                    b'SPAMC/%(version)b'
@@ -50,9 +47,9 @@ class Request:
                    b'%(headers)b\r\n'
                    b'%(body)b')
 
-        return request % {b'verb': self.verb.encode(),
-                          b'version': self.version.encode(),
-                          b'headers': b''.join(map(bytes, self.headers.values())),
+        return request % {b'verb': self.verb.encode('ascii'),
+                          b'version': self.version.encode('ascii'),
+                          b'headers': bytes(self.headers),
                           b'body': body}
 
     body = SpamcBody()  # type: Union[bytes, SupportsBytes]
