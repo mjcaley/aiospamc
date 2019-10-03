@@ -102,7 +102,7 @@ def test_body_saves_value_and_transitions_to_done(delimiter, mocker):
         start=States.Body
     )
     p.buffer = b'body value'
-    p.result['headers']['Content-length'] = len(p.buffer)
+    p.result['headers']['Content-length'] = {'length': len(p.buffer)}
     p.body()
 
     assert p.result['body'] == b'body value'
@@ -131,7 +131,7 @@ def test_body_too_much_data_and_transitions_to_done(delimiter, mocker):
         start=States.Body
     )
     p.buffer = b'body value'
-    p.result['headers']['Content-length'] = 1
+    p.result['headers']['Content-length'] = {'length': 1}
 
     with pytest.raises(TooMuchDataError):
         p.body()
@@ -319,6 +319,13 @@ def test_response_parser():
     assert r.state == States.Status
 
 
+def test_response_from_bytes(response_with_body):
+    r = ResponseParser()
+    result = r.parse(response_with_body)
+
+    assert result is not None
+
+
 def test_request_parser():
     r = RequestParser()
 
@@ -327,3 +334,10 @@ def test_request_parser():
     assert r.header_parser == parse_header
     assert r.body_parser == parse_body
     assert r.state == States.Status
+
+
+def test_request_from_bytes(request_with_body):
+    r = RequestParser()
+    result = r.parse(request_with_body)
+
+    assert result is not None

@@ -55,6 +55,11 @@ def spam():
 
 
 @pytest.fixture
+def request_with_body():
+    return b'CHECK SPAMC/1.5\r\nContent-length: 10\r\n\r\nTest body\n'
+
+
+@pytest.fixture
 def request_ping():
     '''PING request in bytes.'''
     return b'PING SPAMC/1.5\r\n\r\n'

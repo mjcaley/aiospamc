@@ -90,7 +90,7 @@ class Parser:
             raise NotEnoughDataError
 
     def body(self) -> None:
-        content_length = self.result['headers'].get('Content-length', 0)
+        content_length = self.result['headers'].get('Content-length', {'length': 0})['length']
         try:
             self.result['body'] += self.body_parser(self.buffer, content_length)
             self._state = States.Done
