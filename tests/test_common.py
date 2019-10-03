@@ -27,15 +27,26 @@ def test_headers_instantiates_dict():
 
 
 def test_headers_instantiate_dict_headers():
-    h = SpamcHeaders(headers={'Compress': CompressValue(), 'Content-length': ContentLengthValue(length=42)})
+    compress_value = CompressValue()
+    content_length_value = ContentLengthValue(length=42)
+    h = SpamcHeaders(headers={'Compress': compress_value, 'Content-length': content_length_value})
 
-    assert 'h' in locals()
+    assert h['Compress'] is compress_value
+    assert h['Content-length'] is content_length_value
 
 
 def test_headers_instantiates_dict_str_and_int():
     h = SpamcHeaders(headers={'Compress': 'zlib', 'Content-length': 42})
 
-    assert 'h' in locals()
+    assert isinstance(h['Compress'], CompressValue)
+    assert isinstance(h['Content-length'], ContentLengthValue)
+
+
+def test_header_instantiates_dict_parser_results():
+    h = SpamcHeaders(headers={'Compress': {'algorithm': 'zlib'}, 'Content-length': {'length': 10}})
+
+    assert isinstance(h['Compress'], CompressValue)
+    assert isinstance(h['Content-length'], ContentLengthValue)
 
 
 def test_headers_get_item():

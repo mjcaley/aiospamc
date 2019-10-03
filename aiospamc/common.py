@@ -2,9 +2,9 @@
 
 '''Common classes for the project.'''
 
-from typing import Iterator, ItemsView, KeysView, Mapping, ValuesView, SupportsBytes, Union
+from typing import Iterator, ItemsView, KeysView, Mapping, ValuesView, SupportsBytes, Union, Any
 
-from .header_values import HeaderValue, parse_header
+from .header_values import HeaderValue, parse_header, header_to_class
 
 
 class SpamcBody:
@@ -20,10 +20,11 @@ class SpamcBody:
 class SpamcHeaders:
     '''Provides a dictionary-like interface for headers.'''
 
-    def __init__(self, *, headers: Mapping[str, Union[HeaderValue, str]] = None, **_) -> None:
+    def __init__(self, *, headers: Mapping[str, Union[HeaderValue, Mapping[str, Any], str]] = None, **_) -> None:
         if headers:
             self._headers = {
                 key: value if isinstance(value, HeaderValue)
+                else header_to_class[key](**value) if isinstance(value, Mapping)
                 else parse_header(key, value)
                 for key, value in headers.items()
             }
