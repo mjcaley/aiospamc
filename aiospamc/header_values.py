@@ -130,7 +130,7 @@ class SpamValue(HeaderValue):
         self.threshold = threshold
 
     def __bytes__(self) -> bytes:
-        return b'%b ; %.1f / %.1f\r\n' % (str(self.value).encode('ascii'),
+        return b'%b ; %.1f / %.1f' % (str(self.value).encode('ascii'),
                                           self.score,
                                           self.threshold)
 
