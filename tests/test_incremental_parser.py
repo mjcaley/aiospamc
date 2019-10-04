@@ -16,7 +16,7 @@ def delimiter():
 def test_default_result(delimiter, mocker):
     p = Parser(delimiter=delimiter, status_parser=mocker.stub(), header_parser=mocker.stub(), body_parser=mocker.stub())
 
-    assert p.result == {'status': {}, 'headers': {}, 'body': b''}
+    assert p.result == {'headers': {}, 'body': b''}
 
 
 def test_default_state(delimiter, mocker):
@@ -28,7 +28,7 @@ def test_default_state(delimiter, mocker):
 def test_status_transitions_to_header_state(delimiter, mocker):
     p = Parser(
         delimiter=delimiter,
-        status_parser=mocker.Mock(return_value='status success'),
+        status_parser=mocker.Mock(return_value={'status': 'status success'}),
         header_parser=mocker.stub(),
         body_parser=mocker.stub()
     )
@@ -141,7 +141,7 @@ def test_body_too_much_data_and_transitions_to_done(delimiter, mocker):
 def test_parse(delimiter, mocker):
     p = Parser(
         delimiter=delimiter,
-        status_parser=mocker.Mock(return_value='status value'),
+        status_parser=mocker.Mock(return_value={'status': 'status value'}),
         header_parser=mocker.Mock(return_value=('header key', 'header value')),
         body_parser=mocker.Mock(return_value=b'body value'),
     )

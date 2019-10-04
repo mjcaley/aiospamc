@@ -38,7 +38,7 @@ class Parser:
         self.status_parser = status_parser
         self.header_parser = header_parser
         self.body_parser = body_parser
-        self.result = {'status': {}, 'headers': {}, 'body': b''}
+        self.result = {'headers': {}, 'body': b''}
 
         self._state = start
         self.buffer = b''
@@ -71,7 +71,7 @@ class Parser:
 
         if status_line and delimiter:
             self.buffer = leftover
-            self.result['status'] = self.status_parser(status_line)
+            self.result = {**self.result, **self.status_parser(status_line)}
             self._state = States.Header
         else:
             raise NotEnoughDataError
