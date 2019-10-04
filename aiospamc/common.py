@@ -33,7 +33,7 @@ class SpamcHeaders:
 
     def __bytes__(self) -> bytes:
         return b''.join(
-            [b': '.join([name.encode('ascii'), bytes(value), b'\r\n']) for name, value in self._headers.items()]
+            [b'%b: %b\r\n' % (name.encode('ascii'), bytes(value)) for name, value in self._headers.items()]
         )
 
     def __getitem__(self, key: str) -> HeaderValue:

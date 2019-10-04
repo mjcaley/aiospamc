@@ -106,6 +106,6 @@ def test_headers_bytes():
     h = SpamcHeaders(headers={'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')})
     result = bytes(h)
 
-    header_bytes = [b': '.join([name.encode('ascii'), bytes(value), b'\r\n']) for name, value in h.items()]
+    header_bytes = [b'%b: %b\r\n' % (name.encode('ascii'), bytes(value)) for name, value in h.items()]
     for header in header_bytes:
         assert header in result
