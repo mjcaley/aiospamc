@@ -206,7 +206,9 @@ def test_parse_content_length_value_raises_parse_error():
 
 @pytest.mark.parametrize('test_input,expected', [
     ['ham', MessageClassOption.ham],
-    ['spam', MessageClassOption.spam]
+    ['spam', MessageClassOption.spam],
+    [MessageClassOption.ham, MessageClassOption.ham],
+    [MessageClassOption.spam, MessageClassOption.spam]
 ])
 def test_parse_message_class_value_success(test_input, expected):
     result = parse_message_class_value(test_input)

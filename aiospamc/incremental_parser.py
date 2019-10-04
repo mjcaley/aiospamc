@@ -138,14 +138,17 @@ def parse_response_status(stream: bytes) -> Dict[str, str]:
     }
 
 
-def parse_message_class_value(stream: str) -> Dict[str, MessageClassOption]:
+def parse_message_class_value(stream: Union[str, MessageClassOption]) -> Dict[str, MessageClassOption]:
+    try:
+        stream = stream.name
+    except AttributeError:
+        pass
+
     stream = stream.strip()
 
-    if stream == 'ham':
-        return {'value': MessageClassOption.ham}
-    elif stream == 'spam':
-        return {'value': MessageClassOption.spam}
-    else:
+    try:
+        return {'value': getattr(MessageClassOption, stream)}
+    except AttributeError:
         raise ParseError('Unable to parse Message-class header value')
 
 
