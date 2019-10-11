@@ -5,7 +5,6 @@ import pytest
 from aiospamc.options import ActionOption, MessageClassOption
 from aiospamc.header_values import (GenericHeaderValue, CompressValue, ContentLengthValue,
                                     MessageClassValue, SetOrRemoveValue, SpamValue, UserValue)
-from aiospamc.incremental_parser import parse_header2
 
 
 def test_header_bytes():
@@ -120,25 +119,6 @@ def test_user_bytes():
     u = UserValue(name='username')
 
     assert bytes(u) == b'username'
-
-
-@pytest.mark.parametrize('name,value', [
-    ['Compress', 'zlib'],
-    ['Content-length', '42'],
-    ['Content-length', 42],
-    ['DidRemove', 'local'],
-    ['DidSet', 'remote'],
-    ['Message-class', 'ham'],
-    ['Message-class', 'spam'],
-    ['Remove', 'local,remote'],
-    ['Set', 'remote,local'],
-    ['Spam', 'True ; 42.0 / 42.0'],
-    ['User', 'username'],
-])
-def test_parse_header(name, value):
-    result = parse_header2(name, value)
-
-    assert result
 
 
 @pytest.mark.parametrize('test_input', [

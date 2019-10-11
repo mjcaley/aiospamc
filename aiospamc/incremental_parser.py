@@ -4,7 +4,9 @@ from enum import Enum
 import re
 from typing import Any, Callable, Mapping, Tuple, Union, Dict
 
-from aiospamc.options import ActionOption, MessageClassOption
+from .header_values import HeaderValue, CompressValue, ContentLengthValue, GenericHeaderValue, MessageClassValue, \
+    SetOrRemoveValue, SpamValue, UserValue
+from .options import ActionOption, MessageClassOption
 
 
 class NotEnoughDataError(Exception):
@@ -90,7 +92,7 @@ class Parser:
             raise NotEnoughDataError
 
     def body(self) -> None:
-        content_length = self.result['headers'].get('Content-length', {'length': 0})['length']
+        content_length = self.result['headers'].get('Content-length', ContentLengthValue(length=0)).length
         try:
             self.result['body'] += self.body_parser(self.buffer, content_length)
             self._state = States.Done
@@ -138,7 +140,7 @@ def parse_response_status(stream: bytes) -> Dict[str, str]:
     }
 
 
-def parse_message_class_value(stream: Union[str, MessageClassOption]) -> Dict[str, MessageClassOption]:
+def parse_message_class_value(stream: Union[str, MessageClassOption]) -> MessageClassValue:
     try:
         stream = stream.name
     except AttributeError:
@@ -147,25 +149,25 @@ def parse_message_class_value(stream: Union[str, MessageClassOption]) -> Dict[st
     stream = stream.strip()
 
     try:
-        return {'value': getattr(MessageClassOption, stream)}
+        return MessageClassValue(value=getattr(MessageClassOption, stream))
     except AttributeError:
         raise ParseError('Unable to parse Message-class header value')
 
 
-def parse_content_length_value(stream: Union[str, int]) -> Dict[str, int]:
+def parse_content_length_value(stream: Union[str, int]) -> ContentLengthValue:
     try:
         value = int(stream)
     except ValueError:
         raise ParseError('Unable to parse Content-length value, must be integer')
 
-    return {'length': value}
+    return ContentLengthValue(length=value)
 
 
-def parse_compress_value(stream: str) -> Dict[str, str]:
-    return {'algorithm': stream.strip()}
+def parse_compress_value(stream: str) -> CompressValue:
+    return CompressValue(algorithm=stream.strip())
 
 
-def parse_set_remove_value(stream: str) -> ActionOption:
+def parse_set_remove_value(stream: str) -> SetOrRemoveValue:
     stream = stream.replace(' ', '')
     values = stream.split(',')
 
@@ -179,10 +181,10 @@ def parse_set_remove_value(stream: str) -> ActionOption:
     else:
         remote = False
 
-    return {'action': ActionOption(local=local, remote=remote)}
+    return SetOrRemoveValue(action=ActionOption(local=local, remote=remote))
 
 
-def parse_spam_value(stream: str) -> Dict[str, Union[bool, float]]:
+def parse_spam_value(stream: str) -> SpamValue:
     stream = stream.replace(' ', '')
     try:
         found, score, threshold = re.split('[;/]', stream)
@@ -207,24 +209,24 @@ def parse_spam_value(stream: str) -> Dict[str, Union[bool, float]]:
     except ValueError:
         raise ParseError('Cannot parse Spam header threshold value')
 
-    return {'value': value, 'score': score, 'threshold': threshold}
+    return SpamValue(value=value, score=score, threshold=threshold)
 
 
-def parse_user_value(stream: str) -> Dict[str, str]:
-    return {'name': stream.strip()}
+def parse_user_value(stream: str) -> UserValue:
+    return UserValue(name=stream.strip())
 
 
-def parse_xheader_value(stream: bytes) -> Dict[str, bytes]:
-    return {'value': stream.strip()}
+def parse_generic_header_value(stream: bytes) -> GenericHeaderValue:
+    return GenericHeaderValue(value=stream.strip().decode())
 
 
-def parse_header(stream: bytes) -> Tuple[str, Any]:
+def parse_header(stream: bytes) -> Tuple[str, HeaderValue]:
     header, _, value = stream.partition(b':')
     header = header.decode('ascii').strip()
     if header in header_value_parsers:
         value = header_value_parsers[header](value.decode('ascii'))
     else:
-        value = parse_xheader_value(value)
+        value = parse_generic_header_value(value)
 
     return header, value
 
@@ -252,7 +254,7 @@ header_value_parsers = {
 
 
 def get_header_value_parser(header: str) -> Callable:
-    return header_value_parsers.get(header, parse_xheader_value)
+    return header_value_parsers.get(header, parse_generic_header_value)
 
 
 class RequestParser(Parser):
@@ -273,3 +275,24 @@ class ResponseParser(Parser):
             header_parser=parse_header,
             body_parser=parse_body
         )
+
+
+header_to_class = {
+    'Compress': CompressValue,
+    'Content-length': ContentLengthValue,
+    'DidRemove': SetOrRemoveValue,
+    'DidSet': SetOrRemoveValue,
+    'Message-class': MessageClassValue,
+    'Remove': SetOrRemoveValue,
+    'Set': SetOrRemoveValue,
+    'Spam': SpamValue,
+    'User': UserValue
+}
+
+
+def parse_header2(name: str, value: str) -> HeaderValue:
+    parser = get_header_value_parser(name)
+    parsed_value = parser(value)
+    header = header_to_class[name](**parsed_value)
+
+    return header

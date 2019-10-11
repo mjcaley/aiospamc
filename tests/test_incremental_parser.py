@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-import builtins
-
 import pytest
 
-from aiospamc.incremental_parser import *
-from aiospamc.options import MessageClassOption
+from aiospamc.header_values import HeaderValue, CompressValue, ContentLengthValue, GenericHeaderValue, MessageClassValue, SetOrRemoveValue, SpamValue, UserValue
+from aiospamc.incremental_parser import NotEnoughDataError, Parser, ParseError, States, TooMuchDataError, \
+    parse_request_status, parse_response_status, parse_content_length_value, parse_message_class_value, \
+    parse_set_remove_value, parse_spam_value, parse_generic_header_value, parse_header, parse_body, ResponseParser, \
+    RequestParser
+from aiospamc.options import MessageClassOption, ActionOption
 
 
 @pytest.fixture
@@ -102,7 +104,7 @@ def test_body_saves_value_and_transitions_to_done(delimiter, mocker):
         start=States.Body
     )
     p.buffer = b'body value'
-    p.result['headers']['Content-length'] = {'length': len(p.buffer)}
+    p.result['headers']['Content-length'] = ContentLengthValue(length=len(p.buffer))
     p.body()
 
     assert p.result['body'] == b'body value'
@@ -131,7 +133,7 @@ def test_body_too_much_data_and_transitions_to_done(delimiter, mocker):
         start=States.Body
     )
     p.buffer = b'body value'
-    p.result['headers']['Content-length'] = {'length': 1}
+    p.result['headers']['Content-length'] = ContentLengthValue(length=1)
 
     with pytest.raises(TooMuchDataError):
         p.body()
@@ -196,7 +198,7 @@ def test_parse_response_status_raises_parseerror(test_input):
 def test_parse_content_length_value_success():
     result = parse_content_length_value('42')
 
-    assert result['length'] == 42
+    assert result.length == 42
 
 
 def test_parse_content_length_value_raises_parse_error():
@@ -213,7 +215,7 @@ def test_parse_content_length_value_raises_parse_error():
 def test_parse_message_class_value_success(test_input, expected):
     result = parse_message_class_value(test_input)
 
-    assert result['value'] == expected
+    assert result.value == expected
 
 
 def test_parse_message_class_value_raises_parseerror():
@@ -231,12 +233,13 @@ def test_parse_message_class_value_raises_parseerror():
 def test_parse_set_remove_value_success(test_input, local_expected, remote_expected):
     result = parse_set_remove_value(test_input)
 
-    assert result['action'].local == local_expected
-    assert result['action'].remote == remote_expected
+    assert result.action.local == local_expected
+    assert result.action.remote == remote_expected
 
 
 @pytest.mark.parametrize('test_input,value,score,threshold', [
     ['True ; 40.0 / 20.0', True, 40.0, 20.0],
+    ['True ; -40.0 / 20.0', True, -40.0, 20.0],
     ['False ; 40.0 / 20.0', False, 40.0, 20.0],
     ['true ; 40.0 / 20.0', True, 40.0, 20.0],
     ['false ; 40.0 / 20.0', False, 40.0, 20.0],
@@ -249,9 +252,9 @@ def test_parse_set_remove_value_success(test_input, local_expected, remote_expec
 def test_parse_spam_value_success(test_input, value, score, threshold):
     result = parse_spam_value(test_input)
 
-    assert result['value'] == value
-    assert pytest.approx(result['score'], score)
-    assert pytest.approx(result['threshold'], threshold)
+    assert result.value == value
+    assert pytest.approx(result.score, score)
+    assert pytest.approx(result.threshold, threshold)
 
 
 @pytest.mark.parametrize('test_input', [
@@ -266,22 +269,23 @@ def test_parse_spam_value_raises_parseerror(test_input):
 
 
 def test_parse_xheader_success():
-    result = parse_xheader_value(b'value')
+    result = parse_generic_header_value(b'value')
 
-    assert result['value'] == b'value'
+    assert isinstance(result, GenericHeaderValue)
+    assert result.value == 'value'
 
 
 @pytest.mark.parametrize('test_input,header,value', [
-    [b'Compress: zlib', 'Compress', {'algorithm': 'zlib'}],
-    [b'Content-length: 42', 'Content-length', {'length': 42}],
-    [b'DidRemove: local, remote', 'DidRemove', {'action': ActionOption(local=True, remote=True)}],
-    [b'DidSet: local, remote', 'DidSet', {'action': ActionOption(local=True, remote=True)}],
-    [b'Message-class: spam', 'Message-class', {'value': MessageClassOption.spam}],
-    [b'Remove: local, remote', 'Remove', {'action': ActionOption(local=True, remote=True)}],
-    [b'Set: local, remote', 'Set', {'action': ActionOption(local=True, remote=True)}],
-    [b'Spam: True ; 40 / 20', 'Spam', {'value': True, 'score': 40, 'threshold': 20}],
-    [b'User: username', 'User', {'name': 'username'}],
-    [b'XHeader: x value', 'XHeader', {'value': b'x value'}]
+    [b'Compress: zlib', 'Compress', CompressValue(algorithm='zlib')],
+    [b'Content-length: 42', 'Content-length', ContentLengthValue(length=42)],
+    [b'DidRemove: local, remote', 'DidRemove', SetOrRemoveValue(action=ActionOption(local=True, remote=True))],
+    [b'DidSet: local, remote', 'DidSet', SetOrRemoveValue(action=ActionOption(local=True, remote=True))],
+    [b'Message-class: spam', 'Message-class', MessageClassValue(value=MessageClassOption.spam)],
+    [b'Remove: local, remote', 'Remove', SetOrRemoveValue(action=ActionOption(local=True, remote=True))],
+    [b'Set: local, remote', 'Set', SetOrRemoveValue(action=ActionOption(local=True, remote=True))],
+    [b'Spam: True ; 40 / 20', 'Spam', SpamValue(value=True, score=40, threshold=20)],
+    [b'User: username', 'User', UserValue(name='username')],
+    [b'XHeader: x value', 'XHeader', GenericHeaderValue('x value')]
 ])
 def test_parse_header_success(test_input, header, value):
     result = parse_header(test_input)
