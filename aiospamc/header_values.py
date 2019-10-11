@@ -4,11 +4,14 @@
 
 import getpass
 
-from .incremental_parser import get_header_value_parser
 from .options import ActionOption, MessageClassOption
 
 
 class HeaderValue:
+    pass
+
+
+class GenericHeaderValue(HeaderValue):
     '''Generic header value.'''
     
     def __init__(self, value: str, encoding='utf8') -> None:
@@ -17,6 +20,12 @@ class HeaderValue:
 
     def __bytes__(self) -> bytes:
         return self.value.encode(self.encoding)
+
+    def __eq__(self, other):
+        try:
+            return other.value == self.value and other.encoding == self.encoding
+        except AttributeError:
+            return False
 
     def __repr__(self):
         return '{}(value={}, encoding={})'.format(
@@ -39,6 +48,12 @@ class CompressValue(HeaderValue):
 
         self.algorithm = algorithm
 
+    def __eq__(self, other):
+        try:
+            return self.algorithm == other.algorithm
+        except AttributeError:
+            return False
+
     def __repr__(self) -> str:
         return '{}()'.format(self.__class__.__qualname__)
 
@@ -55,6 +70,12 @@ class ContentLengthValue(HeaderValue):
         :param length: Length of the body.
         '''
         self.length = length
+
+    def __eq__(self, other):
+        try:
+            return self.length == other.length
+        except AttributeError:
+            return False
 
     def __bytes__(self) -> bytes:
         return str(self.length).encode('ascii')
@@ -76,6 +97,12 @@ class MessageClassValue(HeaderValue):
 
         self.value = value or MessageClassOption.ham
 
+    def __eq__(self, other):
+        try:
+            return self.value == other.value
+        except AttributeError:
+            return False
+
     def __bytes__(self) -> bytes:
         return self.value.name.encode('ascii')
 
@@ -93,6 +120,12 @@ class SetOrRemoveValue(HeaderValue):
         '''
 
         self.action = action or ActionOption(local=False, remote=False)
+
+    def __eq__(self, other):
+        try:
+            return self.action == other.action
+        except AttributeError:
+            return False
 
     def __bytes__(self) -> bytes:
         if not self.action.local and not self.action.remote:
@@ -129,6 +162,12 @@ class SpamValue(HeaderValue):
         self.score = score
         self.threshold = threshold
 
+    def __eq__(self, other):
+        try:
+            return all([self.value == other.value, self.score == other.score, self.threshold == other.threshold])
+        except AttributeError:
+            return False
+
     def __bytes__(self) -> bytes:
         return b'%b ; %.1f / %.1f' % (str(self.value).encode('ascii'),
                                           self.score,
@@ -153,29 +192,14 @@ class UserValue(HeaderValue):
 
         self.name = name or getpass.getuser()
 
+    def __eq__(self, other):
+        try:
+            return self.name == other.name
+        except AttributeError:
+            return False
+
     def __bytes__(self) -> bytes:
         return self.name.encode('ascii')
 
     def __repr__(self) -> str:
         return '{}(name={})'.format(self.__class__.__qualname__, repr(self.name))
-
-
-header_to_class = {
-    'Compress': CompressValue,
-    'Content-length': ContentLengthValue,
-    'DidRemove': SetOrRemoveValue,
-    'DidSet': SetOrRemoveValue,
-    'Message-class': MessageClassValue,
-    'Remove': SetOrRemoveValue,
-    'Set': SetOrRemoveValue,
-    'Spam': SpamValue,
-    'User': UserValue
-}
-
-
-def parse_header(name: str, value: str) -> HeaderValue:
-    parser = get_header_value_parser(name)
-    parsed_value = parser(value)
-    header = header_to_class[name](**parsed_value)
-
-    return header

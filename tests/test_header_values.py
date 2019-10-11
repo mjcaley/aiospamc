@@ -3,21 +3,21 @@
 import pytest
 
 from aiospamc.options import ActionOption, MessageClassOption
-from aiospamc.header_values import (HeaderValue, CompressValue, ContentLengthValue,
-                                    MessageClassValue, SetOrRemoveValue, SpamValue, UserValue,
-                                    parse_header)
+from aiospamc.header_values import (GenericHeaderValue, CompressValue, ContentLengthValue,
+                                    MessageClassValue, SetOrRemoveValue, SpamValue, UserValue)
+from aiospamc.incremental_parser import parse_header2
 
 
 def test_header_bytes():
-    h = HeaderValue(value='value', encoding='utf8')
+    h = GenericHeaderValue(value='value', encoding='utf8')
 
     assert bytes(h) == b'value'
 
 
 def test_header_repr():
-    h = HeaderValue(value='value')
+    h = GenericHeaderValue(value='value')
 
-    assert repr(h) == 'HeaderValue(value={}, encoding={})'.format(repr(h.value), repr(h.encoding))
+    assert repr(h) == 'GenericHeaderValue(value={}, encoding={})'.format(repr(h.value), repr(h.encoding))
 
 
 def test_compress_repr():
@@ -136,6 +136,37 @@ def test_user_bytes():
     ['User', 'username'],
 ])
 def test_parse_header(name, value):
-    result = parse_header(name, value)
+    result = parse_header2(name, value)
 
     assert result
+
+
+@pytest.mark.parametrize('test_input', [
+    GenericHeaderValue('value'),
+    CompressValue(),
+    ContentLengthValue(),
+    SetOrRemoveValue(ActionOption(local=True, remote=False)),
+    MessageClassValue(value=MessageClassOption.ham),
+    SpamValue(),
+    UserValue()
+])
+def test_equal(test_input):
+    assert test_input == test_input
+
+
+@pytest.mark.parametrize('test_input', [
+    GenericHeaderValue('value'),
+    CompressValue(),
+    ContentLengthValue(),
+    SetOrRemoveValue(ActionOption(local=True, remote=False)),
+    MessageClassValue(value=MessageClassOption.ham),
+    SpamValue(),
+    UserValue()
+])
+def test_eq_attribute_exception_false(test_input):
+    class Empty:
+        pass
+
+    e = Empty()
+
+    assert test_input != e
