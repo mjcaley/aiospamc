@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
-import builtins
-
 import pytest
 
-from aiospamc.incremental_parser import *
-from aiospamc.options import MessageClassOption
+from aiospamc.header_values import CompressValue, ContentLengthValue, GenericHeaderValue, MessageClassValue, \
+    SetOrRemoveValue, SpamValue, UserValue
+from aiospamc.incremental_parser import NotEnoughDataError, Parser, ParseError, States, TooMuchDataError, \
+    parse_request_status, parse_response_status, parse_content_length_value, parse_message_class_value, \
+    parse_set_remove_value, parse_spam_value, parse_generic_header_value, parse_header, parse_body, ResponseParser, \
+    RequestParser
+from aiospamc.options import MessageClassOption, ActionOption
 
 
 @pytest.fixture
@@ -16,7 +19,7 @@ def delimiter():
 def test_default_result(delimiter, mocker):
     p = Parser(delimiter=delimiter, status_parser=mocker.stub(), header_parser=mocker.stub(), body_parser=mocker.stub())
 
-    assert p.result == {'status': {}, 'headers': {}, 'body': b''}
+    assert p.result == {'headers': {}, 'body': b''}
 
 
 def test_default_state(delimiter, mocker):
@@ -28,7 +31,7 @@ def test_default_state(delimiter, mocker):
 def test_status_transitions_to_header_state(delimiter, mocker):
     p = Parser(
         delimiter=delimiter,
-        status_parser=mocker.Mock(return_value='status success'),
+        status_parser=mocker.Mock(return_value={'status': 'status success'}),
         header_parser=mocker.stub(),
         body_parser=mocker.stub()
     )
@@ -80,7 +83,7 @@ def test_header_transitions_to_body_state(delimiter, mocker):
     assert p.state == States.Body
 
 
-def test_header_raises_not_enough_data(delimiter, mocker):
+def test_empty_header_transitions_to_body(delimiter, mocker):
     p = Parser(
         delimiter=delimiter,
         status_parser=mocker.stub(),
@@ -88,8 +91,23 @@ def test_header_raises_not_enough_data(delimiter, mocker):
         body_parser=mocker.stub(),
         start=States.Header
     )
+    p.buffer = b''
+    p.header()
 
-    with pytest.raises(NotEnoughDataError):
+    assert p.state == States.Body
+
+
+def test_header_raises_on_bad_format(delimiter, mocker):
+    p = Parser(
+        delimiter=delimiter,
+        status_parser=mocker.stub(),
+        header_parser=mocker.stub(),
+        body_parser=mocker.stub(),
+        start=States.Header
+    )
+    p.buffer = b'\n'
+
+    with pytest.raises(ParseError):
         p.header()
 
 
@@ -102,7 +120,7 @@ def test_body_saves_value_and_transitions_to_done(delimiter, mocker):
         start=States.Body
     )
     p.buffer = b'body value'
-    p.result['headers']['Content-length'] = len(p.buffer)
+    p.result['headers']['Content-length'] = ContentLengthValue(length=len(p.buffer))
     p.body()
 
     assert p.result['body'] == b'body value'
@@ -131,7 +149,7 @@ def test_body_too_much_data_and_transitions_to_done(delimiter, mocker):
         start=States.Body
     )
     p.buffer = b'body value'
-    p.result['headers']['Content-length'] = 1
+    p.result['headers']['Content-length'] = ContentLengthValue(length=1)
 
     with pytest.raises(TooMuchDataError):
         p.body()
@@ -141,7 +159,7 @@ def test_body_too_much_data_and_transitions_to_done(delimiter, mocker):
 def test_parse(delimiter, mocker):
     p = Parser(
         delimiter=delimiter,
-        status_parser=mocker.Mock(return_value='status value'),
+        status_parser=mocker.Mock(return_value={'status': 'status value'}),
         header_parser=mocker.Mock(return_value=('header key', 'header value')),
         body_parser=mocker.Mock(return_value=b'body value'),
     )
@@ -193,14 +211,27 @@ def test_parse_response_status_raises_parseerror(test_input):
         parse_response_status(test_input)
 
 
+def test_parse_content_length_value_success():
+    result = parse_content_length_value('42')
+
+    assert result.length == 42
+
+
+def test_parse_content_length_value_raises_parse_error():
+    with pytest.raises(ParseError):
+        parse_content_length_value('Invalid')
+
+
 @pytest.mark.parametrize('test_input,expected', [
     ['ham', MessageClassOption.ham],
-    ['spam', MessageClassOption.spam]
+    ['spam', MessageClassOption.spam],
+    [MessageClassOption.ham, MessageClassOption.ham],
+    [MessageClassOption.spam, MessageClassOption.spam]
 ])
 def test_parse_message_class_value_success(test_input, expected):
     result = parse_message_class_value(test_input)
 
-    assert result == expected
+    assert result.value == expected
 
 
 def test_parse_message_class_value_raises_parseerror():
@@ -213,17 +244,19 @@ def test_parse_message_class_value_raises_parseerror():
     ['remote, local', True, True],
     ['local', True, False],
     ['remote', False, True],
-    ['', False, False]
+    ['', False, False],
+    [ActionOption(local=True, remote=False), True, False]
 ])
 def test_parse_set_remove_value_success(test_input, local_expected, remote_expected):
     result = parse_set_remove_value(test_input)
 
-    assert result.local == local_expected
-    assert result.remote == remote_expected
+    assert result.action.local == local_expected
+    assert result.action.remote == remote_expected
 
 
 @pytest.mark.parametrize('test_input,value,score,threshold', [
     ['True ; 40.0 / 20.0', True, 40.0, 20.0],
+    ['True ; -40.0 / 20.0', True, -40.0, 20.0],
     ['False ; 40.0 / 20.0', False, 40.0, 20.0],
     ['true ; 40.0 / 20.0', True, 40.0, 20.0],
     ['false ; 40.0 / 20.0', False, 40.0, 20.0],
@@ -236,9 +269,9 @@ def test_parse_set_remove_value_success(test_input, local_expected, remote_expec
 def test_parse_spam_value_success(test_input, value, score, threshold):
     result = parse_spam_value(test_input)
 
-    assert result['value'] == value
-    assert pytest.approx(result['score'], score)
-    assert pytest.approx(result['threshold'], threshold)
+    assert result.value == value
+    assert pytest.approx(result.score, score)
+    assert pytest.approx(result.threshold, threshold)
 
 
 @pytest.mark.parametrize('test_input', [
@@ -253,22 +286,23 @@ def test_parse_spam_value_raises_parseerror(test_input):
 
 
 def test_parse_xheader_success():
-    result = parse_xheader_value(b'value')
+    result = parse_generic_header_value('value')
 
-    assert result == b'value'
+    assert isinstance(result, GenericHeaderValue)
+    assert result.value == 'value'
 
 
 @pytest.mark.parametrize('test_input,header,value', [
-    [b'Compress: zlib', 'Compress', 'zlib'],
-    [b'Content-length: 42', 'Content-length', 42],
-    [b'DidRemove: local, remote', 'DidRemove', ActionOption(local=True, remote=True)],
-    [b'DidSet: local, remote', 'DidSet', ActionOption(local=True, remote=True)],
-    [b'Message-class: spam', 'Message-class', MessageClassOption.spam],
-    [b'Remove: local, remote', 'Remove', ActionOption(local=True, remote=True)],
-    [b'Set: local, remote', 'Set', ActionOption(local=True, remote=True),],
-    [b'Spam: True ; 40 / 20', 'Spam', {'value': True, 'score': 40, 'threshold': 20}],
-    [b'User: username', 'User', 'username'],
-    [b'XHeader: x value', 'XHeader', b'x value']
+    [b'Compress: zlib', 'Compress', CompressValue(algorithm='zlib')],
+    [b'Content-length: 42', 'Content-length', ContentLengthValue(length=42)],
+    [b'DidRemove: local, remote', 'DidRemove', SetOrRemoveValue(action=ActionOption(local=True, remote=True))],
+    [b'DidSet: local, remote', 'DidSet', SetOrRemoveValue(action=ActionOption(local=True, remote=True))],
+    [b'Message-class: spam', 'Message-class', MessageClassValue(value=MessageClassOption.spam)],
+    [b'Remove: local, remote', 'Remove', SetOrRemoveValue(action=ActionOption(local=True, remote=True))],
+    [b'Set: local, remote', 'Set', SetOrRemoveValue(action=ActionOption(local=True, remote=True))],
+    [b'Spam: True ; 40 / 20', 'Spam', SpamValue(value=True, score=40, threshold=20)],
+    [b'User: username', 'User', UserValue(name='username')],
+    [b'XHeader: x value', 'XHeader', GenericHeaderValue('x value')]
 ])
 def test_parse_header_success(test_input, header, value):
     result = parse_header(test_input)
@@ -298,6 +332,20 @@ def test_parse_body_raises_too_much_data():
         parse_body(test_input, len(test_input) - 1)
 
 
+def test_pong(response_pong):
+    r = ResponseParser()
+    result = r.parse(response_pong)
+
+    assert result
+
+
+def test_tell_response(response_tell):
+    r = ResponseParser()
+    result = r.parse(response_tell)
+
+    assert result
+
+
 def test_response_parser():
     r = ResponseParser()
 
@@ -308,6 +356,13 @@ def test_response_parser():
     assert r.state == States.Status
 
 
+def test_response_from_bytes(response_with_body):
+    r = ResponseParser()
+    result = r.parse(response_with_body)
+
+    assert result is not None
+
+
 def test_request_parser():
     r = RequestParser()
 
@@ -316,3 +371,10 @@ def test_request_parser():
     assert r.header_parser == parse_header
     assert r.body_parser == parse_body
     assert r.state == States.Status
+
+
+def test_request_from_bytes(request_with_body):
+    r = RequestParser()
+    result = r.parse(request_with_body)
+
+    assert result is not None

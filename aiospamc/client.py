@@ -10,10 +10,8 @@ from typing import SupportsBytes, Union
 
 import certifi
 
-from .options import MessageClassOption, ActionOption
 from .exceptions import BadResponse, ResponseException
-from .headers import Compress, MessageClass, Remove, Set, User
-from .parser import parse, ParseError
+from .incremental_parser import ResponseParser, ParseError
 from .requests import Request
 from .responses import Response
 
@@ -62,8 +60,6 @@ class Client:
         self.user = user
         self.compress = compress
         self.loop = loop or asyncio.get_event_loop()
-
-        self.parser = parse
 
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Created instance of %r', self)
@@ -132,9 +128,9 @@ class Client:
         '''
 
         if self.compress:
-            request.headers['Compress'] = Compress()
+            request.headers['Compress'] = 'zlib'
         if self.user:
-            request.headers['User'] = User(name=self.user)
+            request.headers['User'] = self.user
 
         self.logger.debug('Sending request (%s)', id(request))
         async with self.connection.new_connection() as connection:
@@ -144,7 +140,9 @@ class Client:
 
         try:
             try:
-                response = self.parser(data)
+                parser = ResponseParser()
+                parsed_response = parser.parse(data)
+                response = Response(**parsed_response)
             except ParseError:
                 raise BadResponse
             response.raise_for_status()
@@ -431,10 +429,10 @@ class Client:
         return response
 
     async def tell(self,
-                   message_class: MessageClassOption,
+                   message_class: str,
                    message: Union[bytes, SupportsBytes],
-                   remove_action: ActionOption = None,
-                   set_action: ActionOption = None,
+                   remove_action: str = None,
+                   set_action: str = None,
                    ):
         '''Instruct the SPAMD service to to mark the message
 
@@ -448,7 +446,7 @@ class Client:
         :param remove_action:
             Remove message class for message in database.
         :param set_action:
-            Set message class for message in database.
+            Set message class for message in database.  Either `ham` or `spam`.
 
         :return: Will contain a 'Spam' header if the message is marked as spam as
             well as the score and threshold.
@@ -476,13 +474,14 @@ class Client:
         :raises TimeoutException: Timeout during connection.
         '''
 
-        request = Request(verb='TELL',
-                          headers=[MessageClass(message_class)],
-                          body=message)
+        request = Request(verb='TELL', body=message)
+
+        request.headers['Message-class'] = message_class
+
         if remove_action:
-            request.headers['Remove'] = Remove(remove_action)
+            request.headers['Remove'] = remove_action
         if set_action:
-            request.headers['Set'] = Set(set_action)
+            request.headers['Set'] = set_action
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 

@@ -4,20 +4,22 @@ from enum import Enum
 import re
 from typing import Any, Callable, Mapping, Tuple, Union, Dict
 
-from aiospamc import ActionOption, MessageClassOption
-
-
-class NotEnoughDataError(Exception):
-    pass
-
-
-class TooMuchDataError(Exception):
-    pass
+from .header_values import CompressValue, ContentLengthValue, GenericHeaderValue, HeaderValue, MessageClassValue, \
+    SetOrRemoveValue, SpamValue, UserValue
+from .options import ActionOption, MessageClassOption
 
 
 class ParseError(Exception):
-    def __init__(self, message) -> None:
+    def __init__(self, message=None) -> None:
         self.message = message
+
+
+class NotEnoughDataError(ParseError):
+    pass
+
+
+class TooMuchDataError(ParseError):
+    pass
 
 
 class States(Enum):
@@ -38,7 +40,7 @@ class Parser:
         self.status_parser = status_parser
         self.header_parser = header_parser
         self.body_parser = body_parser
-        self.result = {'status': {}, 'headers': {}, 'body': b''}
+        self.result = {'headers': {}, 'body': b''}
 
         self._state = start
         self.buffer = b''
@@ -71,7 +73,7 @@ class Parser:
 
         if status_line and delimiter:
             self.buffer = leftover
-            self.result['status'] = self.status_parser(status_line)
+            self.result = {**self.result, **self.status_parser(status_line)}
             self._state = States.Header
         else:
             raise NotEnoughDataError
@@ -79,18 +81,23 @@ class Parser:
     def header(self) -> None:
         header_line, delimiter, leftover = self.buffer.partition(self.delimiter)
 
-        if not header_line and delimiter:
+        if not header_line and delimiter and leftover == self.delimiter:
+            self.buffer = b''
+            self._state = States.Body
+        elif not header_line and delimiter:
             self.buffer = leftover
             self._state = States.Body
         elif header_line and delimiter:
             self.buffer = leftover
             key, value = self.header_parser(header_line)
             self.result['headers'][key] = value
+        elif not header_line and not delimiter and not leftover:
+            self._state = States.Body
         else:
-            raise NotEnoughDataError
+            raise ParseError('Header section not in recognizable format')
 
     def body(self) -> None:
-        content_length = self.result['headers'].get('Content-length', 0)
+        content_length = self.result['headers'].get('Content-length', ContentLengthValue(length=0)).length
         try:
             self.result['body'] += self.body_parser(self.buffer, content_length)
             self._state = States.Done
@@ -138,39 +145,56 @@ def parse_response_status(stream: bytes) -> Dict[str, str]:
     }
 
 
-def parse_message_class_value(stream: str) -> MessageClassOption:
+def parse_message_class_value(stream: Union[str, MessageClassOption]) -> MessageClassValue:
+    try:
+        stream = stream.name
+    except AttributeError:
+        pass
+
     stream = stream.strip()
 
-    if stream == 'ham':
-        return MessageClassOption.ham
-    elif stream == 'spam':
-        return MessageClassOption.spam
-    else:
+    try:
+        return MessageClassValue(value=getattr(MessageClassOption, stream))
+    except AttributeError:
         raise ParseError('Unable to parse Message-class header value')
 
 
-def parse_compress_value(stream: str) -> str:
-    return stream.strip()
+def parse_content_length_value(stream: Union[str, int]) -> ContentLengthValue:
+    try:
+        value = int(stream)
+    except ValueError:
+        raise ParseError('Unable to parse Content-length value, must be integer')
+
+    return ContentLengthValue(length=value)
 
 
-def parse_set_remove_value(stream: str) -> ActionOption:
-    stream = stream.replace(' ', '')
-    values = stream.split(',')
+def parse_compress_value(stream: str) -> CompressValue:
+    return CompressValue(algorithm=stream.strip())
 
-    if 'local' in values:
-        local = True
+
+def parse_set_remove_value(stream: Union[ActionOption, str]) -> SetOrRemoveValue:
+    if isinstance(stream, ActionOption):
+        value = stream
     else:
-        local = False
+        stream = stream.replace(' ', '')
+        values = stream.split(',')
 
-    if 'remote' in values:
-        remote = True
-    else:
-        remote = False
+        if 'local' in values:
+            local = True
+        else:
+            local = False
 
-    return ActionOption(local=local, remote=remote)
+        if 'remote' in values:
+            remote = True
+        else:
+            remote = False
+
+        value = ActionOption(local=local, remote=remote)
+
+    return SetOrRemoveValue(action=value)
 
 
-def parse_spam_value(stream: str) -> Dict[str, Union[bool, float]]:
+def parse_spam_value(stream: str) -> SpamValue:
     stream = stream.replace(' ', '')
     try:
         found, score, threshold = re.split('[;/]', stream)
@@ -195,24 +219,34 @@ def parse_spam_value(stream: str) -> Dict[str, Union[bool, float]]:
     except ValueError:
         raise ParseError('Cannot parse Spam header threshold value')
 
-    return {'value': value, 'score': score, 'threshold': threshold}
+    return SpamValue(value=value, score=score, threshold=threshold)
 
 
-def parse_user_value(stream: str) -> str:
-    return stream.strip()
+def parse_user_value(stream: str) -> UserValue:
+    return UserValue(name=stream.strip())
 
 
-def parse_xheader_value(stream: bytes) -> bytes:
-    return stream.strip()
+def parse_generic_header_value(stream: str) -> GenericHeaderValue:
+    return GenericHeaderValue(value=stream.strip())
 
 
-def parse_header(stream: bytes) -> Tuple[str, Any]:
+def parse_header_value(header: str, value: Union[str, bytes]) -> HeaderValue:
+    if header in header_value_parsers:
+        if isinstance(value, bytes):
+            value = value.decode('ascii')
+        value = header_value_parsers[header](value)
+    else:
+        if isinstance(value, bytes):
+            value = value.decode('utf8')
+        value = parse_generic_header_value(value)
+
+    return value
+
+
+def parse_header(stream: bytes) -> Tuple[str, HeaderValue]:
     header, _, value = stream.partition(b':')
     header = header.decode('ascii').strip()
-    if header in header_value_parsers:
-        value = header_value_parsers[header](value.decode('ascii'))
-    else:
-        value = parse_xheader_value(value)
+    value = parse_header_value(header, value)
 
     return header, value
 
@@ -228,7 +262,7 @@ def parse_body(stream: bytes, content_length: int) -> bytes:
 
 header_value_parsers = {
     'Compress': parse_compress_value,
-    'Content-length': int,
+    'Content-length': parse_content_length_value,
     'DidRemove': parse_set_remove_value,
     'DidSet': parse_set_remove_value,
     'Message-class': parse_message_class_value,
