@@ -9,17 +9,17 @@ from .header_values import CompressValue, ContentLengthValue, GenericHeaderValue
 from .options import ActionOption, MessageClassOption
 
 
-class NotEnoughDataError(Exception):
-    pass
-
-
-class TooMuchDataError(Exception):
-    pass
-
-
 class ParseError(Exception):
-    def __init__(self, message) -> None:
+    def __init__(self, message=None) -> None:
         self.message = message
+
+
+class NotEnoughDataError(ParseError):
+    pass
+
+
+class TooMuchDataError(ParseError):
+    pass
 
 
 class States(Enum):
