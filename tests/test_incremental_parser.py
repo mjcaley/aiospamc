@@ -83,7 +83,7 @@ def test_header_transitions_to_body_state(delimiter, mocker):
     assert p.state == States.Body
 
 
-def test_header_raises_not_enough_data(delimiter, mocker):
+def test_empty_header_transitions_to_body(delimiter, mocker):
     p = Parser(
         delimiter=delimiter,
         status_parser=mocker.stub(),
@@ -91,9 +91,10 @@ def test_header_raises_not_enough_data(delimiter, mocker):
         body_parser=mocker.stub(),
         start=States.Header
     )
+    p.buffer = b''
+    p.header()
 
-    with pytest.raises(NotEnoughDataError):
-        p.header()
+    assert p.state == States.Body
 
 
 def test_body_saves_value_and_transitions_to_done(delimiter, mocker):
@@ -315,6 +316,13 @@ def test_parse_body_raises_too_much_data():
 
     with pytest.raises(TooMuchDataError):
         parse_body(test_input, len(test_input) - 1)
+
+
+def test_pong(response_pong):
+    r = ResponseParser()
+    result = r.parse(response_pong)
+
+    assert result
 
 
 def test_response_parser():

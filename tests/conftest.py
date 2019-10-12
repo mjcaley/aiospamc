@@ -80,7 +80,13 @@ def response_ok():
 @pytest.fixture
 def response_pong():
     '''PONG response in bytes.'''
-    return b'SPAMD/1.5 0 PONG\r\n\r\n'
+    return b'SPAMD/1.5 0 PONG\r\n'
+
+
+@pytest.fixture
+def response_tell():
+    '''Examplte TELL response.'''
+    return b'SPAMD/1.1 0 EX_OK\r\n\r\n\r\n'
 
 
 @pytest.fixture

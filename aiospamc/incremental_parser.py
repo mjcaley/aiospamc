@@ -88,6 +88,8 @@ class Parser:
             self.buffer = leftover
             key, value = self.header_parser(header_line)
             self.result['headers'][key] = value
+        elif not header_line and not delimiter and not leftover:
+            self._state = States.Body
         else:
             raise NotEnoughDataError
 
