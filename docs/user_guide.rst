@@ -81,15 +81,13 @@ A new request can be made by instantiating the
 :class:`aiospamc.requests.Request` class.  The
 :attr:`aiospamc.requests.Request.verb` defines the method/verb of the request.
 
-Standard headers or the :class:`aiospamc.headers.XHeader` extension header are
-available in the :mod:`aiospamc.headers` module. The
-:class:`aiospamc.requests.Request` class provides a headers attribute that has
-a dictionary-like interface.
+The :class:`aiospamc.requests.Request` class provides a headers attribute that has
+a dictionary-like interface.  Defined headers can be referenced in the :ref:`headers`
+section in :doc:`protocol`.
 
 Once a request is composed, it can be sent through the
 :meth:`aiospamc.client.Client.send` method as-is.  The method will automatically
-add the :class:`aiospamc.headers.User` and :class:`aiospamc.headers.Compress`
-headers if required.
+add the :ref:`user_header` and :ref:`compress_header` headers if required.
 
 For example:
 
