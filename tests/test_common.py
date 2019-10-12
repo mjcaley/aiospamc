@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from aiospamc.common import SpamcBody, SpamcHeaders
-from aiospamc.header_values import CompressValue, ContentLengthValue, HeaderValue
+from aiospamc.header_values import CompressValue, ContentLengthValue, GenericHeaderValue
 
 
 def test_body_get_set_value(mocker):
@@ -42,13 +42,6 @@ def test_headers_instantiates_dict_str_and_int():
     assert isinstance(h['Content-length'], ContentLengthValue)
 
 
-def test_header_instantiates_dict_parser_results():
-    h = SpamcHeaders(headers={'Compress': {'algorithm': 'zlib'}, 'Content-length': {'length': 10}})
-
-    assert isinstance(h['Compress'], CompressValue)
-    assert isinstance(h['Content-length'], ContentLengthValue)
-
-
 def test_headers_get_item():
     header1 = CompressValue()
     h = SpamcHeaders(headers={'Compress': header1})
@@ -66,21 +59,21 @@ def test_headers_set_item():
 
 
 def test_headers_iter():
-    h = SpamcHeaders(headers={'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')})
+    h = SpamcHeaders(headers={'A': GenericHeaderValue(value='a'), 'B': GenericHeaderValue(value='b')})
 
     for test_result in iter(h):
         assert test_result in ['A', 'B']
 
 
 def test_headers_keys():
-    h = SpamcHeaders(headers={'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')})
+    h = SpamcHeaders(headers={'A': GenericHeaderValue(value='a'), 'B': GenericHeaderValue(value='b')})
 
     for test_result in h.keys():
         assert test_result in ['A', 'B']
 
 
 def test_headers_items():
-    headers = {'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')}
+    headers = {'A': GenericHeaderValue(value='a'), 'B': GenericHeaderValue(value='b')}
     h = SpamcHeaders(headers=headers)
 
     for test_key, test_value in h.items():
@@ -89,7 +82,7 @@ def test_headers_items():
 
 
 def test_headers_values():
-    values = [HeaderValue(value='a'), HeaderValue(value='b')]
+    values = [GenericHeaderValue(value='a'), GenericHeaderValue(value='b')]
     h = SpamcHeaders(headers={'A': values[0], 'B': values[1]})
 
     for test_result in h.values():
@@ -97,13 +90,13 @@ def test_headers_values():
 
 
 def test_headers_len():
-    h = SpamcHeaders(headers={'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')})
+    h = SpamcHeaders(headers={'A': GenericHeaderValue(value='a'), 'B': GenericHeaderValue(value='b')})
 
     assert len(h) == 2
 
 
 def test_headers_bytes():
-    h = SpamcHeaders(headers={'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')})
+    h = SpamcHeaders(headers={'A': GenericHeaderValue(value='a'), 'B': GenericHeaderValue(value='b')})
     result = bytes(h)
 
     header_bytes = [b'%b: %b\r\n' % (name.encode('ascii'), bytes(value)) for name, value in h.items()]
