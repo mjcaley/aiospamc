@@ -2,7 +2,8 @@
 
 import pytest
 
-from aiospamc.header_values import HeaderValue, CompressValue, ContentLengthValue, GenericHeaderValue, MessageClassValue, SetOrRemoveValue, SpamValue, UserValue
+from aiospamc.header_values import CompressValue, ContentLengthValue, GenericHeaderValue, MessageClassValue, \
+    SetOrRemoveValue, SpamValue, UserValue
 from aiospamc.incremental_parser import NotEnoughDataError, Parser, ParseError, States, TooMuchDataError, \
     parse_request_status, parse_response_status, parse_content_length_value, parse_message_class_value, \
     parse_set_remove_value, parse_spam_value, parse_generic_header_value, parse_header, parse_body, ResponseParser, \

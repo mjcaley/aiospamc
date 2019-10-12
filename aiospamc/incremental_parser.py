@@ -4,7 +4,7 @@ from enum import Enum
 import re
 from typing import Any, Callable, Mapping, Tuple, Union, Dict
 
-from .header_values import HeaderValue, CompressValue, ContentLengthValue, GenericHeaderValue, MessageClassValue, \
+from .header_values import CompressValue, ContentLengthValue, GenericHeaderValue, HeaderValue, MessageClassValue, \
     SetOrRemoveValue, SpamValue, UserValue
 from .options import ActionOption, MessageClassOption
 

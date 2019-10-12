@@ -59,7 +59,7 @@ class Response:
             message: str = '',
             headers: Mapping[str, HeaderValue] = None,
             body: bytes = b'',
-            **kwargs
+            **_
     ):
         '''Response constructor.
 
