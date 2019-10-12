@@ -216,17 +216,27 @@ def parse_user_value(stream: str) -> UserValue:
     return UserValue(name=stream.strip())
 
 
-def parse_generic_header_value(stream: bytes) -> GenericHeaderValue:
-    return GenericHeaderValue(value=stream.strip().decode())
+def parse_generic_header_value(stream: str) -> GenericHeaderValue:
+    return GenericHeaderValue(value=stream.strip())
+
+
+def parse_header_value(header: str, value: Union[str, bytes]) -> HeaderValue:
+    if header in header_value_parsers:
+        if isinstance(value, bytes):
+            value = value.decode('ascii')
+        value = header_value_parsers[header](value)
+    else:
+        if isinstance(value, bytes):
+            value = value.decode('utf8')
+        value = parse_generic_header_value(value)
+
+    return value
 
 
 def parse_header(stream: bytes) -> Tuple[str, HeaderValue]:
     header, _, value = stream.partition(b':')
     header = header.decode('ascii').strip()
-    if header in header_value_parsers:
-        value = header_value_parsers[header](value.decode('ascii'))
-    else:
-        value = parse_generic_header_value(value)
+    value = parse_header_value(header, value)
 
     return header, value
 
@@ -253,10 +263,6 @@ header_value_parsers = {
 }
 
 
-def get_header_value_parser(header: str) -> Callable:
-    return header_value_parsers.get(header, parse_generic_header_value)
-
-
 class RequestParser(Parser):
     def __init__(self):
         super().__init__(
@@ -275,24 +281,3 @@ class ResponseParser(Parser):
             header_parser=parse_header,
             body_parser=parse_body
         )
-
-
-header_to_class = {
-    'Compress': CompressValue,
-    'Content-length': ContentLengthValue,
-    'DidRemove': SetOrRemoveValue,
-    'DidSet': SetOrRemoveValue,
-    'Message-class': MessageClassValue,
-    'Remove': SetOrRemoveValue,
-    'Set': SetOrRemoveValue,
-    'Spam': SpamValue,
-    'User': UserValue
-}
-
-
-def parse_header2(name: str, value: str) -> HeaderValue:
-    parser = get_header_value_parser(name)
-    parsed_value = parser(value)
-    header = header_to_class[name](**parsed_value)
-
-    return header

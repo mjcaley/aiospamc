@@ -269,7 +269,7 @@ def test_parse_spam_value_raises_parseerror(test_input):
 
 
 def test_parse_xheader_success():
-    result = parse_generic_header_value(b'value')
+    result = parse_generic_header_value('value')
 
     assert isinstance(result, GenericHeaderValue)
     assert result.value == 'value'
