@@ -229,7 +229,8 @@ def test_parse_message_class_value_raises_parseerror():
     ['remote, local', True, True],
     ['local', True, False],
     ['remote', False, True],
-    ['', False, False]
+    ['', False, False],
+    [ActionOption(local=True, remote=False), True, False]
 ])
 def test_parse_set_remove_value_success(test_input, local_expected, remote_expected):
     result = parse_set_remove_value(test_input)

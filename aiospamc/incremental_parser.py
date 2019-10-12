@@ -167,21 +167,26 @@ def parse_compress_value(stream: str) -> CompressValue:
     return CompressValue(algorithm=stream.strip())
 
 
-def parse_set_remove_value(stream: str) -> SetOrRemoveValue:
-    stream = stream.replace(' ', '')
-    values = stream.split(',')
-
-    if 'local' in values:
-        local = True
+def parse_set_remove_value(stream: Union[ActionOption, str]) -> SetOrRemoveValue:
+    if isinstance(stream, ActionOption):
+        value = stream
     else:
-        local = False
+        stream = stream.replace(' ', '')
+        values = stream.split(',')
 
-    if 'remote' in values:
-        remote = True
-    else:
-        remote = False
+        if 'local' in values:
+            local = True
+        else:
+            local = False
 
-    return SetOrRemoveValue(action=ActionOption(local=local, remote=remote))
+        if 'remote' in values:
+            remote = True
+        else:
+            remote = False
+
+        value = ActionOption(local=local, remote=remote)
+
+    return SetOrRemoveValue(action=value)
 
 
 def parse_spam_value(stream: str) -> SpamValue:
