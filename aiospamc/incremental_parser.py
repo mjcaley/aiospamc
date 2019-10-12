@@ -94,7 +94,7 @@ class Parser:
         elif not header_line and not delimiter and not leftover:
             self._state = States.Body
         else:
-            raise NotEnoughDataError
+            raise ParseError('Header section not in recognizable format')
 
     def body(self) -> None:
         content_length = self.result['headers'].get('Content-length', ContentLengthValue(length=0)).length

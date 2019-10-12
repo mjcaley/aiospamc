@@ -97,6 +97,20 @@ def test_empty_header_transitions_to_body(delimiter, mocker):
     assert p.state == States.Body
 
 
+def test_header_raises_on_bad_format(delimiter, mocker):
+    p = Parser(
+        delimiter=delimiter,
+        status_parser=mocker.stub(),
+        header_parser=mocker.stub(),
+        body_parser=mocker.stub(),
+        start=States.Header
+    )
+    p.buffer = b'\n'
+
+    with pytest.raises(ParseError):
+        p.header()
+
+
 def test_body_saves_value_and_transitions_to_done(delimiter, mocker):
     p = Parser(
         delimiter=delimiter,
