@@ -325,6 +325,13 @@ def test_pong(response_pong):
     assert result
 
 
+def test_tell_response(response_tell):
+    r = ResponseParser()
+    result = r.parse(response_tell)
+
+    assert result
+
+
 def test_response_parser():
     r = ResponseParser()
 

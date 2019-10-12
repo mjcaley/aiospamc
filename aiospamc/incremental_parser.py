@@ -81,7 +81,10 @@ class Parser:
     def header(self) -> None:
         header_line, delimiter, leftover = self.buffer.partition(self.delimiter)
 
-        if not header_line and delimiter:
+        if not header_line and delimiter and leftover == self.delimiter:
+            self.buffer = b''
+            self._state = States.Body
+        elif not header_line and delimiter:
             self.buffer = leftover
             self._state = States.Body
         elif header_line and delimiter:
