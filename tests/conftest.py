@@ -18,9 +18,9 @@ if sys.platform == 'win32':
 
 @pytest.fixture
 def x_headers():
-    from aiospamc.header_values import HeaderValue
+    from aiospamc.header_values import GenericHeaderValue
 
-    return {'A': HeaderValue(value='a'), 'B': HeaderValue(value='b')}
+    return {'A': GenericHeaderValue(value='a'), 'B': GenericHeaderValue(value='b')}
 
 
 @pytest.fixture
