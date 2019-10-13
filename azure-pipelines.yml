@@ -109,7 +109,7 @@ stages:
 
     - script: |
         $HOME/.poetry/bin/poetry config repositories.pypi "$PYPIREPOSITORY"
-        $HOME/.poetry/bin/poetry config httpbasic.pypi __token__ "$PYPITOKEN"
+        $HOME/.poetry/bin/poetry config http-basic.pypi __token__ "$PYPITOKEN"
         $HOME/.poetry/bin/poetry publish --no-interaction --build --repository=pypi -v
       displayName: 'Poetry publish'
       env:
