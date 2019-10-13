@@ -108,9 +108,9 @@ stages:
       displayName: 'Install Poetry'
 
     - script: |
-        $HOME/.poetry/bin/poetry config repositories.pypi "$PYPIREPOSITORY"
-        $HOME/.poetry/bin/poetry config http-basic.pypi __token__ "$PYPITOKEN"
-        $HOME/.poetry/bin/poetry publish --no-interaction --build --repository=pypi -v
+        $HOME/.poetry/bin/poetry config repositories.repo "$PYPIREPOSITORY"
+        $HOME/.poetry/bin/poetry config http-basic.repo __token__ "$PYPITOKEN"
+        $HOME/.poetry/bin/poetry publish --no-interaction --build --repository=repo -v
       displayName: 'Poetry publish'
       env:
         PYPITOKEN: '$(PyPIToken)'
