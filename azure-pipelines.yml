@@ -92,8 +92,8 @@ stages:
 - stage: publish
   displayName: Publish to PyPI
   variables:
-    PyPIRepository: 'https://test.pypi.org/legacy/'
-#  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    PyPIRepository: 'https://upload.pypi.org/legacy/'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn: [unittest, integration]
   jobs:
   - job: Publish
