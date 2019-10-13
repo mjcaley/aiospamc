@@ -20,8 +20,8 @@ from aiospamc.responses import Response
 
 
 def test_client_repr():
-    client = Client(host='localhost')
-    assert repr(client) == ('Client(socket_path=\'/var/run/spamassassin/spamd.sock\', '
+    client = Client()
+    assert repr(client) == ('Client(socket_path=None, '
                             'host=\'localhost\', '
                             'port=783, '
                             'user=None, '

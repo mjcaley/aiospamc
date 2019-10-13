@@ -20,8 +20,8 @@ class Client:
     '''Client object for interacting with SPAMD.'''
 
     def __init__(self,
-                 socket_path: str = '/var/run/spamassassin/spamd.sock',
-                 host: str = None,
+                 socket_path: str = None,
+                 host: str = 'localhost',
                  port: int = 783,
                  user: str = None,
                  compress: bool = False,
@@ -42,15 +42,15 @@ class Client:
         :raises ValueError: Raised if the constructor can't tell if it's using a TCP or a Unix domain socket connection.
         '''
 
-        if host and port:
+        if socket_path:
+            from aiospamc.connections.unix_connection import UnixConnectionManager
+            self.connection = UnixConnectionManager(socket_path)
+        elif host and port:
             from aiospamc.connections.tcp_connection import TcpConnectionManager
             if verify is not None:
                 self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify))
             else:
                 self.connection = TcpConnectionManager(host, port)
-        elif socket_path:
-            from aiospamc.connections.unix_connection import UnixConnectionManager
-            self.connection = UnixConnectionManager(socket_path)
         else:
             raise ValueError('Either "host" and "port" or "socket_path" must be specified.')
 
