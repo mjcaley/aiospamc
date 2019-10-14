@@ -167,8 +167,9 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -205,10 +206,10 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain the modified headers of the message.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains the modified
+            message headers, but not the content of the message.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -240,7 +241,7 @@ class Client:
         '''Sends a ping request to the SPAMD service and will receive a
         response if the service is alive.
 
-        :return: Response message will contain 'PONG' if successful.
+        :return: A response with "PONG".
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -277,10 +278,10 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain a modified version of the message.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains a modified
+            copy of the message.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -317,10 +318,9 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain a report composed by the SPAMD service.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains a report.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -357,11 +357,10 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain a report composed by the SPAMD service only if the
-            message is marked as being spam.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains a report if
+            the message is considered spam.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -398,10 +397,10 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain a comma separated list of all the rule names.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains a
+            comma-separated list of the symbols that were hit.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -442,18 +441,14 @@ class Client:
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
-        :param message_class:
-            An enumeration to classify the message as 'spam' or 'ham.'
-        :param remove_action:
-            Remove message class for message in database.
+        :param message_class: How to classify the message, either "ham" or "spam".
+        :param remove_action: Remove message class for message in database.
         :param set_action:
             Set message class for message in database.  Either `ham` or `spam`.
 
-        :return: Will contain a 'Spam' header if the message is marked as spam as
-            well as the score and threshold.
-
-            The body will contain a report composed by the SPAMD service only if
-            message is marked as being spam.
+        :return:
+            A successful response with "DidSet" and/or "DidRemove" headers along with the
+            actions that were taken.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
