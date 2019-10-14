@@ -337,7 +337,7 @@ async def test_request_tell(message_class, remove_action, set_action, spam, mock
     c = Client()
     c.send = CoroutineMock()
     mocker.spy(c, 'send')
-    await c.tell(message_class=message_class, message=spam, remove_action=remove_action, set_action=set_action)
+    await c.tell(message=spam, message_class=message_class, remove_action=remove_action, set_action=set_action)
     request = c.send.call_args[0][0]
 
     assert request.headers['Message-class'].value == message_class

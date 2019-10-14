@@ -12,6 +12,7 @@ import certifi
 
 from .exceptions import BadResponse, ResponseException
 from .incremental_parser import ResponseParser, ParseError
+from .options import ActionOption, MessageClassOption
 from .requests import Request
 from .responses import Response
 
@@ -429,20 +430,20 @@ class Client:
         return response
 
     async def tell(self,
-                   message_class: str,
                    message: Union[bytes, SupportsBytes],
-                   remove_action: str = None,
-                   set_action: str = None,
+                   message_class: Union[str, MessageClassOption],
+                   remove_action: Union[str, ActionOption] = None,
+                   set_action: Union[str, ActionOption] = None,
                    ):
-        '''Instruct the SPAMD service to to mark the message
+        '''Instruct the SPAMD service to to mark the message.
 
-        :param message_class:
-            An enumeration to classify the message as 'spam' or 'ham.'
         :param message:
             A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
+        :param message_class:
+            An enumeration to classify the message as 'spam' or 'ham.'
         :param remove_action:
             Remove message class for message in database.
         :param set_action:
