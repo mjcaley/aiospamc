@@ -159,7 +159,7 @@ class Client:
         return response
 
     async def check(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Request the SPAMD service to check a message.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
@@ -269,7 +269,7 @@ class Client:
         return response
 
     async def process(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Process the message and return a modified copy of the message.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
@@ -309,7 +309,7 @@ class Client:
         return response
 
     async def report(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Check if message is spam and return report.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
@@ -349,7 +349,7 @@ class Client:
         return response
 
     async def report_if_spam(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Check if a message is spam and return a report if the message is spam.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
@@ -390,7 +390,7 @@ class Client:
         return response
 
     async def symbols(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Check if the message is spam and return a list of symbols that were hit.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
