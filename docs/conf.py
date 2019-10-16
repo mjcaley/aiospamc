@@ -32,7 +32,8 @@ needs_sphinx = '2.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.viewcode']
+              'sphinx.ext.viewcode',
+              'sphinx.ext.intersphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -160,3 +161,10 @@ texinfo_documents = [
 
 set_type_checking_flag = True
 always_document_param_types = True
+
+
+# -- Options for InterSphinx documentation --------------------------------
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None)
+}

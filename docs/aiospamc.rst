@@ -80,6 +80,7 @@ Module contents
 ---------------
 
 .. automodule:: aiospamc
+   :ignore-module-all:
    :members:
    :undoc-members:
    :show-inheritance:
