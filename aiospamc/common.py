@@ -27,6 +27,13 @@ class SpamcHeaders:
             for key, value in headers.items():
                 self[key] = value
 
+    def __str__(self):
+        return '<{} object at {}, keys: {}>'.format(
+            '.'.join([self.__class__.__module__, self.__class__.__qualname__]),
+            id(self),
+            ', '.join(self._headers.keys())
+        )
+
     def __bytes__(self) -> bytes:
         return b''.join(
             [b'%b: %b\r\n' % (name.encode('ascii'), bytes(value)) for name, value in self._headers.items()]
