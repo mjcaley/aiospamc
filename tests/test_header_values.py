@@ -45,6 +45,12 @@ def test_compress_bytes():
     assert bytes(c) == b'zlib'
 
 
+def test_content_length_str():
+    c = ContentLengthValue(length=42)
+
+    assert str(c) == 'length=42'
+
+
 def test_content_length_repr():
     c = ContentLengthValue(length=42)
 
@@ -55,6 +61,15 @@ def test_content_length_bytes():
     c = ContentLengthValue(length=42)
 
     assert bytes(c) == b'42'
+
+
+@pytest.mark.parametrize('test_input', [
+    MessageClassOption.ham, MessageClassOption.spam
+])
+def test_message_class_str(test_input):
+    m = MessageClassValue(value=test_input)
+
+    assert str(m) == test_input.name
 
 
 @pytest.mark.parametrize('test_input,expected', [
@@ -83,6 +98,18 @@ def test_message_class_bytes(test_input, expected):
     ActionOption(local=False, remote=True),
     ActionOption(local=True, remote=True)
 ])
+def test_set_or_remove_str(test_input):
+    s = SetOrRemoveValue(action=test_input)
+
+    assert str(s) == 'local={}, remote={}'.format(test_input.local, test_input.remote)
+
+
+@pytest.mark.parametrize('test_input', [
+    ActionOption(local=False, remote=False),
+    ActionOption(local=True, remote=False),
+    ActionOption(local=False, remote=True),
+    ActionOption(local=True, remote=True)
+])
 def test_set_or_remove_repr(test_input):
     s = SetOrRemoveValue(action=test_input)
 
@@ -99,6 +126,19 @@ def test_set_or_remove_bytes(test_input, expected):
     s = SetOrRemoveValue(action=test_input)
 
     assert bytes(s) == expected
+
+
+@pytest.mark.parametrize('value,score,threshold', [
+    [True, 1, 42],
+    [False, 1, 42],
+    [True, 1.0, 42.0]
+])
+def test_spam_str(value, score, threshold):
+    s = SpamValue(value=value, score=score, threshold=threshold)
+
+    assert str(s) == 'value={}, score={}, threshold={}'.format(
+        str(value), str(score), str(threshold)
+    )
 
 
 @pytest.mark.parametrize('value,score,threshold,expected', [
@@ -121,6 +161,12 @@ def test_spam_bytes(value, score, threshold, expected):
     s = SpamValue(value=value, score=score, threshold=threshold)
 
     assert bytes(s) == expected
+
+
+def test_user_str():
+    u = UserValue(name='username')
+
+    assert str(u) == 'name=username'
 
 
 def test_user_repr():
