@@ -95,6 +95,25 @@ def test_headers_len():
     assert len(h) == 2
 
 
+def test_headers_str_object():
+    h = SpamcHeaders()
+    result = str(h)
+
+    assert result.startswith('<aiospamc.common.SpamcHeaders object at {}'.format(id(h)))
+    assert result.endswith('>')
+
+
+def test_headers_str_keys():
+    test_input = {'Content-length': 42, 'User': 'testuser'}
+    h = SpamcHeaders(headers=test_input)
+    result = str(h)
+    keys_start = result.find('keys: ')
+    keys_str = result[keys_start:-1].split('keys: ')[1].split(', ')
+
+    for key_name in test_input.keys():
+        assert key_name in keys_str
+
+
 def test_headers_bytes():
     h = SpamcHeaders(headers={'A': GenericHeaderValue(value='a'), 'B': GenericHeaderValue(value='b')})
     result = bytes(h)
