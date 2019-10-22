@@ -13,10 +13,24 @@ def test_header_bytes():
     assert bytes(h) == b'value'
 
 
+def test_header_str():
+    value = 'value'
+    encoding = 'utf8'
+    h = GenericHeaderValue(value=value, encoding=encoding)
+
+    assert str(h) == 'value={}, encoding={}'.format(repr(value), repr(encoding))
+
+
 def test_header_repr():
     h = GenericHeaderValue(value='value')
 
     assert repr(h) == 'GenericHeaderValue(value={}, encoding={})'.format(repr(h.value), repr(h.encoding))
+
+
+def test_compress_str():
+    h = CompressValue()
+
+    assert str(h) == 'algorithm={}'.format(repr('zlib'))
 
 
 def test_compress_repr():
