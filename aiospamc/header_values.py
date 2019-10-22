@@ -18,6 +18,9 @@ class GenericHeaderValue(HeaderValue):
         self.value = value
         self.encoding = encoding
 
+    def __str__(self):
+        return 'value={}, encoding={}'.format(repr(self.value), repr(self.encoding))
+
     def __bytes__(self) -> bytes:
         return self.value.encode(self.encoding)
 
@@ -48,6 +51,9 @@ class CompressValue(HeaderValue):
 
         self.algorithm = algorithm
 
+    def __str__(self):
+        return 'algorithm={}'.format(repr(self.algorithm))
+
     def __eq__(self, other):
         try:
             return self.algorithm == other.algorithm
@@ -70,6 +76,9 @@ class ContentLengthValue(HeaderValue):
         :param length: Length of the body.
         '''
         self.length = length
+
+    def __str__(self):
+        return 'length={}'.format(repr(self.length))
 
     def __eq__(self, other):
         try:
@@ -97,6 +106,9 @@ class MessageClassValue(HeaderValue):
 
         self.value = value or MessageClassOption.ham
 
+    def __str__(self):
+        return self.value.name
+
     def __eq__(self, other):
         try:
             return self.value == other.value
@@ -120,6 +132,9 @@ class SetOrRemoveValue(HeaderValue):
         '''
 
         self.action = action or ActionOption(local=False, remote=False)
+
+    def __str__(self):
+        return 'local={}, remote={}'.format(str(self.action.local), str(self.action.remote))
 
     def __eq__(self, other):
         try:
@@ -162,6 +177,9 @@ class SpamValue(HeaderValue):
         self.score = score
         self.threshold = threshold
 
+    def __str__(self):
+        return 'value={}, score={}, threshold={}'.format(str(self.value), str(self.score), str(self.threshold))
+
     def __eq__(self, other):
         try:
             return all([self.value == other.value, self.score == other.score, self.threshold == other.threshold])
@@ -191,6 +209,9 @@ class UserValue(HeaderValue):
         '''
 
         self.name = name or getpass.getuser()
+
+    def __str__(self):
+        return 'name={}'.format(self.name)
 
     def __eq__(self, other):
         try:
