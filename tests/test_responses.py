@@ -62,6 +62,13 @@ def test_bytes_body_compressed():
     assert result == zlib.compress(test_input)
 
 
+def test_str():
+    r = Response(status_code=Status.EX_OK)
+    result = str(r)
+
+    assert result == '<0 - EX_OK: aiospamc.responses.Response object at {}>'.format(id(r))
+
+
 def test_raise_for_status_ok():
     r = Response(version='1.5', status_code=Status.EX_OK, message='')
 

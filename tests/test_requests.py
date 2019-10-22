@@ -64,6 +64,13 @@ def test_bytes_body_compressed():
     assert result == zlib.compress(test_input)
 
 
+def test_str():
+    r = Request(verb='TEST')
+    result = str(r)
+
+    assert result == '<TEST: aiospamc.requests.Request object at {}>'.format(id(r))
+
+
 def test_request_from_parser_result(request_with_body):
     p = RequestParser().parse(request_with_body)
     r = Request(**p)
