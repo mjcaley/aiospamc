@@ -53,4 +53,11 @@ class Request:
                           b'headers': bytes(self.headers),
                           b'body': body}
 
+    def __str__(self):
+        return '<{}: {} object at {}>'.format(
+            self.verb,
+            '.'.join([self.__class__.__module__, self.__class__.__qualname__]),
+            id(self)
+        )
+
     body = SpamcBody()  # type: Union[bytes, SupportsBytes]
