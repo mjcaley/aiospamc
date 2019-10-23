@@ -44,7 +44,9 @@ class States(Enum):
 
 
 class Parser:
-    '''The parser state macine.'''
+    '''The parser state machine.
+
+    :ivar result: Storage location for parsing results.'''
 
     def __init__(self,
                  delimiter: bytes,
@@ -78,6 +80,11 @@ class Parser:
 
     @property
     def state(self) -> States:
+        '''The current state of the parser.
+
+        :return: The :class:`States` instance.
+        '''
+
         return self._state
 
     def parse(self, stream: bytes) -> Mapping[str, Any]:
@@ -85,11 +92,11 @@ class Parser:
 
         :param stream: Byte string to parse.
 
-        :return: Returns the parser results dictionary stored in the class attribute `result`.
+        :return: Returns the parser results dictionary stored in the class attribute :attr:`result`.
 
         :raises NotEnoughDataError: Raised when not enough data is sent to be parsed.
         :raises TooMuchDataError: Raised when too much data is sent to be parsed.
-        :raises ParserError: Raised when a general parse error is found.
+        :raises ParseError: Raised when a general parse error is found.
         '''
 
         self.buffer += stream
@@ -106,10 +113,10 @@ class Parser:
 
     def status(self) -> None:
         '''Splits the message at the delimiter and sends the first part of the message to the `status_line` callable to
-        be parsed.  If successful then the results are stored in the `results` class attribute and the state
-        transitions to `Status.Header`.
+        be parsed.  If successful then the results are stored in the :attr:`result` class attribute and the state
+        transitions to :class:`States.Header`.
 
-        :raises NotEnouchDataError: When there is no delimiter the message is incomplete.
+        :raises NotEnoughDataError: When there is no delimiter the message is incomplete.
         :raises ParseError: When the `status_line` callable experiences an error.
         '''
 
@@ -135,7 +142,7 @@ class Parser:
         +-------------+-----------+-----------+----------------------------------------------------------------------+
         |     No      |    Yes    |    N/A    | Headers done.  Transition to :class:`States.Body`.                   |
         +-------------+-----------+-----------+----------------------------------------------------------------------+
-        |     Yes     |    Yes    |    N/A    | Parse header.  Record in result class attribute.                     |
+        |     Yes     |    Yes    |    N/A    | Parse header.  Record in :attr:`result` class attribute.             |
         +-------------+-----------+-----------+----------------------------------------------------------------------+
         |     No      |    No     |    No     | Message was a status line only.  Transition to :class:`States.Body`. |
         +-------------+-----------+-----------+----------------------------------------------------------------------+
