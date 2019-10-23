@@ -1,6 +1,5 @@
 import asyncio
-
-from aiospamc import *
+import aiospamc
 
 
 GTUBE = '''Subject: Test spam mail (GTUBE)
@@ -31,10 +30,11 @@ You should send this test mail from an account outside of your network.
 '''.encode('ascii')
 
 loop = asyncio.get_event_loop()
-client = Client(host='localhost', loop=loop)
 responses = loop.run_until_complete(asyncio.gather(
-    client.ping(),
-    client.check(GTUBE),
-    client.headers(GTUBE)
+
+    aiospamc.ping(host='localhost', loop=loop),
+    aiospamc.check(GTUBE, host='localhost', loop=loop),
+    aiospamc.headers(GTUBE, host='localhost', loop=loop)
+
 ))
 print(responses)
