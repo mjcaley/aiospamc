@@ -78,6 +78,11 @@ class Parser:
 
     @property
     def state(self) -> States:
+        '''The current state of the parser.
+
+        :return: The :class:`States` instance.
+        '''
+
         return self._state
 
     def parse(self, stream: bytes) -> Mapping[str, Any]:
