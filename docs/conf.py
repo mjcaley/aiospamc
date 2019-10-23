@@ -157,11 +157,14 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-# -- Options for sphinx-autodoc-typehints ---------------------------------
+# -- Options for sphinx-autodoc -------------------------------------------
 
+autodoc_default_options = {
+    'special-members': '__init__',
+    'member-order': 'bysource'
+}
 set_type_checking_flag = True
 always_document_param_types = True
-
 
 # -- Options for InterSphinx documentation --------------------------------
 
