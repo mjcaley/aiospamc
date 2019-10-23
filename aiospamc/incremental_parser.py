@@ -44,7 +44,7 @@ class States(Enum):
 
 
 class Parser:
-    '''The parser state macine.'''
+    '''The parser state machine.'''
 
     def __init__(self,
                  delimiter: bytes,
@@ -89,7 +89,7 @@ class Parser:
 
         :raises NotEnoughDataError: Raised when not enough data is sent to be parsed.
         :raises TooMuchDataError: Raised when too much data is sent to be parsed.
-        :raises ParserError: Raised when a general parse error is found.
+        :raises ParseError: Raised when a general parse error is found.
         '''
 
         self.buffer += stream
@@ -107,9 +107,9 @@ class Parser:
     def status(self) -> None:
         '''Splits the message at the delimiter and sends the first part of the message to the `status_line` callable to
         be parsed.  If successful then the results are stored in the `results` class attribute and the state
-        transitions to `Status.Header`.
+        transitions to :class:`States.Header`.
 
-        :raises NotEnouchDataError: When there is no delimiter the message is incomplete.
+        :raises NotEnoughDataError: When there is no delimiter the message is incomplete.
         :raises ParseError: When the `status_line` callable experiences an error.
         '''
 
