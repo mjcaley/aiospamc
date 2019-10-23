@@ -1,5 +1,5 @@
 import asyncio
-import aiospamc
+from aiospamc import Client
 
 
 GTUBE = '''Subject: Test spam mail (GTUBE)
@@ -29,12 +29,17 @@ XJS*C4JDBQADN1.NSBN3*2IDNEN*GTUBE-STANDARD-ANTI-UBE-TEST-EMAIL*C.34X
 You should send this test mail from an account outside of your network.
 '''.encode('ascii')
 
+
+async def tell_spamd_message_is_spam(message, loop=None):
+    client = Client(host='localhost', loop=loop)
+
+    response = await client.tell(message, message_class='spam', set_action='local, remote')
+    response.raise_for_status()
+
+    return True
+
 loop = asyncio.get_event_loop()
-responses = loop.run_until_complete(asyncio.gather(
-
-    aiospamc.ping(host='localhost', loop=loop),
-    aiospamc.check(GTUBE, host='localhost', loop=loop),
-    aiospamc.headers(GTUBE, host='localhost', loop=loop)
-
-))
-print(responses)
+result = loop.run_until_complete(
+    tell_spamd_message_is_spam(GTUBE, loop=loop)
+)
+print('Message reported as spam:', result)
