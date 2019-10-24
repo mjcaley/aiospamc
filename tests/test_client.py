@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
+from pathlib import Path
+import ssl
+
 import pytest
 from asynctest import CoroutineMock
+
+import certifi
 
 from aiospamc import Client, MessageClassOption, ActionOption
 from aiospamc.connections.tcp_connection import TcpConnectionManager
@@ -15,19 +20,67 @@ from aiospamc.responses import Response
 
 
 def test_client_repr():
-    client = Client(host='localhost')
-    assert repr(client) == ('Client(socket_path=\'/var/run/spamassassin/spamd.sock\', '
+    client = Client()
+    assert repr(client) == ('Client(socket_path=None, '
                             'host=\'localhost\', '
                             'port=783, '
                             'user=None, '
-                            'compress=False, '
-                            'ssl=False)')
+                            'compress=False)')
+
+
+def test_ssl_context_from_true(mocker):
+    mocker.spy(ssl, 'create_default_context')
+    s = Client.new_ssl_context(True)
+
+    args, kwargs = ssl.create_default_context.call_args
+    assert kwargs['cafile'] == certifi.where()
+
+
+def test_ssl_context_from_false(mocker):
+    mocker.spy(ssl, 'create_default_context')
+    s = Client.new_ssl_context(False)
+
+    args, kwargs = ssl.create_default_context.call_args
+    assert kwargs['cafile'] == certifi.where()
+    assert s.check_hostname is False
+    assert s.verify_mode == ssl.CERT_NONE
+
+
+def test_ssl_context_from_dir(mocker, tmp_path):
+    mocker.spy(ssl, 'create_default_context')
+    temp = Path(str(tmp_path))
+    s = Client.new_ssl_context(temp)
+
+    args, kwargs = ssl.create_default_context.call_args
+    assert kwargs['capath'] == str(temp)
+
+
+def test_ssl_context_from_file(mocker, tmp_path):
+    mocker.spy(ssl, 'create_default_context')
+    file = tmp_path / 'certs.pem'
+    with open(str(file), 'wb') as dest:
+        with open(certifi.where(), 'rb') as source:
+            dest.writelines(source.readlines())
+    s = Client.new_ssl_context(str(file))
+
+    args, kwargs = ssl.create_default_context.call_args
+    assert kwargs['cafile'] == str(file)
 
 
 def test_tcp_manager():
-    client = Client(host='127.0.0.1', port='783')
+    client = Client(host='127.0.0.1', port=783)
 
     assert isinstance(client.connection, TcpConnectionManager)
+
+
+@pytest.mark.parametrize('test_input', [
+    True, False, certifi.where()
+])
+def test_tcp_manager_with_ssl(test_input):
+    client = Client(host='127.0.0.1', port=783, verify=test_input)
+
+    assert isinstance(client.connection, TcpConnectionManager)
+    assert client.connection.ssl
 
 
 def test_unix_manager():
@@ -284,7 +337,7 @@ async def test_request_tell(message_class, remove_action, set_action, spam, mock
     c = Client()
     c.send = CoroutineMock()
     mocker.spy(c, 'send')
-    await c.tell(message_class=message_class, message=spam, remove_action=remove_action, set_action=set_action)
+    await c.tell(message=spam, message_class=message_class, remove_action=remove_action, set_action=set_action)
     request = c.send.call_args[0][0]
 
     assert request.headers['Message-class'].value == message_class

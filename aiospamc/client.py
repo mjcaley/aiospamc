@@ -4,12 +4,15 @@
 
 import asyncio
 import logging
+from pathlib import Path
+import ssl
 from typing import SupportsBytes, Union
 
-from .options import MessageClassOption, ActionOption
+import certifi
+
 from .exceptions import BadResponse, ResponseException
-from .headers import Compress, MessageClass, Remove, Set, User
-from .parser import parse, ParseError
+from .incremental_parser import ResponseParser, ParseError
+from .options import ActionOption, MessageClassOption
 from .requests import Request
 from .responses import Response
 
@@ -18,12 +21,12 @@ class Client:
     '''Client object for interacting with SPAMD.'''
 
     def __init__(self,
-                 socket_path: str = '/var/run/spamassassin/spamd.sock',
-                 host: str = None,
+                 socket_path: str = None,
+                 host: str = 'localhost',
                  port: int = 783,
                  user: str = None,
                  compress: bool = False,
-                 ssl: bool = False,
+                 verify: Union[bool, str, Path] = None,
                  loop: asyncio.AbstractEventLoop = None) -> None:
         '''Client constructor.
 
@@ -32,18 +35,23 @@ class Client:
         :param port: Port number for the SPAMD service, defaults to 783.
         :param user: Name of the user that SPAMD will run the checks under.
         :param compress: If true, the request body will be compressed.
-        :param ssl: If true, will enable SSL/TLS for the connection.
+        :param verify: Use SSL for the connection.  If True, will use root certificates.
+            If False, will not verify the certificate.  If a string to a path or a Path
+            object, the connection will use the certificates found there.
         :param loop: The asyncio event loop.
 
         :raises ValueError: Raised if the constructor can't tell if it's using a TCP or a Unix domain socket connection.
         '''
 
-        if host and port:
-            from aiospamc.connections.tcp_connection import TcpConnectionManager
-            self.connection = TcpConnectionManager(host, port)
-        elif socket_path:
+        if socket_path:
             from aiospamc.connections.unix_connection import UnixConnectionManager
             self.connection = UnixConnectionManager(socket_path)
+        elif host and port:
+            from aiospamc.connections.tcp_connection import TcpConnectionManager
+            if verify is not None:
+                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify))
+            else:
+                self.connection = TcpConnectionManager(host, port)
         else:
             raise ValueError('Either "host" and "port" or "socket_path" must be specified.')
 
@@ -52,10 +60,7 @@ class Client:
         self._socket_path = socket_path
         self.user = user
         self.compress = compress
-        self._ssl = ssl
         self.loop = loop or asyncio.get_event_loop()
-
-        self.parser = parse
 
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Created instance of %r', self)
@@ -65,15 +70,36 @@ class Client:
                       'host={}, '
                       'port={}, '
                       'user={}, '
-                      'compress={}, '
-                      'ssl={})')
+                      'compress={})')
         return client_fmt.format(self.__class__.__name__,
                                  repr(self._socket_path),
                                  repr(self._host),
                                  repr(self._port),
                                  repr(self.user),
-                                 repr(self.compress),
-                                 repr(self._ssl))
+                                 repr(self.compress))
+
+    @staticmethod
+    def new_ssl_context(value: Union[bool, str, Path]) -> ssl.SSLContext:
+        '''Creates an SSL context based on the supplied parameter.
+
+        :param value: Use SSL for the connection.  If True, will use root certificates.
+            If False, will not verify the certificate.  If a string to a path or a Path
+            object, the connection will use the certificates found there.
+        '''
+
+        if value is True:
+            return ssl.create_default_context(cafile=certifi.where())
+        elif value is False:
+            context = ssl.create_default_context(cafile=certifi.where())
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+            return context
+
+        cert_path = Path(value).absolute()
+        if cert_path.is_dir():
+            return ssl.create_default_context(capath=str(cert_path))
+        elif cert_path.is_file():
+            return ssl.create_default_context(cafile=str(cert_path))
 
     async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.
@@ -103,9 +129,9 @@ class Client:
         '''
 
         if self.compress:
-            request.headers['Compress'] = Compress()
+            request.headers['Compress'] = 'zlib'
         if self.user:
-            request.headers['User'] = User(name=self.user)
+            request.headers['User'] = self.user
 
         self.logger.debug('Sending request (%s)', id(request))
         async with self.connection.new_connection() as connection:
@@ -115,7 +141,9 @@ class Client:
 
         try:
             try:
-                response = self.parser(data)
+                parser = ResponseParser()
+                parsed_response = parser.parse(data)
+                response = Response(**parsed_response)
             except ParseError:
                 raise BadResponse
             response.raise_for_status()
@@ -131,7 +159,7 @@ class Client:
         return response
 
     async def check(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Request the SPAMD service to check a message.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
@@ -139,8 +167,9 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -177,10 +206,10 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain the modified headers of the message.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains the modified
+            message headers, but not the content of the message.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -212,7 +241,7 @@ class Client:
         '''Sends a ping request to the SPAMD service and will receive a
         response if the service is alive.
 
-        :return: Response message will contain 'PONG' if successful.
+        :return: A response with "PONG".
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -241,7 +270,7 @@ class Client:
         return response
 
     async def process(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Process the message and return a modified copy of the message.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
@@ -249,10 +278,10 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain a modified version of the message.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains a modified
+            copy of the message.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -281,7 +310,7 @@ class Client:
         return response
 
     async def report(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Check if message is spam and return report.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
@@ -289,10 +318,9 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain a report composed by the SPAMD service.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains a report.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -321,7 +349,7 @@ class Client:
         return response
 
     async def report_if_spam(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Check if a message is spam and return a report if the message is spam.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
@@ -329,11 +357,10 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain a report composed by the SPAMD service only if the
-            message is marked as being spam.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains a report if
+            the message is considered spam.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -362,7 +389,7 @@ class Client:
         return response
 
     async def symbols(self, message: Union[bytes, SupportsBytes]) -> Response:
-        '''Request the SPAMD service to check a message with a HEADERS request.
+        '''Check if the message is spam and return a list of symbols that were hit.
 
         :param message:
             A byte string containing the contents of the message to be scanned.
@@ -370,10 +397,10 @@ class Client:
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
 
-        :return: The response will contain a 'Spam' header if the message is marked
-            as spam as well as the score and threshold.
-
-            The body will contain a comma separated list of all the rule names.
+        :return:
+            A successful response with a "Spam" header showing if the message is
+            considered spam as well as the score.  The body contains a
+            comma-separated list of the symbols that were hit.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -402,30 +429,26 @@ class Client:
         return response
 
     async def tell(self,
-                   message_class: MessageClassOption,
                    message: Union[bytes, SupportsBytes],
-                   remove_action: ActionOption = None,
-                   set_action: ActionOption = None,
+                   message_class: Union[str, MessageClassOption],
+                   remove_action: Union[str, ActionOption] = None,
+                   set_action: Union[str, ActionOption] = None,
                    ):
-        '''Instruct the SPAMD service to to mark the message
+        '''Instruct the SPAMD service to to mark the message.
 
-        :param message_class:
-            An enumeration to classify the message as 'spam' or 'ham.'
         :param message:
             A byte string containing the contents of the message to be scanned.
 
             SPAMD will perform a scan on the included message.  SPAMD expects an
             RFC 822 or RFC 2822 formatted email.
-        :param remove_action:
-            Remove message class for message in database.
+        :param message_class: How to classify the message, either "ham" or "spam".
+        :param remove_action: Remove message class for message in database.
         :param set_action:
-            Set message class for message in database.
+            Set message class for message in database.  Either `ham` or `spam`.
 
-        :return: Will contain a 'Spam' header if the message is marked as spam as
-            well as the score and threshold.
-
-            The body will contain a report composed by the SPAMD service only if
-            message is marked as being spam.
+        :return:
+            A successful response with "DidSet" and/or "DidRemove" headers along with the
+            actions that were taken.
 
         :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
         :raises AIOSpamcConnectionFailed: Raised if an error occurred when trying to connect.
@@ -447,13 +470,14 @@ class Client:
         :raises TimeoutException: Timeout during connection.
         '''
 
-        request = Request(verb='TELL',
-                          headers=[MessageClass(message_class)],
-                          body=message)
+        request = Request(verb='TELL', body=message)
+
+        request.headers['Message-class'] = message_class
+
         if remove_action:
-            request.headers['Remove'] = Remove(remove_action)
+            request.headers['Remove'] = remove_action
         if set_action:
-            request.headers['Set'] = Set(set_action)
+            request.headers['Set'] = set_action
         self.logger.debug('Composed %s request (%s)', request.verb, id(request))
         response = await self.send(request)
 

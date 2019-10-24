@@ -35,44 +35,64 @@ With GIT
 How to use aiospamc
 *******************
 
-Instantiating the :class:`aiospamc.client.Client` class will be the primary way
-to interact with aiospamc.
+:mod:`aiospamc` provides top-level functions for basic functionality a lot like
+the `requests` library.
 
-Parameters are available to specify how to connect to the SpamAssassin SPAMD
-service including host, port, and whether SSL is enabled.  They default to
-``localhost``, ``783``, and SSL being disabled.  Additional optional parameters
-are the username that requests will be sent as (no user by default) and whether
-to compress the request body (disabled by default).
-
-A coroutine method is available for each type of request that can be sent to
-SpamAssassin.
-
-An example using the :meth:`aiospamc.client.Client.check` method:
+For example, to ask SpamAssassin to check and score a message you can use the
+:func:`aiospamc.check` function.  Just give it a bytes-encoded copy of the
+message, specify the host and await on the request.  In this case, the response
+will contain a header called `Spam` with a boolean if the message is considered
+spam as well as the score.
 
 .. code-block::
 
     import asyncio
     import aiospamc
-    
+
     example_message = ('From: John Doe <jdoe@machine.example>'
-                       'To: Mary Smith <mary@example.net>'
-                       'Subject: Saying Hello'
-                       'Date: Fri, 21 Nov 1997 09:55:06 -0600'
-                       'Message-ID: <1234@local.machine.example>'
-                       ''
-                       'This is a message just to say hello.'
-                       'So, "Hello".').encode('ascii')
-    
+                   'To: Mary Smith <mary@example.net>'
+                   'Subject: Saying Hello'
+                   'Date: Fri, 21 Nov 1997 09:55:06 -0600'
+                   'Message-ID: <1234@local.machine.example>'
+                   ''
+                   'This is a message just to say hello.'
+                   'So, "Hello".').encode('ascii')
+
+    async def check_for_spam(message):
+        response = await aiospamc.check(message, host='localhost')
+        return response
+
     loop = asyncio.get_event_loop()
-    client = aiospamc.Client()
-    response = loop.run_until_complete(client.check(example_message))
-    print(response)
 
-Other requests can be seen in the :class:`aiospamc.client.Client` class.
+    response = loop.run_until_complete(check_for_spam(example_message))
+    print(
+        'Is the message spam? {}'.format(response.headers['Spam'].value),
+        'The score and threshold is {} / {}'.format(
+            response.headers['Spam'].score,
+            response.headers['Spam'].threshold)
+    )
 
-************************
+All the frontend functions instantiate the :class:`aiospamc.client.Client`
+class behind the scenes.  Additional keywords arguments can be found in the
+class constructor documentation.
+
+Connect using SSL
+=================
+
+Each frontend function and :class:`aiospamc.client.Client` has a `verify`
+parameter which allows configuring an SSL connection.
+
+If `True` is supplied, then root certificates from the `certifi` project
+will be used to verify the connection.
+
+If a path is supplied as a string or :class:`pathlib.Path` object then the path
+is used to load certificates to verify the connection.
+
+If `False` then an SSL connection is established, but the server certificate
+is not verified.
+
 Making your own requests
-************************
+========================
 
 If a request that isn't built into aiospamc is needed a new request can be
 created and sent.
@@ -81,15 +101,14 @@ A new request can be made by instantiating the
 :class:`aiospamc.requests.Request` class.  The
 :attr:`aiospamc.requests.Request.verb` defines the method/verb of the request.
 
-Standard headers or the :class:`aiospamc.headers.XHeader` extension header are
-available in the :mod:`aiospamc.headers` module. The
-:class:`aiospamc.requests.Request` class provides a headers attribute that has
-a dictionary-like interface.
+The :class:`aiospamc.requests.Request` class provides a headers attribute that has
+a dictionary-like interface.  Defined headers can be referenced in the :ref:`headers`
+section in :doc:`protocol`.
 
-Once a request is composed, it can be sent through the
-:meth:`aiospamc.client.Client.send` method as-is.  The method will automatically
-add the :class:`aiospamc.headers.User` and :class:`aiospamc.headers.Compress`
-headers if required.
+Once a request is composed, the :class:`aiospamc.client.Client` class can be
+instantiated and the request can be sent through the
+:meth:`aiospamc.client.Client.send` method.  The method will automatically
+add the `User` and `Compress` headers if required.
 
 For example:
 
@@ -125,9 +144,8 @@ For example:
     spam_result = loop.run_until_complete(is_spam(example_message))
     print('Example message is spam:', spam_result)
 
-********************
 Interpreting results
-********************
+====================
 
 Responses are encapsulated in the :class:`aiospamc.responses.Response` class.
 It includes the status code, headers and body.

@@ -8,15 +8,19 @@ from asynctest import CoroutineMock, MagicMock, Mock, patch
 import pytest
 
 
+def pytest_addoption(parser):
+    parser.addoption('--spamd-process-timeout', action='store', default=10, type=int)
+
+
 if sys.platform == 'win32':
-    collect_ignore = ["connections/test_unix_connection.py"]
+    collect_ignore = ['connections/test_unix_connection.py', 'connections/test_unix_connection_manager.py']
 
 
 @pytest.fixture
 def x_headers():
-    from aiospamc.headers import XHeader
+    from aiospamc.header_values import GenericHeaderValue
 
-    return [XHeader(name='A', value='a'), XHeader(name='B', value='b')]
+    return {'A': GenericHeaderValue(value='a'), 'B': GenericHeaderValue(value='b')}
 
 
 @pytest.fixture
@@ -51,6 +55,11 @@ def spam():
 
 
 @pytest.fixture
+def request_with_body():
+    return b'CHECK SPAMC/1.5\r\nContent-length: 10\r\n\r\nTest body\n'
+
+
+@pytest.fixture
 def request_ping():
     '''PING request in bytes.'''
     return b'PING SPAMC/1.5\r\n\r\n'
@@ -71,7 +80,13 @@ def response_ok():
 @pytest.fixture
 def response_pong():
     '''PONG response in bytes.'''
-    return b'SPAMD/1.5 0 PONG\r\n\r\n'
+    return b'SPAMD/1.5 0 PONG\r\n'
+
+
+@pytest.fixture
+def response_tell():
+    '''Examplte TELL response.'''
+    return b'SPAMD/1.1 0 EX_OK\r\n\r\n\r\n'
 
 
 @pytest.fixture

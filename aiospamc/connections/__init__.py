@@ -58,7 +58,6 @@ class Connection:
 
         self.writer.write(data)
         await self.writer.drain()
-        self.writer.write_eof()
 
     async def receive(self) -> bytes:
         '''Receives data from the connection.'''

@@ -1,6 +1,7 @@
 stages:
-- stage: build
-  displayName: Build
+- stage: unittest
+  displayName: Unit Tests
+  dependsOn: []
   jobs:
   - job: Test
     pool:
@@ -44,20 +45,62 @@ stages:
         codeCoverageTool: cobertura
         summaryFileLocation: $(Build.StagingDirectory)/coverage.xml
 
-    - script: |
-        $HOME/.poetry/bin/poetry build
-      displayName: 'Package'
-
-- stage: package
-  displayName: Package
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-  dependsOn: build
+- stage: integration
+  displayName: Integration Tests
+  dependsOn: []
   jobs:
-  - job: Package
+    - job: Test
+      pool:
+       vmImage: 'ubuntu-latest'
+      strategy:
+       matrix:
+         Python35:
+           python.version: '3.5'
+         Python36:
+           python.version: '3.6'
+         Python37:
+           python.version: '3.7'
+      steps:
+       - task: UsePythonVersion@0
+         inputs:
+           versionSpec: '$(python.version)'
+         displayName: 'Use Python $(python.version)'
+
+       - script: |
+           sudo apt-get -y install spamassassin
+         displayName: 'Install SpamAssassin'
+
+       - script: |
+           curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+           $HOME/.poetry/bin/poetry config settings.virtualenvs.create false
+         displayName: 'Install Poetry'
+
+       - script: |
+           $HOME/.poetry/bin/poetry install
+         displayName: 'Install dependencies'
+
+       - script: |
+           pytest tests/ -m integration --junit-xml="$BUILD_STAGINGDIRECTORY/test-results.xml" --cov aiospamc --cov-report="xml:$BUILD_STAGINGDIRECTORY/coverage.xml"
+         displayName: 'pytest'
+
+       - task: PublishTestResults@2
+         inputs:
+           testResultsFormat: junit
+           testResultsFiles: test-results.xml
+           searchFolder: $(Build.StagingDirectory)
+
+- stage: publish
+  displayName: Publish to PyPI
+  variables:
+    PyPIRepository: 'https://upload.pypi.org/legacy/'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  dependsOn: [unittest, integration]
+  jobs:
+  - job: Publish
     steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.5'
+        versionSpec: '3.7'
 
     - script: |
         curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
@@ -65,10 +108,30 @@ stages:
       displayName: 'Install Poetry'
 
     - script: |
-        $HOME/.poetry/bin/poetry build
-      displayName: 'Poetry build'
+        $HOME/.poetry/bin/poetry config repositories.repo "$PYPIREPOSITORY"
+        $HOME/.poetry/bin/poetry config http-basic.repo __token__ "$PYPITOKEN"
+        $HOME/.poetry/bin/poetry publish --no-interaction --build --repository=repo -v
+      displayName: 'Poetry publish'
+      env:
+        PYPITOKEN: '$(PyPIToken)'
+
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)/dist/'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: $(Build.SourcesDirectory)/dist/
-        artifactName: drop
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'drop'
+
+    - task: GitHubRelease@1
+      inputs:
+        gitHubConnection: 'Releases'
+        repositoryName: '$(Build.Repository.Name)'
+        action: 'create'
+        target: '$(Build.SourceVersion)'
+        tagSource: 'gitTag'
+        changeLogCompareToRelease: 'lastFullRelease'
+        changeLogType: 'commitBased'

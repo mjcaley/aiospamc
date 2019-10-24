@@ -35,10 +35,18 @@ aiospamc.exceptions module
    :undoc-members:
    :show-inheritance:
 
-aiospamc.headers module
------------------------
+aiospamc.header\_values module
+------------------------------
 
-.. automodule:: aiospamc.headers
+.. automodule:: aiospamc.header_values
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.incremental\_parser module
+-----------------------------------
+
+.. automodule:: aiospamc.incremental_parser
    :members:
    :undoc-members:
    :show-inheritance:
@@ -47,14 +55,6 @@ aiospamc.options module
 -----------------------
 
 .. automodule:: aiospamc.options
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-aiospamc.parser module
-----------------------
-
-.. automodule:: aiospamc.parser
    :members:
    :undoc-members:
    :show-inheritance:
@@ -80,6 +80,7 @@ Module contents
 ---------------
 
 .. automodule:: aiospamc
+   :ignore-module-all:
    :members:
    :undoc-members:
    :show-inheritance:
