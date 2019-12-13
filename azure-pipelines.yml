@@ -14,6 +14,8 @@ stages:
           python.version: '3.6'
         Python37:
           python.version: '3.7'
+        Python38:
+          python.version: '3.8'
     steps:
     - task: UsePythonVersion@0
       inputs:
@@ -22,7 +24,7 @@ stages:
 
     - script: |
         curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-        $HOME/.poetry/bin/poetry config settings.virtualenvs.create false
+        $HOME/.poetry/bin/poetry env use system
       displayName: 'Install Poetry'
 
     - script: |
@@ -60,6 +62,8 @@ stages:
            python.version: '3.6'
          Python37:
            python.version: '3.7'
+         Python38:
+           python.version: '3.8'
       steps:
        - task: UsePythonVersion@0
          inputs:
@@ -72,7 +76,7 @@ stages:
 
        - script: |
            curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-           $HOME/.poetry/bin/poetry config settings.virtualenvs.create false
+           $HOME/.poetry/bin/poetry env use system
          displayName: 'Install Poetry'
 
        - script: |
@@ -91,29 +95,27 @@ stages:
 
 - stage: publish
   displayName: Publish to PyPI
-  variables:
-    PyPIRepository: 'https://upload.pypi.org/legacy/'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+#  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   dependsOn: [unittest, integration]
   jobs:
   - job: Publish
     steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '3.7'
+        versionSpec: '3.8'
 
     - script: |
         curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-        $HOME/.poetry/bin/poetry config settings.virtualenvs.create false
+        $HOME/.poetry/bin/poetry use system
       displayName: 'Install Poetry'
 
     - script: |
-        $HOME/.poetry/bin/poetry config repositories.repo "$PYPIREPOSITORY"
-        $HOME/.poetry/bin/poetry config http-basic.repo __token__ "$PYPITOKEN"
-        $HOME/.poetry/bin/poetry publish --no-interaction --build --repository=repo -v
+        $HOME/.poetry/bin/poetry config pypi-token.pypi "$POETRY_PYPI_TOKEN_PYPI"
+        $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/simple/
+        $HOME/.poetry/bin/poetry publish --no-interaction --build -v --repo=test
       displayName: 'Poetry publish'
       env:
-        PYPITOKEN: '$(PyPIToken)'
+        POETRY_PYPI_TOKEN_PYPI: '$(POETRY_PYPI_TOKEN_PYPI)'
 
     - task: CopyFiles@2
       inputs:
