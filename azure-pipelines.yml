@@ -113,7 +113,7 @@ stages:
 
     - script: |
         $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/simple/
-        $HOME/.poetry/bin/poetry publish --no-interaction --build -v --repo=test
+        $HOME/.poetry/bin/poetry publish --no-interaction --build -v --repository test
       displayName: 'Poetry publish'
       env:
         POETRY_PYPI_TOKEN_PYPI: '$(POETRY_PYPI_TOKEN_PYPI)'
