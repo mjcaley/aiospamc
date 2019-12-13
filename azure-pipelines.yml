@@ -116,7 +116,7 @@ stages:
         $HOME/.poetry/bin/poetry publish --no-interaction --build -v --repository test
       displayName: 'Poetry publish'
       env:
-        POETRY_PYPI_TOKEN_PYPI: '$(POETRY_PYPI_TOKEN_PYPI)'
+        POETRY_PYPI_TOKEN_TEST: '$(POETRY_PYPI_TOKEN_PYPI)'
 
     - task: CopyFiles@2
       inputs:
