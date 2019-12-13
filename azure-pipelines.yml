@@ -1,3 +1,7 @@
+variables:
+  - name: POETRY_VIRTUALENVS_CREATE
+    value: false
+
 stages:
 - stage: unittest
   displayName: Unit Tests
@@ -110,7 +114,6 @@ stages:
       displayName: 'Install Poetry'
 
     - script: |
-        $HOME/.poetry/bin/poetry config pypi-token.pypi "$POETRY_PYPI_TOKEN_PYPI"
         $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/simple/
         $HOME/.poetry/bin/poetry publish --no-interaction --build -v --repo=test
       displayName: 'Poetry publish'
