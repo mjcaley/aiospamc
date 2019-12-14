@@ -99,6 +99,8 @@ class Client:
             return ssl.create_default_context(capath=str(cert_path))
         elif cert_path.is_file():
             return ssl.create_default_context(cafile=str(cert_path))
+        else:
+            raise FileNotFoundError('Certificate path does not exist at {}'.format(value))
 
     async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.
