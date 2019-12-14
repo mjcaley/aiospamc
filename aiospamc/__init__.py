@@ -360,6 +360,9 @@ async def tell(
     :param message_class: How to classify the message, either "ham" or "spam".
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
+    :param remove_action: Remove message class for message in database.
+    :param set_action:
+        Set message class for message in database.  Either `ham` or `spam`.
     :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client` instance.
