@@ -67,6 +67,13 @@ def test_ssl_context_from_file(mocker, tmp_path):
     assert kwargs['cafile'] == str(file)
 
 
+def test_ssl_context_file_not_found(tmp_path):
+    file = tmp_path / 'nonexistent.pem'
+
+    with pytest.raises(FileNotFoundError):
+        Client.new_ssl_context(str(file))
+
+
 def test_tcp_manager():
     client = Client(host='127.0.0.1', port=783)
 

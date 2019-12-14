@@ -45,13 +45,13 @@ class Client:
 
         if socket_path:
             from aiospamc.connections.unix_connection import UnixConnectionManager
-            self.connection = UnixConnectionManager(socket_path)
+            self.connection = UnixConnectionManager(socket_path, loop=loop)
         elif host and port:
             from aiospamc.connections.tcp_connection import TcpConnectionManager
             if verify is not None:
-                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify))
+                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify), loop=loop)
             else:
-                self.connection = TcpConnectionManager(host, port)
+                self.connection = TcpConnectionManager(host, port, loop=loop)
         else:
             raise ValueError('Either "host" and "port" or "socket_path" must be specified.')
 
@@ -60,7 +60,6 @@ class Client:
         self._socket_path = socket_path
         self.user = user
         self.compress = compress
-        self.loop = loop or asyncio.get_event_loop()
 
         self.logger = logging.getLogger(__name__)
         self.logger.debug('Created instance of %r', self)
@@ -100,6 +99,8 @@ class Client:
             return ssl.create_default_context(capath=str(cert_path))
         elif cert_path.is_file():
             return ssl.create_default_context(cafile=str(cert_path))
+        else:
+            raise FileNotFoundError('Certificate path does not exist at {}'.format(value))
 
     async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.
