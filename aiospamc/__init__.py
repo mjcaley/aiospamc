@@ -353,7 +353,8 @@ async def tell(
         port: int = 783,
         remove_action: Union[str, ActionOption] = None,
         set_action: Union[str, ActionOption] = None,
-        loop: asyncio.AbstractEventLoop = None, **kwargs) -> Response:
+        loop: asyncio.AbstractEventLoop = None,
+        **kwargs) -> Response:
     '''Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
