@@ -1,5 +1,5 @@
-aiospamc API Reference
-======================
+API Reference
+=============
 
 .. toctree::
    :maxdepth: 4
