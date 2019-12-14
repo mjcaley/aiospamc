@@ -353,13 +353,17 @@ async def tell(
         port: int = 783,
         remove_action: Union[str, ActionOption] = None,
         set_action: Union[str, ActionOption] = None,
-        loop: asyncio.AbstractEventLoop = None, **kwargs) -> Response:
+        loop: asyncio.AbstractEventLoop = None,
+        **kwargs) -> Response:
     '''Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param message_class: How to classify the message, either "ham" or "spam".
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
+    :param remove_action: Remove message class for message in database.
+    :param set_action:
+        Set message class for message in database.  Either `ham` or `spam`.
     :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client` instance.
