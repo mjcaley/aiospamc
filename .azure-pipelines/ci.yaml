@@ -16,6 +16,6 @@ jobs:
         PythonVersion: '3.9'
 
   steps:
-  - template: 'templates/build_steps.yaml'
+  - template: 'templates/ci_steps.yaml'
     parameters:
       PythonVersion: '$(PythonVersion)'
