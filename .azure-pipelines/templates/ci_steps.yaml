@@ -1,0 +1,50 @@
+parameters:
+- name: PythonVersion
+  type: string
+
+variables:
+- template: 'vars.yml'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: ${{ parameters.PythonVersion }}
+  displayName: 'Use Python ${{ parameters.PythonVersion }}'
+
+- script: |
+        curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+      displayName: 'Installing Poetry'
+
+- script: |
+        $(PoetryBin) install
+      displayName: 'Install dependencies'
+
+- script: |
+    pytest tests/ --junit-xml="$BUILD_STAGINGDIRECTORY/unit-test-results.xml" --cov aiospamc --cov-report="xml:$BUILD_STAGINGDIRECTORY/coverage.xml"
+  displayName: 'pytest unit tests'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'junit'
+    testResultsFiles: 'unit-test-results.xml'
+    searchFolder: '$(Build.StagingDirectory)'
+
+- task: PublishCodeCoverageResults@1
+  condition: succeededOrFailed()
+  inputs:
+    codeCoverageTool: 'cobertura'
+    summaryFileLocation: '$(Build.StagingDirectory)/coverage.xml'
+
+- script: |
+    sudo apt-get -y install spamassassin
+  displayName: 'Install SpamAssassin'
+
+- script: |
+    pytest tests/ -m integration --junit-xml="$BUILD_STAGINGDIRECTORY/integration-test-results.xml" --cov aiospamc"
+  displayName: 'pytest integration tests'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'junit'
+    testResultsFiles: 'test-results.xml'
+    searchFolder: '$(Build.StagingDirectory)'

@@ -1,0 +1,21 @@
+jobs:
+- job: 'ci'
+  pool:
+    vmImage: 'ubuntu-latest'
+  strategy:
+    matrix:
+      Python35:
+        PythonVersion: '3.5'
+      Python36:
+        PythonVersion: '3.6'
+      Python37:
+        PythonVersion: '3.7'
+      Python38:
+        PythonVersion: '3.8'
+      Python39:
+        PythonVersion: '3.9'
+
+  steps:
+  - template: 'templates/build_steps.yaml'
+    parameters:
+      PythonVersion: '$(PythonVersion)'
