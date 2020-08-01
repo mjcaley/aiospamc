@@ -7,7 +7,6 @@ schedules:
   always: true
 
 trigger: none
-pr: none
 
 jobs:
 - job: 'ci'
