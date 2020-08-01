@@ -6,37 +6,44 @@ trigger:
 variables:
 - template: 'vars.yaml'
 
-steps:
-- template: 'templates/ci_steps.yaml'
-  parameters:
-    PythonVersion: '3.8'
+jobs:
+- job: ci
+  displayName: 'CI'
+  steps:
+  - template: 'templates/ci_steps.yaml'
+    parameters:
+      PythonVersion: '3.8'
 
-- script: |
-    $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
+- job: release
+  displayName: 'Release'
+  steps:
+  - script: |
+      $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
+    displayName: 'Add Test PyPI'
 
-- script: |
-    $HOME/.poetry/bin/poetry publish --no-interaction --build -v -r test
-  displayName: 'Poetry publish'
-  env:
-    POETRY_PYPI_TOKEN_PYPI: '$(POETRY_PYPI_TOKEN_TEST)'
+  - script: |
+      $HOME/.poetry/bin/poetry publish --no-interaction --build -v -r test
+    displayName: 'Poetry publish'
+    env:
+      POETRY_PYPI_TOKEN_TEST: '$(POETRY_PYPI_TOKEN_TEST)'
 
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/dist/'
-    Contents: '**'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)/dist/'
+      Contents: '**'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'drop'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'drop'
 
-- task: GitHubRelease@1
-  inputs:
-    gitHubConnection: 'Releases'
-    repositoryName: '$(Build.Repository.Name)'
-    action: 'create'
-    target: '$(Build.SourceVersion)'
-    tagSource: 'gitTag'
-    changeLogCompareToRelease: 'lastFullRelease'
-    changeLogType: 'commitBased'
+  - task: GitHubRelease@1
+    inputs:
+      gitHubConnection: 'Releases'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'gitTag'
+      changeLogCompareToRelease: 'lastFullRelease'
+      changeLogType: 'commitBased'
