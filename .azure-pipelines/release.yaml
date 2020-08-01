@@ -12,7 +12,7 @@ steps:
     PythonVersion: '3.8'
 
 - script: |
-    $HOME/.poetry/bin/poetry config pypi-token.test "$API_KEY"
+    $HOME/.poetry/bin/poetry config pypi-token.pypi "$API_KEY"
   displayName: 'Set PyPI API key'
   env:
     API_KEY: '$(POETRY_PYPI_TOKEN_PYPI)'
