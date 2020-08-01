@@ -2,6 +2,10 @@ jobs:
 - job: 'ci'
   pool:
     vmImage: 'ubuntu-latest'
+
+  variables:
+  - template: 'vars.yml'
+
   strategy:
     matrix:
       Python35:
