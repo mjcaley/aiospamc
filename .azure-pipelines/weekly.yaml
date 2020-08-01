@@ -6,6 +6,8 @@ schedules:
     - 'master'
   always: true
 
+triggers: none
+
 jobs:
 - job: 'ci'
   displayName: 'CI'
