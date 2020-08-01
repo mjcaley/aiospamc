@@ -9,12 +9,12 @@ steps:
   displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
 - script: |
-        curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-      displayName: 'Installing Poetry'
+    curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+  displayName: 'Installing Poetry'
 
 - script: |
-        $HOME/.poetry/bin/poetry install
-      displayName: 'Install dependencies'
+    $HOME/.poetry/bin/poetry install
+  displayName: 'Install dependencies'
 
 - script: |
     pytest tests/ --junit-xml="$BUILD_STAGINGDIRECTORY/unit-test-results.xml" --cov aiospamc --cov-report="xml:$BUILD_STAGINGDIRECTORY/coverage.xml"
