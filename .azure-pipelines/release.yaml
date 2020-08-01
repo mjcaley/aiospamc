@@ -16,6 +16,7 @@ jobs:
 
 - job: release
   displayName: 'Release'
+  dependsOn: ci
   steps:
   - script: |
       $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
