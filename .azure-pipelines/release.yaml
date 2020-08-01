@@ -13,8 +13,8 @@ steps:
 - script: |
     $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
 
- - script: |
-    $HOME/.poetry/bin/poetry publish --no-interaction --build -v -r test
+- script: |
+  $HOME/.poetry/bin/poetry publish --no-interaction --build -v -r test
   displayName: 'Poetry publish'
   env:
     POETRY_PYPI_TOKEN_PYPI: '$(POETRY_PYPI_TOKEN_TEST)'
