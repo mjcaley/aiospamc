@@ -37,11 +37,11 @@ steps:
   displayName: 'Install SpamAssassin'
 
 - script: |
-    pytest tests/ -m integration --junit-xml="$BUILD_STAGINGDIRECTORY/integration-test-results.xml" --cov aiospamc"
+    pytest tests/ -m integration --junit-xml="$BUILD_STAGINGDIRECTORY/integration-test-results.xml" --cov aiospamc
   displayName: 'pytest integration tests'
 
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'junit'
-    testResultsFiles: 'test-results.xml'
+    testResultsFiles: 'integration-test-results.xml'
     searchFolder: '$(Build.StagingDirectory)'
