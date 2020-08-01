@@ -22,7 +22,7 @@ steps:
     POETRY_PYPI_TOKEN_TEST: 'API_KEY'
 
 - script: |
-    $HOME/.poetry/bin/poetry publish --no-interaction -v -r test
+    $HOME/.poetry/bin/poetry publish --build --no-interaction -v -r test
   displayName: 'Poetry publish'
 
 - task: CopyFiles@2
