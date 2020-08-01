@@ -1,6 +1,7 @@
 trigger:
   tags:
-    include: 'v*.*.*'
+    include:
+    - 'v*.*.*'
 
 variables:
 - template: 'vars.yaml'
