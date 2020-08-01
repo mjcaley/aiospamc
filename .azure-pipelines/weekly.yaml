@@ -6,7 +6,7 @@ schedules:
     - 'master'
   always: true
 
-triggers: none
+trigger: none
 
 jobs:
 - job: 'ci'
