@@ -6,49 +6,42 @@ trigger:
 variables:
 - template: 'vars.yaml'
 
-jobs:
-- job: ci
-  displayName: 'CI'
-  steps:
-  - template: 'templates/ci_steps.yaml'
-    parameters:
-      PythonVersion: '3.8'
+steps:
+- template: 'templates/ci_steps.yaml'
+  parameters:
+    PythonVersion: '3.8'
 
-- job: release
-  displayName: 'Release'
-  dependsOn: ci
-  steps:
-  - script: |
-      $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
-    displayName: 'Add Test PyPI'
+- script: |
+    $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
+  displayName: 'Add Test PyPI'
 
-  - script: |
-      $HOME/.poetry/bin/poetry config pypi-token.test $API_KEY
-    displayName: 'Set PyPI API key'
-    env:
-      POETRY_PYPI_TOKEN_TEST: 'API_KEY'
+- script: |
+    $HOME/.poetry/bin/poetry config pypi-token.test $API_KEY
+  displayName: 'Set PyPI API key'
+  env:
+    POETRY_PYPI_TOKEN_TEST: 'API_KEY'
 
-  - script: |
-      $HOME/.poetry/bin/poetry publish --no-interaction -v -r test
-    displayName: 'Poetry publish'
+- script: |
+    $HOME/.poetry/bin/poetry publish --no-interaction -v -r test
+  displayName: 'Poetry publish'
 
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$(Build.SourcesDirectory)/dist/'
-      Contents: '**'
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/dist/'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
 
-  - task: GitHubRelease@1
-    inputs:
-      gitHubConnection: 'Releases'
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'create'
-      target: '$(Build.SourceVersion)'
-      tagSource: 'gitTag'
-      changeLogCompareToRelease: 'lastFullRelease'
-      changeLogType: 'commitBased'
+- task: GitHubRelease@1
+  inputs:
+    gitHubConnection: 'Releases'
+    repositoryName: '$(Build.Repository.Name)'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    tagSource: 'gitTag'
+    changeLogCompareToRelease: 'lastFullRelease'
+    changeLogType: 'commitBased'
