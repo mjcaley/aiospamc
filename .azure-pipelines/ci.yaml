@@ -1,5 +1,6 @@
 jobs:
 - job: 'ci'
+  displayName: 'CI'
   pool:
     vmImage: 'ubuntu-latest'
 
@@ -16,8 +17,6 @@ jobs:
         PythonVersion: '3.7'
       Python38:
         PythonVersion: '3.8'
-      Python39:
-        PythonVersion: '3.9'
 
   steps:
   - template: 'templates/ci_steps.yaml'
