@@ -16,7 +16,7 @@ steps:
   displayName: 'Add Test PyPI'
 
 - script: |
-    $HOME/.poetry/bin/poetry config pypi-token.test $API_KEY
+    $HOME/.poetry/bin/poetry config pypi-token.test '$API_KEY'
   displayName: 'Set PyPI API key'
   env:
     POETRY_PYPI_TOKEN_TEST: 'API_KEY'
