@@ -1,0 +1,2 @@
+variables:
+  POETRY_VIRTUALENVS_CREATE: false

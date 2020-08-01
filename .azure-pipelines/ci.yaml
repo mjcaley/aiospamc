@@ -1,0 +1,24 @@
+jobs:
+- job: 'ci'
+  displayName: 'CI'
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  variables:
+  - template: 'vars.yaml'
+
+  strategy:
+    matrix:
+      Python35:
+        PythonVersion: '3.5'
+      Python36:
+        PythonVersion: '3.6'
+      Python37:
+        PythonVersion: '3.7'
+      Python38:
+        PythonVersion: '3.8'
+
+  steps:
+  - template: 'templates/ci_steps.yaml'
+    parameters:
+      PythonVersion: '$(PythonVersion)'
