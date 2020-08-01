@@ -22,10 +22,14 @@ jobs:
     displayName: 'Add Test PyPI'
 
   - script: |
-      $HOME/.poetry/bin/poetry publish --no-interaction --build -v -r test
-    displayName: 'Poetry publish'
+      $HOME/.poetry/bin/poetry config pypi-token.test $API_KEY
+    displayName: 'Set PyPI API key'
     env:
-      POETRY_PYPI_TOKEN_TEST: '$(POETRY_PYPI_TOKEN_TEST)'
+      POETRY_PYPI_TOKEN_TEST: 'API_KEY'
+
+  - script: |
+      $HOME/.poetry/bin/poetry publish --no-interaction -v -r test
+    displayName: 'Poetry publish'
 
   - task: CopyFiles@2
     inputs:
