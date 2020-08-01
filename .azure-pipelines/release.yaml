@@ -12,17 +12,13 @@ steps:
     PythonVersion: '3.8'
 
 - script: |
-    $HOME/.poetry/bin/poetry config repositories.test https://test.pypi.org/legacy/
-  displayName: 'Add Test PyPI'
-
-- script: |
     $HOME/.poetry/bin/poetry config pypi-token.test "$API_KEY"
   displayName: 'Set PyPI API key'
   env:
-    API_KEY: '$(POETRY_PYPI_TOKEN_TEST)'
+    API_KEY: '$(POETRY_PYPI_TOKEN_PYPI)'
 
 - script: |
-    $HOME/.poetry/bin/poetry publish --build --no-interaction -v -r test
+    $HOME/.poetry/bin/poetry publish --build --no-interaction
   displayName: 'Poetry publish'
 
 - task: CopyFiles@2
@@ -43,5 +39,6 @@ steps:
     action: 'create'
     target: '$(Build.SourceVersion)'
     tagSource: 'gitTag'
+    assets: '$(Build.SourcesDirectory)/dist/*'
     changeLogCompareToRelease: 'lastFullRelease'
     changeLogType: 'commitBased'
