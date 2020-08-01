@@ -19,7 +19,7 @@ steps:
     $HOME/.poetry/bin/poetry config pypi-token.test '$API_KEY'
   displayName: 'Set PyPI API key'
   env:
-    POETRY_PYPI_TOKEN_TEST: 'API_KEY'
+    API_KEY: '$(POETRY_PYPI_TOKEN_TEST)'
 
 - script: |
     $HOME/.poetry/bin/poetry publish --build --no-interaction -v -r test
