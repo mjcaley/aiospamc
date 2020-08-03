@@ -23,6 +23,14 @@ classifiers = [
 
 keywords = ["spam", "spamc", "spamassassin"]
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "tests"
+]
+markers = ["integration: spawn an instance of spamd and test against it"]
+addopts = "-m \"not integration\""
+
 [tool.poetry.dependencies]
 python = "^3.5"
 certifi = "^2020.6"
