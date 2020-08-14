@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import pytest
-from asynctest import CoroutineMock
 
 import aiospamc
 from aiospamc.client import Client

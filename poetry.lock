@@ -8,14 +8,6 @@ version = "0.7.12"
 
 [[package]]
 category = "dev"
-description = "Enhance the standard unittest package with features for testing asyncio libraries"
-name = "asynctest"
-optional = false
-python-versions = ">=3.5"
-version = "0.13.0"
-
-[[package]]
-category = "dev"
 description = "Atomic file writes."
 marker = "sys_platform == \"win32\""
 name = "atomicwrites"
@@ -516,7 +508,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "unittest2", "jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "ce31e11c3501ba027162a1a4c629b0294c32cb8fd2587dc21917e42d78fcc7cf"
+content-hash = "291efae9052af17f47eb5a1fa52286f65118e5b873fefa6bdab48148078283ea"
 lock-version = "1.0"
 python-versions = "^3.6"
 
@@ -524,10 +516,6 @@ python-versions = "^3.6"
 alabaster = [
     {file = "alabaster-0.7.12-py2.py3-none-any.whl", hash = "sha256:446438bdcca0e05bd45ea2de1668c1d9b032e1a9154c2c259092d77031ddd359"},
     {file = "alabaster-0.7.12.tar.gz", hash = "sha256:a661d72d58e6ea8a57f7a86e37d86716863ee5e92788398526d58b26a4e4dc02"},
-]
-asynctest = [
-    {file = "asynctest-0.13.0-py3-none-any.whl", hash = "sha256:5da6118a7e6d6b54d83a8f7197769d046922a44d2a99c21382f0a6e4fadae676"},
-    {file = "asynctest-0.13.0.tar.gz", hash = "sha256:c27862842d15d83e6a34eb0b2866c323880eb3a75e4485b079ea11748fd77fac"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},

@@ -3,8 +3,6 @@
 import asyncio
 import sys
 
-from asynctest import CoroutineMock, MagicMock, Mock, patch
-
 import pytest
 
 
@@ -219,65 +217,63 @@ def ex_undefined():
 # Mock fixtures for asyncio objects/functions
 
 @pytest.fixture
-def connection_refused():
-    tcp_open = patch('asyncio.open_connection', side_effect=[ConnectionRefusedError()])
+def connection_refused(mocker):
+    tcp_open = mocker.patch('asyncio.open_connection', side_effect=[ConnectionRefusedError()])
     if sys.platform == 'win32':
         with tcp_open:
             yield
     else:
-        unix_open = patch('asyncio.open_unix_connection', side_effect=[ConnectionRefusedError()])
+        unix_open = mocker.patch('asyncio.open_unix_connection', side_effect=[ConnectionRefusedError()])
         with tcp_open, unix_open:
             yield
 
 
 @pytest.fixture
-def mock_connection(response_ok):
+def mock_connection(mocker, response_ok):
     from itertools import cycle
 
-    reader = MagicMock(spec=asyncio.StreamReader)
+    reader = mocker.MagicMock(spec=asyncio.StreamReader)
     reader.read.side_effect = cycle([response_ok])
-    writer = MagicMock(spec=asyncio.StreamWriter)
+    writer = mocker.MagicMock(spec=asyncio.StreamWriter)
 
-    conn_string = patch('aiospamc.connections.Connection.connection_string',
+    conn_string = mocker.patch('aiospamc.connections.Connection.connection_string',
                         return_value='MockConnectionString')
-    conn_open = patch('aiospamc.connections.Connection.open',
+    conn_open = mocker.patch('aiospamc.connections.Connection.open',
                       return_value=(reader, writer))
-    tcp_open = patch('aiospamc.connections.tcp_connection.TcpConnection.open',
+    tcp_open = mocker.patch('aiospamc.connections.tcp_connection.TcpConnection.open',
                      return_value=(reader, writer))
-    unix_open = patch('aiospamc.connections.unix_connection.UnixConnection.open',
+    unix_open = mocker.patch('aiospamc.connections.unix_connection.UnixConnection.open',
                       return_value=(reader, writer))
 
     if sys.platform == 'win32':
-        with conn_string, conn_open, tcp_open:
-            yield reader.read
+        yield reader.read
     else:
-        with conn_string, conn_open, tcp_open, unix_open:
-            yield reader.read
+        yield reader.read
 
 
 @pytest.fixture
-def stub_connection():
+def stub_connection(mocker):
     def inner(return_value=None, side_effect=None):
-        connection = Mock()
-        connection.send = CoroutineMock()
-        connection.receive = CoroutineMock(return_value=return_value, side_effect=side_effect)
+        connection = mocker.Mock()
+        connection.send = mocker.AsyncMock()
+        connection.receive = mocker.AsyncMock(return_value=return_value, side_effect=side_effect)
 
         return connection
     return inner
 
 
 @pytest.fixture
-def stub_connection_manager(stub_connection):
+def stub_connection_manager(stub_connection, mocker):
     def inner(return_value=None, side_effect=None):
         stub = stub_connection(return_value=return_value, side_effect=side_effect)
-        context_manager = MagicMock()
-        context_manager.__aenter__ = CoroutineMock(
+        context_manager = mocker.MagicMock()
+        context_manager.__aenter__ = mocker.AsyncMock(
             return_value=stub
         )
-        context_manager.__aexit__ = CoroutineMock()
+        context_manager.__aexit__ = mocker.AsyncMock()
 
-        manager = MagicMock()
-        manager.new_connection = Mock(return_value=context_manager)
+        manager = mocker.MagicMock()
+        manager.new_connection = mocker.Mock(return_value=context_manager)
         manager.connection_stub = stub
 
         return manager
