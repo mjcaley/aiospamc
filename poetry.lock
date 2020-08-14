@@ -84,6 +84,11 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 version = "5.2.1"
 
+[package.dependencies]
+[package.dependencies.toml]
+optional = true
+version = "*"
+
 [package.extras]
 toml = ["toml"]
 
@@ -508,7 +513,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "unittest2", "jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "291efae9052af17f47eb5a1fa52286f65118e5b873fefa6bdab48148078283ea"
+content-hash = "81379ebf4088f0311eaf0671e161a1560294e1adc5b0a2c54de43c6029bda46c"
 lock-version = "1.0"
 python-versions = "^3.6"
 

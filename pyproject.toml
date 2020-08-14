@@ -32,6 +32,15 @@ markers = ["integration: spawn an instance of spamd and test against it"]
 addopts = "-m \"not integration\""
 mock_use_standalone_module = true
 
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__"
+]
+
 [tool.poetry.dependencies]
 python = "^3.6"
 certifi = "^2020.6"
@@ -44,6 +53,7 @@ sphinx = "^3.1"
 pytest-mock = "^3.2"
 cryptography = "^3.0"
 mock = "^4.0.2"
+coverage = {extras = ["toml"], version = "^5.2"}
 
 [build-system]
 requires = ["poetry>=1.0"]
