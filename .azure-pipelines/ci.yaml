@@ -17,8 +17,6 @@ jobs:
 
   strategy:
     matrix:
-      Python35:
-        PythonVersion: '3.5'
       Python36:
         PythonVersion: '3.6'
       Python37:

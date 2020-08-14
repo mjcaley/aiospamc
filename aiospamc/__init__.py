@@ -26,7 +26,7 @@ __email__ = 'mjcaley@darkarctic.com'
 async def check(
         message: Union[bytes, SupportsBytes],
         *,
-        host: str = 'Localhost',
+        host: str = 'localhost',
         port: int = 783,
         loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
@@ -72,7 +72,7 @@ async def check(
 async def headers(
         message: Union[bytes, SupportsBytes],
         *,
-        host: str = 'Localhost',
+        host: str = 'localhost',
         port: int = 783,
         loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
@@ -119,7 +119,7 @@ async def headers(
 
 async def ping(
         *,
-        host: str = 'Localhost',
+        host: str = 'localhost',
         port: int = 783,
         loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
@@ -162,7 +162,7 @@ async def ping(
 async def process(
         message: Union[bytes, SupportsBytes],
         *,
-        host: str = 'Localhost',
+        host: str = 'localhost',
         port: int = 783,
         loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
@@ -209,7 +209,7 @@ async def process(
 async def report(
         message: Union[bytes, SupportsBytes],
         *,
-        host: str = 'Localhost',
+        host: str = 'localhost',
         port: int = 783,
         loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
@@ -255,7 +255,7 @@ async def report(
 async def report_if_spam(
         message: Union[bytes, SupportsBytes],
         *,
-        host: str = 'Localhost',
+        host: str = 'localhost',
         port: int = 783,
         loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
@@ -301,7 +301,7 @@ async def report_if_spam(
 
 async def symbols(message: Union[bytes, SupportsBytes],
                   *,
-                  host: str = 'Localhost',
+                  host: str = 'localhost',
                   port: int = 783,
                   loop: asyncio.AbstractEventLoop = None,
                   **kwargs) -> Response:
@@ -349,7 +349,7 @@ async def tell(
         message: Union[bytes, SupportsBytes],
         message_class: Union[str, MessageClassOption],
         *,
-        host: str = 'Localhost',
+        host: str = 'localhost',
         port: int = 783,
         remove_action: Union[str, ActionOption] = None,
         set_action: Union[str, ActionOption] = None,

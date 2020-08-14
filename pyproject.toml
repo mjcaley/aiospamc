@@ -11,7 +11,6 @@ homepage = "https://github.com/mjcaley/aiospamc"
 
 classifiers = [
     'Development Status :: 4 - Beta',
-    'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
@@ -23,18 +22,39 @@ classifiers = [
 
 keywords = ["spam", "spamc", "spamassassin"]
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "tests"
+]
+markers = ["integration: spawn an instance of spamd and test against it"]
+addopts = "-m \"not integration\""
+mock_use_standalone_module = true
+
+[tool.coverage.run]
+source = ["aiospamc"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__"
+]
+fail_under = 90.0
+
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 certifi = "^2020.6"
 
 [tool.poetry.dev-dependencies]
-asynctest = "^0.13.0"
 pytest = "^6.0"
 pytest-cov = "^2.10"
 pytest-asyncio = "^0.14.0"
 sphinx = "^3.1"
 pytest-mock = "^3.2"
 cryptography = "^3.0"
+mock = "^4.0"
+coverage = {extras = ["toml"], version = "^5.2"}
 
 [build-system]
 requires = ["poetry>=1.0"]

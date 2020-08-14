@@ -4,7 +4,6 @@ from pathlib import Path
 import ssl
 
 import pytest
-from asynctest import CoroutineMock
 
 import certifi
 
@@ -308,10 +307,10 @@ async def test_response_general_exception(stub_connection_manager, ex_undefined,
 @pytest.mark.asyncio
 async def test_requests_with_body(verb, method, spam, mocker):
     c = Client()
-    c.send = CoroutineMock()
+    mocker.patch('aiospamc.client.Client.send')
     mocker.spy(c, 'send')
     await getattr(c, method)(spam)
-    request = c.send.call_args[0][0]
+    request = c.send.await_args[0][0]
 
     assert request.verb == verb
     assert request.body == spam
@@ -320,10 +319,10 @@ async def test_requests_with_body(verb, method, spam, mocker):
 @pytest.mark.asyncio
 async def test_request_ping(mocker):
     c = Client()
-    c.send = CoroutineMock()
+    mocker.patch('aiospamc.client.Client.send')
     mocker.spy(c, 'send')
     await c.ping()
-    request = c.send.call_args[0][0]
+    request = c.send.await_args[0][0]
 
     assert request.verb == 'PING'
 
@@ -342,10 +341,10 @@ async def test_request_ping(mocker):
 @pytest.mark.asyncio
 async def test_request_tell(message_class, remove_action, set_action, spam, mocker):
     c = Client()
-    c.send = CoroutineMock()
+    mocker.patch('aiospamc.client.Client.send')
     mocker.spy(c, 'send')
     await c.tell(message=spam, message_class=message_class, remove_action=remove_action, set_action=set_action)
-    request = c.send.call_args[0][0]
+    request = c.send.await_args[0][0]
 
     assert request.headers['Message-class'].value == message_class
     if remove_action:
