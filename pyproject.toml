@@ -28,7 +28,7 @@ testpaths = [
     "tests"
 ]
 markers = ["integration: spawn an instance of spamd and test against it"]
-addopts = "-m \"not integration\" --cov"
+addopts = "-m \"not integration\""
 mock_use_standalone_module = true
 
 [tool.coverage.run]
