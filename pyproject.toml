@@ -29,10 +29,11 @@ testpaths = [
     "tests"
 ]
 markers = ["integration: spawn an instance of spamd and test against it"]
-addopts = "-m \"not integration\""
+addopts = "-m \"not integration\" --cov"
 mock_use_standalone_module = true
 
 [tool.coverage.run]
+source = ["aiospamc"]
 branch = true
 
 [tool.coverage.report]
@@ -40,6 +41,7 @@ exclude_lines = [
     "pragma: no cover",
     "def __repr__"
 ]
+fail_under = 90.0
 
 [tool.poetry.dependencies]
 python = "^3.6"
