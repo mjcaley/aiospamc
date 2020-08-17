@@ -28,14 +28,12 @@ async def check(
         *,
         host: str = 'localhost',
         port: int = 783,
-        loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
     '''Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
-    :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client` instance.
 
@@ -63,7 +61,7 @@ async def check(
     :raises TimeoutException: Timeout during connection.
     '''
 
-    c = Client(host=host, port=port, **kwargs, loop=loop)
+    c = Client(host=host, port=port, **kwargs)
     response = await c.check(message)
 
     return response
@@ -74,14 +72,12 @@ async def headers(
         *,
         host: str = 'localhost',
         port: int = 783,
-        loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
     '''Checks a message if it's spam and return the modified message headers.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
-    :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client`
         instance.
@@ -111,7 +107,7 @@ async def headers(
     :raises TimeoutException: Timeout during connection.
     '''
 
-    c = Client(host=host, port=port, **kwargs, loop=loop)
+    c = Client(host=host, port=port, **kwargs)
     response = await c.headers(message)
 
     return response
@@ -121,13 +117,11 @@ async def ping(
         *,
         host: str = 'localhost',
         port: int = 783,
-        loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
     '''Sends a ping to the SPAMD service.
 
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
-    :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client` instance.
 
@@ -153,7 +147,7 @@ async def ping(
     :raises TimeoutException: Timeout during connection.
     '''
 
-    c = Client(host=host, port=port, **kwargs, loop=loop)
+    c = Client(host=host, port=port, **kwargs)
     response = await c.ping()
 
     return response
@@ -164,14 +158,12 @@ async def process(
         *,
         host: str = 'localhost',
         port: int = 783,
-        loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
     '''Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
-    :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client` instance.
 
@@ -200,7 +192,7 @@ async def process(
     :raises TimeoutException: Timeout during connection.
     '''
 
-    c = Client(host=host, port=port, **kwargs, loop=loop)
+    c = Client(host=host, port=port, **kwargs)
     response = await c.process(message)
 
     return response
@@ -211,14 +203,12 @@ async def report(
         *,
         host: str = 'localhost',
         port: int = 783,
-        loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
     '''Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
-    :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client` instance.
 
@@ -246,7 +236,7 @@ async def report(
     :raises TimeoutException: Timeout during connection.
     '''
 
-    c = Client(host=host, port=port, **kwargs, loop=loop)
+    c = Client(host=host, port=port, **kwargs)
     response = await c.report(message)
 
     return response
@@ -257,14 +247,12 @@ async def report_if_spam(
         *,
         host: str = 'localhost',
         port: int = 783,
-        loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
     '''Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
-    :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client` instance.
 
@@ -293,7 +281,7 @@ async def report_if_spam(
     :raises TimeoutException: Timeout during connection.
     '''
 
-    c = Client(host=host, port=port, **kwargs, loop=loop)
+    c = Client(host=host, port=port, **kwargs)
     response = await c.report_if_spam(message)
 
     return response
@@ -310,7 +298,6 @@ async def symbols(message: Union[bytes, SupportsBytes],
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
-    :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client` instance.
 
@@ -339,7 +326,7 @@ async def symbols(message: Union[bytes, SupportsBytes],
     :raises TimeoutException: Timeout during connection.
     '''
 
-    c = Client(host=host, port=port, **kwargs, loop=loop)
+    c = Client(host=host, port=port, **kwargs)
     response = await c.symbols(message)
 
     return response
@@ -353,7 +340,6 @@ async def tell(
         port: int = 783,
         remove_action: Union[str, ActionOption] = None,
         set_action: Union[str, ActionOption] = None,
-        loop: asyncio.AbstractEventLoop = None,
         **kwargs) -> Response:
     '''Checks a message if it's spam and return a response with a score header.
 
@@ -364,7 +350,6 @@ async def tell(
     :param remove_action: Remove message class for message in database.
     :param set_action:
         Set message class for message in database.  Either `ham` or `spam`.
-    :param loop: The asyncio event loop.
     :param kwargs:
         Additional options to pass to the :class:`aiospamc.client.Client` instance.
 
@@ -392,7 +377,7 @@ async def tell(
     :raises TimeoutException: Timeout during connection.
     '''
 
-    c = Client(host=host, port=port, **kwargs, loop=loop)
+    c = Client(host=host, port=port, **kwargs)
     response = await c.tell(
         message=message,
         message_class=message_class,

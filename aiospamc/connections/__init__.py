@@ -10,14 +10,10 @@ from typing import Tuple, Union, SupportsBytes
 class Connection:
     '''Base class for connection objects.'''
 
-    def __init__(self, loop: asyncio.AbstractEventLoop = None):
-        '''Connection constructor.
-
-        :param loop: The asyncio event loop.
-        '''
+    def __init__(self):
+        '''Connection constructor.'''
 
         self.connected = False
-        self.loop = loop or asyncio.get_event_loop()
         self.logger = logging.getLogger(__name__)
 
     async def __aenter__(self):
@@ -67,9 +63,6 @@ class Connection:
 
 class ConnectionManager:
     '''Stores connection parameters and creates connections.'''
-
-    def __init__(self, loop: asyncio.AbstractEventLoop = None):
-        self.loop = loop or asyncio.get_event_loop()
 
     def new_connection(self) -> Connection:
         '''Creates a connection object.'''

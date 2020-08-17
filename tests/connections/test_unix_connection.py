@@ -14,13 +14,6 @@ def test_instantiates(unix_socket):
     assert conn.path is unix_socket
 
 
-def test_instantiates_with_loop(unix_socket, event_loop):
-    conn = UnixConnection(unix_socket, event_loop)
-
-    assert conn.path is unix_socket
-    assert conn.loop is event_loop
-
-
 def test_repr(unix_socket):
     conn = UnixConnection(unix_socket)
 

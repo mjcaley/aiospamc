@@ -21,14 +21,6 @@ def test_instantiates_with_ssl(address, mocker):
     assert conn_man.ssl is ssl_stub
 
 
-def test_instantiates_with_loop(address, event_loop):
-    conn_man = TcpConnectionManager(host=address[0], port=address[1], loop=event_loop)
-
-    assert conn_man.host is address[0]
-    assert conn_man.port is address[1]
-    assert conn_man.loop is event_loop
-
-
 def test_repr(address):
     conn_man = TcpConnectionManager(address[0], address[1])
 

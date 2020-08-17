@@ -14,19 +14,18 @@ from ..exceptions import AIOSpamcConnectionFailed
 class TcpConnectionManager(ConnectionManager):
     '''Creates new connections based on host and port provided.'''
 
-    def __init__(self, host: str, port: int, ssl: SSLContext = None, loop: asyncio.AbstractEventLoop = None) -> None:
+    def __init__(self, host: str, port: int, ssl: SSLContext = None) -> None:
         '''Constructor for TcpConnectionManager.
 
         :param host: Hostname or IP address of server.
         :param port: Port number
         :param ssl: SSL/TLS context.
-        :param loop: The asyncio event loop.
         '''
 
         self.host = host
         self.port = port
         self.ssl = ssl
-        super().__init__(loop)
+        super().__init__()
 
     def __repr__(self) -> str:
         return '{}(host={}, port={}, ssl={})'.format(self.__class__.__name__,
@@ -40,13 +39,13 @@ class TcpConnectionManager(ConnectionManager):
         :raises AIOSpamcConnectionFailed:
         '''
 
-        return TcpConnection(self.host, self.port, self.ssl, self.loop)
+        return TcpConnection(self.host, self.port, self.ssl)
 
 
 class TcpConnection(Connection):
     '''Manages a TCP connection.'''
 
-    def __init__(self, host: str, port: int, ssl: SSLContext = None, loop: asyncio.AbstractEventLoop = None):
+    def __init__(self, host: str, port: int, ssl: SSLContext = None):
         '''Constructor for TcpConnection.
 
         :param host: Hostname or IP address of server.
@@ -57,7 +56,7 @@ class TcpConnection(Connection):
         self.host = host
         self.port = port
         self.ssl = ssl
-        super().__init__(loop)
+        super().__init__()
 
     def __repr__(self) -> str:
         return '{}(host={}, port={}, ssl={})'.format(self.__class__.__name__,
@@ -75,8 +74,7 @@ class TcpConnection(Connection):
 
             reader, writer = await asyncio.open_connection(self.host,
                                                            self.port,
-                                                           ssl=self.ssl,
-                                                           loop=self.loop)
+                                                           ssl=self.ssl)
         except (ConnectionRefusedError, OSError) as error:
             raised = AIOSpamcConnectionFailed(error)
             self.logger.exception('Exception occurred when connecting to %s:%s: %s',
