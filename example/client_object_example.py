@@ -30,8 +30,8 @@ You should send this test mail from an account outside of your network.
 '''.encode('ascii')
 
 
-async def tell_spamd_message_is_spam(message, loop=None):
-    client = Client(host='localhost', loop=loop)
+async def tell_spamd_message_is_spam(message):
+    client = Client(host='localhost')
 
     response = await client.tell(message, message_class='spam', set_action='local, remote')
     response.raise_for_status()
@@ -40,6 +40,6 @@ async def tell_spamd_message_is_spam(message, loop=None):
 
 loop = asyncio.get_event_loop()
 result = loop.run_until_complete(
-    tell_spamd_message_is_spam(GTUBE, loop=loop)
+    tell_spamd_message_is_spam(GTUBE)
 )
 print('Message reported as spam:', result)
