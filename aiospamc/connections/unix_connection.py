@@ -13,15 +13,14 @@ from ..exceptions import AIOSpamcConnectionFailed
 class UnixConnectionManager(ConnectionManager):
     '''Creates new connections based on Unix domain socket path provided.'''
 
-    def __init__(self, path: str, loop: asyncio.AbstractEventLoop = None) -> None:
+    def __init__(self, path: str) -> None:
         '''Constructor for UnixConnectionManager.
 
         :param path: Path of the socket.
-        :param loop: The asyncio event loop.
         '''
 
         self.path = path
-        super().__init__(loop)
+        super().__init__()
 
     def __repr__(self) -> str:
         return 'UnixConnectionManager(path={})'.format(repr(self.path))
@@ -32,21 +31,20 @@ class UnixConnectionManager(ConnectionManager):
         :raises AIOSpamcConnectionFailed:
         '''
 
-        return UnixConnection(self.path, self.loop)
+        return UnixConnection(self.path)
 
 
 class UnixConnection(Connection):
     '''Manages a Unix domain socket connection.'''
 
-    def __init__(self, path: str, loop: asyncio.AbstractEventLoop = None) -> None:
+    def __init__(self, path: str) -> None:
         '''Constructor for UnixConnection.
 
         :param path: Path of the socket.
-        :param loop: The asyncio event loop.
         '''
 
         self.path = path
-        super().__init__(loop)
+        super().__init__()
 
     def __repr__(self) -> str:
         return 'UnixConnection(path={})'.format(repr(self.path))
@@ -58,8 +56,7 @@ class UnixConnection(Connection):
         '''
 
         try:
-            reader, writer = await asyncio.open_unix_connection(self.path,
-                                                                loop=self.loop)
+            reader, writer = await asyncio.open_unix_connection(self.path)
         except (ConnectionRefusedError, OSError) as error:
             raised = AIOSpamcConnectionFailed(error)
             self.logger.exception('Exception occurred when connecting: %s', raised)

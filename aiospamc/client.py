@@ -26,8 +26,7 @@ class Client:
                  port: int = 783,
                  user: str = None,
                  compress: bool = False,
-                 verify: Union[bool, str, Path] = None,
-                 loop: asyncio.AbstractEventLoop = None) -> None:
+                 verify: Union[bool, str, Path] = None) -> None:
         '''Client constructor.
 
         :param socket_path: The path to the Unix socket for the SPAMD service.
@@ -38,20 +37,19 @@ class Client:
         :param verify: Use SSL for the connection.  If True, will use root certificates.
             If False, will not verify the certificate.  If a string to a path or a Path
             object, the connection will use the certificates found there.
-        :param loop: The asyncio event loop.
 
         :raises ValueError: Raised if the constructor can't tell if it's using a TCP or a Unix domain socket connection.
         '''
 
         if socket_path:
             from aiospamc.connections.unix_connection import UnixConnectionManager
-            self.connection = UnixConnectionManager(socket_path, loop=loop)
+            self.connection = UnixConnectionManager(socket_path)
         elif host and port:
             from aiospamc.connections.tcp_connection import TcpConnectionManager
             if verify is not None:
-                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify), loop=loop)
+                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify))
             else:
-                self.connection = TcpConnectionManager(host, port, loop=loop)
+                self.connection = TcpConnectionManager(host, port)
         else:
             raise ValueError('Either "host" and "port" or "socket_path" must be specified.')
 
