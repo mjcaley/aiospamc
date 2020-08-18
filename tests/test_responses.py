@@ -66,7 +66,7 @@ def test_str():
     r = Response(status_code=Status.EX_OK)
     result = str(r)
 
-    assert result == '<0 - EX_OK: aiospamc.responses.Response object at {}>'.format(id(r))
+    assert result == f'<0 - EX_OK: aiospamc.responses.Response object at {id(r)}>'
 
 
 def test_raise_for_status_ok():

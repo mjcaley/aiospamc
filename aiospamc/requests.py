@@ -54,10 +54,8 @@ class Request:
                           b'body': body}
 
     def __str__(self):
-        return '<{}: {} object at {}>'.format(
-            self.verb,
-            '.'.join([self.__class__.__module__, self.__class__.__qualname__]),
-            id(self)
-        )
+        return f'<{self.verb}: ' \
+            f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} ' \
+            f'object at {id(self)}>'
 
     body = SpamcBody()  # type: Union[bytes, SupportsBytes]

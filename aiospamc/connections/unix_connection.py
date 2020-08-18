@@ -23,7 +23,7 @@ class UnixConnectionManager(ConnectionManager):
         super().__init__()
 
     def __repr__(self) -> str:
-        return 'UnixConnectionManager(path={})'.format(repr(self.path))
+        return f'UnixConnectionManager(path={repr(self.path)})'
 
     def new_connection(self) -> 'UnixConnection':
         '''Creates a new Unix domain socket connection.
@@ -47,7 +47,7 @@ class UnixConnection(Connection):
         super().__init__()
 
     def __repr__(self) -> str:
-        return 'UnixConnection(path={})'.format(repr(self.path))
+        return f'UnixConnection(path={repr(self.path)})'
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Opens a connection.

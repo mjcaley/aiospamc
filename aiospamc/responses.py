@@ -110,12 +110,10 @@ class Response:
                               b'body': body}
 
     def __str__(self):
-        return '<{} - {}: {} object at {}>'.format(
-            self.status_code.value,
-            self.status_code.name,
-            '.'.join([self.__class__.__module__, self.__class__.__qualname__]),
-            id(self)
-        )
+        return f'<{self.status_code.value} - ' \
+            f'{self.status_code.name}: ' \
+            f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} ' \
+            f'object at {id(self)}>'
 
     body = SpamcBody()  # type: Union[bytes, SupportsBytes]
 

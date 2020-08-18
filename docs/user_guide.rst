@@ -66,10 +66,10 @@ spam as well as the score.
 
     response = loop.run_until_complete(check_for_spam(example_message))
     print(
-        'Is the message spam? {}'.format(response.headers['Spam'].value),
-        'The score and threshold is {} / {}'.format(
-            response.headers['Spam'].score,
-            response.headers['Spam'].threshold)
+        f'Is the message spam? {response.headers['Spam'].value}\n',
+        f'The score and threshold is {response.headers['Spam'].score} ',
+        f'/ {response.headers['Spam'].threshold}'),
+        sep=''
     )
 
 All the frontend functions instantiate the :class:`aiospamc.client.Client`

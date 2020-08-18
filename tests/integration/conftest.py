@@ -96,18 +96,18 @@ def spamd(spamd_tcp_options, spamd_ssl_options, spamd_unix_options, tmp_path_fac
     log_file = tmp_path_factory.mktemp('spamd') / 'spamd.log'
 
     options = [
-        '--syslog={}'.format(str(log_file)),
+        f'--syslog={str(log_file)}',
         '--local',
         '--allow-tell',
-        '--listen={host}:{port}'.format(**spamd_tcp_options),
-        '--listen=ssl:{host}:{port}'.format(**spamd_ssl_options),
+        f'--listen={spamd_tcp_options["host"]}:{spamd_tcp_options["port"]}',
+        f'--listen=ssl:{spamd_ssl_options["host"]}:{spamd_ssl_options["port"]}',
         '--server-key',
-        '{key}'.format(**spamd_ssl_options),
+        f'{spamd_ssl_options["key"]}',
         '--server-cert',
-        '{cert}'.format(**spamd_ssl_options)
+        f'{spamd_ssl_options["cert"]}'
     ]
     if spamd_unix_options:
-        options += ['--socketpath={socket}'.format(**spamd_unix_options)]
+        options += [f'--socketpath={spamd_unix_options["socket"]}']
 
     process = Popen(
         ['spamd', *options],

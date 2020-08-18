@@ -19,7 +19,7 @@ class GenericHeaderValue(HeaderValue):
         self.encoding = encoding
 
     def __str__(self):
-        return 'value={}, encoding={}'.format(repr(self.value), repr(self.encoding))
+        return f'value={repr(self.value)}, encoding={repr(self.encoding)}'
 
     def __bytes__(self) -> bytes:
         return self.value.encode(self.encoding)
@@ -31,11 +31,9 @@ class GenericHeaderValue(HeaderValue):
             return False
 
     def __repr__(self):
-        return '{}(value={}, encoding={})'.format(
-            self.__class__.__qualname__,
-            repr(self.value),
-            repr(self.encoding)
-        )
+        return f'{self.__class__.__qualname__}(' \
+            f'value={repr(self.value)}, ' \
+            f'encoding={repr(self.encoding)})'
 
 
 class CompressValue(HeaderValue):
@@ -52,7 +50,7 @@ class CompressValue(HeaderValue):
         self.algorithm = algorithm
 
     def __str__(self):
-        return 'algorithm={}'.format(repr(self.algorithm))
+        return f'algorithm={repr(self.algorithm)}'
 
     def __eq__(self, other):
         try:
@@ -61,7 +59,7 @@ class CompressValue(HeaderValue):
             return False
 
     def __repr__(self) -> str:
-        return '{}()'.format(self.__class__.__qualname__)
+        return f'{self.__class__.__qualname__}()'
 
     def __bytes__(self) -> bytes:
         return self.algorithm.encode('ascii')
@@ -78,7 +76,7 @@ class ContentLengthValue(HeaderValue):
         self.length = length
 
     def __str__(self):
-        return 'length={}'.format(repr(self.length))
+        return f'length={repr(self.length)}'
 
     def __eq__(self, other):
         try:
@@ -90,7 +88,7 @@ class ContentLengthValue(HeaderValue):
         return str(self.length).encode('ascii')
 
     def __repr__(self) -> str:
-        return '{}(length={})'.format(self.__class__.__qualname__, self.length)
+        return f'{self.__class__.__qualname__}(length={repr(self.length)})'
 
 
 class MessageClassValue(HeaderValue):
@@ -119,7 +117,7 @@ class MessageClassValue(HeaderValue):
         return self.value.name.encode('ascii')
 
     def __repr__(self) -> str:
-        return '{}(value={})'.format(self.__class__.__qualname__, str(self.value))
+        return f'{self.__class__.__qualname__}(value={repr(self.value)})'
 
 
 class SetOrRemoveValue(HeaderValue):
@@ -134,7 +132,7 @@ class SetOrRemoveValue(HeaderValue):
         self.action = action or ActionOption(local=False, remote=False)
 
     def __str__(self):
-        return 'local={}, remote={}'.format(str(self.action.local), str(self.action.remote))
+        return f'local={self.action.local}, remote={self.action.remote}'
 
     def __eq__(self, other):
         try:
@@ -157,8 +155,7 @@ class SetOrRemoveValue(HeaderValue):
         return b', '.join(values)
 
     def __repr__(self) -> str:
-        return '{}(action={})'.format(self.__class__.__qualname__,
-                                      repr(self.action))
+        return f'{self.__class__.__qualname__}(action={repr(self.action)})'
 
 
 class SpamValue(HeaderValue):
@@ -178,7 +175,7 @@ class SpamValue(HeaderValue):
         self.threshold = threshold
 
     def __str__(self):
-        return 'value={}, score={}, threshold={}'.format(str(self.value), str(self.score), str(self.threshold))
+        return f'value={str(self.value)}, score={self.score}, threshold={self.threshold}'
 
     def __eq__(self, other):
         try:
@@ -192,10 +189,10 @@ class SpamValue(HeaderValue):
                                           self.threshold)
 
     def __repr__(self) -> str:
-        return '{}(value={}, score={}, threshold={})'.format(self.__class__.__qualname__,
-                                                             self.value,
-                                                             self.score,
-                                                             self.threshold)
+        return f'{self.__class__.__qualname__}(' \
+            f'value={repr(self.value)}, ' \
+            f'score={repr(self.score)}, ' \
+            f'threshold={repr(self.threshold)})'
 
 
 class UserValue(HeaderValue):
@@ -211,7 +208,7 @@ class UserValue(HeaderValue):
         self.name = name or getpass.getuser()
 
     def __str__(self):
-        return 'name={}'.format(self.name)
+        return f'name={self.name}'
 
     def __eq__(self, other):
         try:
@@ -223,4 +220,4 @@ class UserValue(HeaderValue):
         return self.name.encode('ascii')
 
     def __repr__(self) -> str:
-        return '{}(name={})'.format(self.__class__.__qualname__, repr(self.name))
+        return f'{self.__class__.__qualname__}(name={repr(self.name)})'

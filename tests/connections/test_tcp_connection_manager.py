@@ -21,15 +21,6 @@ def test_instantiates_with_ssl(address, mocker):
     assert conn_man.ssl is ssl_stub
 
 
-def test_repr(address):
-    conn_man = TcpConnectionManager(address[0], address[1])
-
-    assert repr(conn_man) == 'TcpConnectionManager(host={}, port={}, ssl=None)'.format(
-        repr(address[0]),
-        repr(address[1])
-    )
-
-
 @pytest.mark.asyncio
 async def test_new_connection(address, open_connection):
     conn = TcpConnectionManager(address[0], address[1])
