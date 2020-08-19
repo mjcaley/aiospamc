@@ -63,17 +63,9 @@ class Client:
         self.logger.debug('Created instance of %r', self)
 
     def __repr__(self) -> str:
-        client_fmt = ('{}(socket_path={}, '
-                      'host={}, '
-                      'port={}, '
-                      'user={}, '
-                      'compress={})')
-        return client_fmt.format(self.__class__.__name__,
-                                 repr(self._socket_path),
-                                 repr(self._host),
-                                 repr(self._port),
-                                 repr(self.user),
-                                 repr(self.compress))
+        return f'{self.__class__.__name__}(socket_path={self._socker_path}, ' \
+            f'host={repr(self._host)}, port={repr(self._port)}, ' \
+            f'user={repr(self.user)}, compress={repr(self.compress)})'
 
     @staticmethod
     def new_ssl_context(value: Union[bool, str, Path]) -> ssl.SSLContext:
@@ -98,7 +90,7 @@ class Client:
         elif cert_path.is_file():
             return ssl.create_default_context(cafile=str(cert_path))
         else:
-            raise FileNotFoundError('Certificate path does not exist at {}'.format(value))
+            raise FileNotFoundError(f'Certificate path does not exist at {value}')
 
     async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.

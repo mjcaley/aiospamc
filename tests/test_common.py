@@ -99,7 +99,7 @@ def test_headers_str_object():
     h = SpamcHeaders()
     result = str(h)
 
-    assert result.startswith('<aiospamc.common.SpamcHeaders object at {}'.format(id(h)))
+    assert result.startswith(f'<aiospamc.common.SpamcHeaders object at {id(h)}')
     assert result.endswith('>')
 
 

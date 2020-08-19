@@ -14,14 +14,6 @@ def test_instantiates(unix_socket):
     assert conn.path is unix_socket
 
 
-def test_repr(unix_socket):
-    conn = UnixConnection(unix_socket)
-
-    assert repr(conn) == 'UnixConnection(path={})'.format(
-            repr(unix_socket)
-    )
-
-
 @pytest.mark.asyncio
 async def test_open(unix_socket, open_unix_connection):
     conn = UnixConnection(unix_socket)

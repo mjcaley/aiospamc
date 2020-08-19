@@ -14,9 +14,7 @@ def test_instantiates(unix_socket):
 def test_repr(unix_socket):
     conn_man = UnixConnectionManager(unix_socket)
 
-    assert repr(conn_man) == 'UnixConnectionManager(path={})'.format(
-        repr(unix_socket)
-    )
+    assert repr(conn_man) == f'UnixConnectionManager(path={repr(unix_socket)})'
 
 
 @pytest.mark.asyncio

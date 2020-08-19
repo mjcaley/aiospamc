@@ -28,10 +28,7 @@ class TcpConnectionManager(ConnectionManager):
         super().__init__()
 
     def __repr__(self) -> str:
-        return '{}(host={}, port={}, ssl={})'.format(self.__class__.__name__,
-                                                     repr(self.host),
-                                                     repr(self.port),
-                                                     self.ssl)
+        return f'{self.__class__.__name__}(host={self.host}, port={self.port}, ssl={self.ssl})'
 
     def new_connection(self) -> 'TcpConnection':
         '''Creates a new TCP connection.
@@ -59,10 +56,8 @@ class TcpConnection(Connection):
         super().__init__()
 
     def __repr__(self) -> str:
-        return '{}(host={}, port={}, ssl={})'.format(self.__class__.__name__,
-                                                     repr(self.host),
-                                                     repr(self.port),
-                                                     self.ssl)
+        return f'{self.__class__.__name__}(' \
+            f'host={repr(self.host)}, port={repr(self.port)}, ssl={repr(self.ssl)})'
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         '''Opens a connection.

@@ -18,15 +18,6 @@ from aiospamc.exceptions import (BadResponse, ResponseException,
 from aiospamc.responses import Response
 
 
-def test_client_repr():
-    client = Client()
-    assert repr(client) == ('Client(socket_path=None, '
-                            'host=\'localhost\', '
-                            'port=783, '
-                            'user=None, '
-                            'compress=False)')
-
-
 def test_ssl_context_from_true(mocker):
     mocker.spy(ssl, 'create_default_context')
     s = Client.new_ssl_context(True)

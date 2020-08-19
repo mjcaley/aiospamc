@@ -11,7 +11,7 @@ class FileEditor:
     def __init__(self, filename):
         self.filename = filename
         if not self.filename.exists():
-            raise FileExistsError('%s does not exist.  Check your file path.'.format(self.filename))
+            raise FileExistsError(f'{self.filename} does not exist.  Check your file path.')
 
     def read_contents(self):
         logging.debug('Reading contents of %s', str(self.filename))

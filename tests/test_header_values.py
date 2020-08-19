@@ -18,26 +18,13 @@ def test_header_str():
     encoding = 'utf8'
     h = GenericHeaderValue(value=value, encoding=encoding)
 
-    assert str(h) == 'value={}, encoding={}'.format(repr(value), repr(encoding))
-
-
-def test_header_repr():
-    h = GenericHeaderValue(value='value')
-
-    assert repr(h) == 'GenericHeaderValue(value={}, encoding={})'.format(repr(h.value), repr(h.encoding))
+    assert str(h) == f'value={repr(value)}, encoding={repr(encoding)}'
 
 
 def test_compress_str():
     h = CompressValue()
 
-    assert str(h) == 'algorithm={}'.format(repr('zlib'))
-
-
-def test_compress_repr():
-    c = CompressValue()
-
-    assert repr(c) == 'CompressValue()'
-
+    assert str(h) == f'algorithm={repr("zlib")}'
 
 def test_compress_bytes():
     c = CompressValue()
@@ -49,12 +36,6 @@ def test_content_length_str():
     c = ContentLengthValue(length=42)
 
     assert str(c) == 'length=42'
-
-
-def test_content_length_repr():
-    c = ContentLengthValue(length=42)
-
-    assert repr(c) == 'ContentLengthValue(length=42)'
 
 
 def test_content_length_bytes():
@@ -70,16 +51,6 @@ def test_message_class_str(test_input):
     m = MessageClassValue(value=test_input)
 
     assert str(m) == test_input.name
-
-
-@pytest.mark.parametrize('test_input,expected', [
-    [MessageClassOption.ham, 'MessageClassValue(value=MessageClassOption.ham)'],
-    [MessageClassOption.spam, 'MessageClassValue(value=MessageClassOption.spam)']
-])
-def test_message_class_repr(test_input, expected):
-    m = MessageClassValue(value=test_input)
-
-    assert repr(m) == expected
 
 
 @pytest.mark.parametrize('test_input,expected', [
@@ -101,19 +72,7 @@ def test_message_class_bytes(test_input, expected):
 def test_set_or_remove_str(test_input):
     s = SetOrRemoveValue(action=test_input)
 
-    assert str(s) == 'local={}, remote={}'.format(test_input.local, test_input.remote)
-
-
-@pytest.mark.parametrize('test_input', [
-    ActionOption(local=False, remote=False),
-    ActionOption(local=True, remote=False),
-    ActionOption(local=False, remote=True),
-    ActionOption(local=True, remote=True)
-])
-def test_set_or_remove_repr(test_input):
-    s = SetOrRemoveValue(action=test_input)
-
-    assert repr(s) == 'SetOrRemoveValue(action={})'.format(repr(test_input))
+    assert str(s) == f'local={test_input.local}, remote={test_input.remote}'
 
 
 @pytest.mark.parametrize('test_input,expected', [
@@ -136,20 +95,7 @@ def test_set_or_remove_bytes(test_input, expected):
 def test_spam_str(value, score, threshold):
     s = SpamValue(value=value, score=score, threshold=threshold)
 
-    assert str(s) == 'value={}, score={}, threshold={}'.format(
-        str(value), str(score), str(threshold)
-    )
-
-
-@pytest.mark.parametrize('value,score,threshold,expected', [
-    [True, 1, 42, 'SpamValue(value=True, score=1.0, threshold=42.0)'],
-    [False, 1, 42, 'SpamValue(value=False, score=1.0, threshold=42.0)'],
-    [True, 1.0, 42.0, 'SpamValue(value=True, score=1.0, threshold=42.0)']
-])
-def test_spam_repr(value, score, threshold, expected):
-    s = SpamValue(value=value, score=score, threshold=threshold)
-
-    assert repr(s) == 'SpamValue(value={}, score={}, threshold={})'.format(repr(value), repr(score), repr(threshold))
+    assert str(s) == f'value={str(value)}, score={str(score)}, threshold={str(threshold)}'
 
 
 @pytest.mark.parametrize('value,score,threshold,expected', [
@@ -167,12 +113,6 @@ def test_user_str():
     u = UserValue(name='username')
 
     assert str(u) == 'name=username'
-
-
-def test_user_repr():
-    u = UserValue(name='username')
-
-    assert repr(u) == 'UserValue(name={})'.format(repr('username'))
 
 
 def test_user_bytes():

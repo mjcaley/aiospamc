@@ -28,11 +28,9 @@ class SpamcHeaders:
                 self[key] = value
 
     def __str__(self):
-        return '<{} object at {}, keys: {}>'.format(
-            '.'.join([self.__class__.__module__, self.__class__.__qualname__]),
-            id(self),
-            ', '.join(self._headers.keys())
-        )
+        return f'<{".".join([self.__class__.__module__, self.__class__.__qualname__])} ' \
+            f'object at {id(self)}, ' \
+            f'keys: {", ".join(self._headers.keys())}>'
 
     def __bytes__(self) -> bytes:
         return b''.join(

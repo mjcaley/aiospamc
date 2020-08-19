@@ -68,7 +68,7 @@ def test_str():
     r = Request(verb='TEST')
     result = str(r)
 
-    assert result == '<TEST: aiospamc.requests.Request object at {}>'.format(id(r))
+    assert result == f'<TEST: aiospamc.requests.Request object at {id(r)}>'
 
 
 def test_request_from_parser_result(request_with_body):
