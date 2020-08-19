@@ -115,7 +115,7 @@ class Response:
             f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} ' \
             f'object at {id(self)}>'
 
-    body = SpamcBody()  # type: Union[bytes, SupportsBytes]
+    body: Union[bytes, SupportsBytes] = SpamcBody()
 
     def raise_for_status(self) -> None:
         if isinstance(self.status_code, Status):
