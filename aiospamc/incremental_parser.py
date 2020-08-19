@@ -2,7 +2,7 @@
 
 '''Module for the parsing functions and objects.'''
 
-from enum import Enum
+from enum import Enum, auto
 import re
 from typing import Any, Callable, Mapping, Tuple, Union, Dict
 
@@ -37,10 +37,10 @@ class TooMuchDataError(ParseError):
 class States(Enum):
     '''States for the parser state machine.'''
 
-    Status = 1
-    Header = 2
-    Body = 3
-    Done = 4
+    Status = auto()
+    Header = auto()
+    Body = auto()
+    Done = auto()
 
 
 class Parser:
