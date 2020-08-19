@@ -2,7 +2,7 @@
 
 '''Contains classes used for responses.'''
 
-import enum
+from enum import IntEnum
 from typing import Mapping, SupportsBytes, Union
 import zlib
 
@@ -14,7 +14,7 @@ from .exceptions import (UsageException, DataErrorException, NoInputException, N
 from .header_values import ContentLengthValue, HeaderValue
 
 
-class Status(enum.IntEnum):
+class Status(IntEnum):
     '''Enumeration of status codes that the SPAMD will accompany with a
     response.
 
