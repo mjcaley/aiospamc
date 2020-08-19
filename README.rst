@@ -27,7 +27,7 @@ Documentation can be found at: https://aiospamc.readthedocs.io/
 Requirements
 ------------
 
-* Python 3.5 or higher
+* Python 3.6 or higher
 
 -------
 Example
@@ -69,9 +69,9 @@ Example
     loop = asyncio.get_event_loop()
     responses = loop.run_until_complete(asyncio.gather(
 
-        aiospamc.ping(host='localhost', loop=loop),
-        aiospamc.check(GTUBE, host='localhost', loop=loop),
-        aiospamc.headers(GTUBE, host='localhost', loop=loop)
+        aiospamc.ping(host='localhost'),
+        aiospamc.check(GTUBE, host='localhost'),
+        aiospamc.headers(GTUBE, host='localhost')
 
     ))
     print(responses)
