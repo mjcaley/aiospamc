@@ -255,17 +255,16 @@ def parse_message_class_value(stream: Union[str, MessageClassOption]) -> Message
     :raises ParseError: When the value doesn't match either `ham` or `spam`.
     '''
 
+    value: MessageClassOption
     if isinstance(stream, MessageClassOption):
-        value = stream.name
+        value = stream
     else:
-        value = ''
+        try:
+            value = getattr(MessageClassOption, stream.strip())
+        except AttributeError:
+            raise ParseError('Unable to parse Message-class header value')
 
-    value = value.strip()
-
-    try:
-        return MessageClassValue(value=getattr(MessageClassOption, value))
-    except AttributeError:
-        raise ParseError('Unable to parse Message-class header value')
+    return MessageClassValue(value=value)
 
 
 def parse_content_length_value(stream: Union[str, int]) -> ContentLengthValue:
@@ -351,16 +350,16 @@ def parse_spam_value(stream: str) -> SpamValue:
         raise ParseError('Spam header is not a true or false value')
 
     try:
-        score = float(score)
+        parsed_score = float(score)
     except ValueError:
         raise ParseError('Cannot parse Spam header score value')
 
     try:
-        threshold = float(threshold)
+        parsed_threshold = float(threshold)
     except ValueError:
         raise ParseError('Cannot parse Spam header threshold value')
 
-    return SpamValue(value=value, score=score, threshold=threshold)
+    return SpamValue(value=value, score=parsed_score, threshold=parsed_threshold)
 
 
 def parse_user_value(stream: str) -> UserValue:
@@ -389,14 +388,12 @@ def parse_header_value(header: str, value: Union[str, bytes]) -> HeaderValue:
 
     if header in header_value_parsers:
         if isinstance(value, bytes):
-            value = value.decode('ascii')
-        value = header_value_parsers[header](value)
+            return header_value_parsers[header](value.decode('ascii'))
+        return header_value_parsers[header](value)
     else:
         if isinstance(value, bytes):
-            value = value.decode('utf8')
-        value = parse_generic_header_value(value)
-
-    return value
+            return parse_generic_header_value(value.decode('utf8'))
+        return parse_generic_header_value(value)
 
 
 def parse_header(stream: bytes) -> Tuple[str, HeaderValue]:
@@ -408,10 +405,10 @@ def parse_header(stream: bytes) -> Tuple[str, HeaderValue]:
     '''
 
     header, _, value = stream.partition(b':')
-    header = header.decode('ascii').strip()
-    value = parse_header_value(header, value)
+    parsed_header = header.decode('ascii').strip()
+    parsed_value = parse_header_value(parsed_header, value)
 
-    return header, value
+    return parsed_header, parsed_value
 
 
 def parse_body(stream: bytes, content_length: int) -> bytes:
