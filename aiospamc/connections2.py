@@ -32,7 +32,6 @@ class ConnectionManager:
         response = await reader.read()
 
         writer.close()
-        await writer.wait_closed()
 
         return response
 
