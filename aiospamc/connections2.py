@@ -92,3 +92,12 @@ class UnixConnectionManager(ConnectionManager):
             raise raised
 
         return reader, writer
+
+    @property
+    def connection_string(self) -> str:
+        '''Unix connection path.
+
+        :return: str # TODO: Right format?
+        '''
+
+        return self.path

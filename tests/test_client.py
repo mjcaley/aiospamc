@@ -8,8 +8,8 @@ import pytest
 import certifi
 
 from aiospamc import Client, MessageClassOption, ActionOption
-from aiospamc.connections.tcp_connection import TcpConnectionManager
-from aiospamc.connections.unix_connection import UnixConnectionManager
+from aiospamc.connections2 import TcpConnectionManager
+from aiospamc.connections2 import UnixConnectionManager
 from aiospamc.exceptions import (BadResponse, ResponseException,
                                  UsageException, DataErrorException, NoInputException, NoUserException,
                                  NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
@@ -105,7 +105,7 @@ async def test_send(stub_connection_manager, request_ping, response_pong):
 async def test_send_with_user(stub_connection_manager, response_with_body, spam, mocker):
     client = Client(host='localhost', user='testuser')
     client.connection = stub_connection_manager(return_value=response_with_body)
-    send_spy = mocker.spy(client.connection.connection_stub, 'send')
+    send_spy = mocker.spy(client.connection, 'request')
     await client.check(spam)
     headers = send_spy.call_args[0][0].split(b'\r\n')[1:-1]
     has_user_header = [header.startswith(b'User') for header in headers]
@@ -117,7 +117,7 @@ async def test_send_with_user(stub_connection_manager, response_with_body, spam,
 async def test_send_with_compress(stub_connection_manager, response_with_body, spam, mocker):
     client = Client(host='localhost', compress=True)
     client.connection = stub_connection_manager(return_value=response_with_body)
-    send_spy = mocker.spy(client.connection.connection_stub, 'send')
+    send_spy = mocker.spy(client.connection, 'request')
     await client.check(spam)
     headers = send_spy.call_args[0][0].split(b'\r\n')[1:-1]
     has_compress_header = [header.startswith(b'Compress') for header in headers]

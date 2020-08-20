@@ -2,7 +2,6 @@
 
 '''Contains the Client class that is used to interact with SPAMD.'''
 
-import asyncio
 import logging
 from pathlib import Path
 import ssl
@@ -42,10 +41,10 @@ class Client:
         '''
 
         if socket_path:
-            from aiospamc.connections.unix_connection import UnixConnectionManager
+            from aiospamc.connections2 import UnixConnectionManager
             self.connection = UnixConnectionManager(socket_path)
         elif host and port:
-            from aiospamc.connections.tcp_connection import TcpConnectionManager
+            from aiospamc.connections2 import TcpConnectionManager
             if verify is not None:
                 self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify))
             else:
@@ -63,7 +62,7 @@ class Client:
         self.logger.debug('Created instance of %r', self)
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(socket_path={self._socker_path}, ' \
+        return f'{self.__class__.__name__}(socket_path={self._socket_path}, ' \
             f'host={repr(self._host)}, port={repr(self._port)}, ' \
             f'user={repr(self.user)}, compress={repr(self.compress)})'
 
@@ -125,10 +124,7 @@ class Client:
             request.headers['User'] = self.user
 
         self.logger.debug('Sending request (%s)', id(request))
-        async with self.connection.new_connection() as connection:
-            await connection.send(bytes(request))
-            self.logger.debug('Request (%s) successfully sent', id(request))
-            data = await connection.receive()
+        data = await self.connection.request(bytes(request))
 
         try:
             try:
