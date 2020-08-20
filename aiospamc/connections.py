@@ -65,7 +65,12 @@ class TcpConnectionManager(ConnectionManager):
         self.ssl = ssl
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
-        '''Opens a TCP connections and returns the reader and writer.'''
+        '''Opens a TCP connection.
+
+        :raises: AIOSpamcConnectionFailed
+
+        :return: Reader and writer for the connection.
+        '''
 
         try:
             reader, writer = await asyncio.open_connection(self.host,
@@ -83,7 +88,7 @@ class TcpConnectionManager(ConnectionManager):
 
     @property
     def connection_string(self) -> str:
-        '''TCP hostname/IP and port.'''
+        ''':return: TCP hostname/IP and port.'''
 
         return ':'.join([self.host, str(self.port)])
 
@@ -99,6 +104,13 @@ class UnixConnectionManager(ConnectionManager):
         self.path = path
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+        '''Opens a unix socket path connection.
+
+        :raises: AIOSpamcConnectionFailed
+
+        :return: Reader and writer for the connection.
+        '''
+
         try:
             reader, writer = await asyncio.open_unix_connection(self.path)
         except (ConnectionRefusedError, OSError) as error:
@@ -110,6 +122,6 @@ class UnixConnectionManager(ConnectionManager):
 
     @property
     def connection_string(self) -> str:
-        '''Unix connection path.'''
+        ''':return: Unix connection path.'''
 
         return self.path
