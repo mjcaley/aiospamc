@@ -1,13 +1,6 @@
 aiospamc package
 ================
 
-Subpackages
------------
-
-.. toctree::
-
-   aiospamc.connections
-
 Submodules
 ----------
 
@@ -23,6 +16,14 @@ aiospamc.common module
 ----------------------
 
 .. automodule:: aiospamc.common
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.connections module
+---------------------------
+
+.. automodule:: aiospamc.connections
    :members:
    :undoc-members:
    :show-inheritance:
