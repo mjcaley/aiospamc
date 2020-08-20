@@ -12,7 +12,7 @@ from typing import Tuple
 class Timeout:
     '''Container object for defining timeouts.'''
 
-    def __init__(self, total: float = None, connection: float = None, response: float = None) -> None:
+    def __init__(self, total: float = 600, connection: float = None, response: float = None) -> None:
         '''Timeout constructor.
 
         :param total: The total length of time in seconds to set the timeout.
@@ -36,7 +36,7 @@ class ConnectionManager:
     '''Stores connection parameters and creates connections.'''
 
     def __init__(self, timeout: Timeout = None) -> None:
-        self.timeout = timeout or Timeout(total=600)
+        self.timeout = timeout or Timeout()
         self._logger = logging.getLogger(__name__)
 
     @property
