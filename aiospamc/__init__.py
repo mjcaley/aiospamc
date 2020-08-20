@@ -8,13 +8,15 @@ import asyncio
 from typing import SupportsBytes, Union
 
 from .client import Client
+from .connections import Timeout
 from .options import ActionOption, MessageClassOption
 from .responses import Response
 
 
 __all__ = ('Client',
            'MessageClassOption',
-           'ActionOption')
+           'ActionOption',
+           'Timeout')
 
 __author__ = 'Michael Caley'
 __copyright__ = 'Copyright 2016-2019 Michael Caley'

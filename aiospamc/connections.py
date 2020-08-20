@@ -91,7 +91,7 @@ class ConnectionManager:
 
 
 class TcpConnectionManager(ConnectionManager):
-    def __init__(self, host: str, port: int, ssl: SSLContext = None) -> None:
+    def __init__(self, host: str, port: int, ssl: SSLContext = None, *args, **kwargs) -> None:
         '''TcpConnectionManager constructor.
 
         :param host: Hostname or IP address.
@@ -99,7 +99,7 @@ class TcpConnectionManager(ConnectionManager):
         :param ssl: SSL context.
         '''
 
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self.host = host
         self.port = port
         self.ssl = ssl
@@ -134,13 +134,13 @@ class TcpConnectionManager(ConnectionManager):
 
 
 class UnixConnectionManager(ConnectionManager):
-    def __init__(self, path: str):
+    def __init__(self, path: str, *args, **kwargs):
         '''UnixConnectionManager constructor.
 
         :param path: Unix socket path.
         '''
 
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self.path = path
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
