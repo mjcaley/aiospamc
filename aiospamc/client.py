@@ -41,10 +41,10 @@ class Client:
         '''
 
         if socket_path:
-            from aiospamc.connections import UnixConnectionManager
+            from .connections import UnixConnectionManager
             self.connection = UnixConnectionManager(socket_path)
         elif host and port:
-            from aiospamc.connections import TcpConnectionManager
+            from .connections import TcpConnectionManager
             if verify is not None:
                 self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify))
             else:

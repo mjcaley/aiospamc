@@ -2,7 +2,7 @@
 
 '''ConnectionManager classes for TCP and Unix sockets.'''
 
-from aiospamc.exceptions import AIOSpamcConnectionFailed
+from .exceptions import AIOSpamcConnectionFailed
 import asyncio
 import logging
 from ssl import SSLContext
