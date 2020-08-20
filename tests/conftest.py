@@ -220,12 +220,10 @@ def ex_undefined():
 def connection_refused(mocker):
     tcp_open = mocker.patch('asyncio.open_connection', side_effect=[ConnectionRefusedError()])
     if sys.platform == 'win32':
-        with tcp_open:
-            yield
+        yield
     else:
         unix_open = mocker.patch('asyncio.open_unix_connection', side_effect=[ConnectionRefusedError()])
-        with tcp_open, unix_open:
-            yield
+        yield
 
 
 @pytest.fixture
@@ -252,30 +250,11 @@ def mock_connection(mocker, response_ok):
 
 
 @pytest.fixture
-def stub_connection(mocker):
+def stub_connection_manager(mocker):
     def inner(return_value=None, side_effect=None):
         connection = mocker.Mock()
-        connection.send = mocker.AsyncMock()
-        connection.receive = mocker.AsyncMock(return_value=return_value, side_effect=side_effect)
+        connection.request = mocker.AsyncMock(return_value=return_value, side_effect=side_effect)
 
         return connection
-    return inner
 
-
-@pytest.fixture
-def stub_connection_manager(stub_connection, mocker):
-    def inner(return_value=None, side_effect=None):
-        stub = stub_connection(return_value=return_value, side_effect=side_effect)
-        context_manager = mocker.MagicMock()
-        context_manager.__aenter__ = mocker.AsyncMock(
-            return_value=stub
-        )
-        context_manager.__aexit__ = mocker.AsyncMock()
-
-        manager = mocker.MagicMock()
-        manager.new_connection = mocker.Mock(return_value=context_manager)
-        manager.connection_stub = stub
-
-        return manager
-
-    return inner
+    yield inner
