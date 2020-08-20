@@ -22,7 +22,10 @@ class ConnectionManager:
         return self._logger
 
     async def request(self, data: bytes) -> bytes:
-        '''Send bytes data and receive a response.'''
+        '''Send bytes data and receive a response.
+
+        :param data: Data to send.
+        '''
 
         reader, writer = await self.open()
 
@@ -49,12 +52,21 @@ class ConnectionManager:
 
 class TcpConnectionManager(ConnectionManager):
     def __init__(self, host: str, port: int, ssl: SSLContext = None) -> None:
+        '''TcpConnectionManager constructor.
+
+        :param host: Hostname or IP address.
+        :param port: TCP port.
+        :param ssl: SSL context.
+        '''
+
         super().__init__()
         self.host = host
         self.port = port
         self.ssl = ssl
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+        '''Opens a TCP connections and returns the reader and writer.'''
+
         try:
             reader, writer = await asyncio.open_connection(self.host,
                                                            self.port,
@@ -71,20 +83,24 @@ class TcpConnectionManager(ConnectionManager):
 
     @property
     def connection_string(self) -> str:
-        '''String representation of the connection.'''
+        '''TCP hostname/IP and port.'''
 
         return ':'.join([self.host, str(self.port)])
 
 
 class UnixConnectionManager(ConnectionManager):
-    def __init__(self, path: str, ssl: SSLContext = None):
+    def __init__(self, path: str):
+        '''UnixConnectionManager constructor.
+
+        :param path: Unix socket path.
+        '''
+
         super().__init__()
         self.path = path
-        self.ssl = ssl
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         try:
-            reader, writer = await asyncio.open_unix_connection(self.path, ssl=self.ssl)
+            reader, writer = await asyncio.open_unix_connection(self.path)
         except (ConnectionRefusedError, OSError) as error:
             raised = AIOSpamcConnectionFailed(error)
             self.logger.exception('Exception occurred when connecting: %s', raised)
@@ -94,9 +110,6 @@ class UnixConnectionManager(ConnectionManager):
 
     @property
     def connection_string(self) -> str:
-        '''Unix connection path.
-
-        :return: str # TODO: Right format?
-        '''
+        '''Unix connection path.'''
 
         return self.path

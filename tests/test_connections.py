@@ -155,11 +155,9 @@ def test_tcp_connection_manager_connection_string(tcp_address):
 
 
 def test_unix_connection_manager_init(mocker):
-    mock_ssl_context = mocker.Mock()
-    u = UnixConnectionManager('spamd.sock', mock_ssl_context)
+    u = UnixConnectionManager('spamd.sock')
 
     assert 'spamd.sock' == u.path
-    assert mock_ssl_context is u.ssl
 
 
 @pytest.mark.asyncio
