@@ -67,7 +67,7 @@ class Parser:
         self.status_parser = status_parser
         self.header_parser = header_parser
         self.body_parser = body_parser
-        self.result = {'headers': {}, 'body': b''}
+        self.result: Dict[str, Any] = {'headers': {}, 'body': b''}
 
         self._state = start
         self.buffer = b''
@@ -211,7 +211,7 @@ def parse_request_status(stream: bytes) -> Dict[str, str]:
     return {'verb': verb, 'protocol': protocol, 'version': version}
 
 
-def parse_response_status(stream: bytes) -> Dict[str, str]:
+def parse_response_status(stream: bytes) -> Dict[str, Union[str, int]]:
     '''Parse the status line for a response.
 
     :param stream: The byte stream to parse.
@@ -233,14 +233,14 @@ def parse_response_status(stream: bytes) -> Dict[str, str]:
         raise ParseError('Protocol name does not match')
 
     try:
-        status_code = int(status_code)
+        status_code_int = int(status_code)
     except ValueError:
         raise ParseError('Protocol status code is not an integer')
 
     return {
         'protocol': protocol,
         'version': version,
-        'status_code': status_code,
+        'status_code': status_code_int,
         'message': message
     }
 
@@ -255,15 +255,15 @@ def parse_message_class_value(stream: Union[str, MessageClassOption]) -> Message
     :raises ParseError: When the value doesn't match either `ham` or `spam`.
     '''
 
-    try:
-        stream = stream.name
-    except AttributeError:
-        pass
+    if isinstance(stream, MessageClassOption):
+        value = stream.name
+    else:
+        value = ''
 
-    stream = stream.strip()
+    value = value.strip()
 
     try:
-        return MessageClassValue(value=getattr(MessageClassOption, stream))
+        return MessageClassValue(value=getattr(MessageClassOption, value))
     except AttributeError:
         raise ParseError('Unable to parse Message-class header value')
 
