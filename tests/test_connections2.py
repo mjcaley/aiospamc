@@ -1,5 +1,5 @@
 from aiospamc.exceptions import AIOSpamcConnectionFailed
-from aiospamc.connections2 import ConnectionManager, TcpConnectionManager, UnixConnectionManager
+from aiospamc.connections import ConnectionManager, TcpConnectionManager, UnixConnectionManager
 
 import asyncio
 import pytest

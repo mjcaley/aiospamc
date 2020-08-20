@@ -8,8 +8,8 @@ import pytest
 import certifi
 
 from aiospamc import Client, MessageClassOption, ActionOption
-from aiospamc.connections2 import TcpConnectionManager
-from aiospamc.connections2 import UnixConnectionManager
+from aiospamc.connections import TcpConnectionManager
+from aiospamc.connections import UnixConnectionManager
 from aiospamc.exceptions import (BadResponse, ResponseException,
                                  UsageException, DataErrorException, NoInputException, NoUserException,
                                  NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
