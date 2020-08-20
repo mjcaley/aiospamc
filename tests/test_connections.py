@@ -1,5 +1,5 @@
 from aiospamc.exceptions import AIOSpamcConnectionFailed
-from aiospamc.connections import ConnectionManager, TcpConnectionManager, UnixConnectionManager
+from aiospamc.connections import ConnectionManager, TcpConnectionManager, UnixConnectionManager, Timeout
 
 import asyncio
 import pytest
@@ -97,6 +97,50 @@ async def test_connection_manager_request_sends_and_receives(mocker):
 
     assert expected == result
     writer.write.assert_called_with(test_input)
+
+
+@pytest.mark.asyncio
+async def test_connection_manager_timeout_total(mocker):
+    async def sleep():
+        await asyncio.sleep(5)
+
+        return mocker.AsyncMock(spec=asyncio.StreamReader), mocker.AsyncMock(spec=asyncio.StreamWriter)
+
+    c = ConnectionManager(timeout=Timeout(total=0))
+    c.open = mocker.AsyncMock(side_effect=sleep)
+
+    with pytest.raises(asyncio.TimeoutError):
+        await c.request(b'data')
+
+
+@pytest.mark.asyncio
+async def test_connection_manager_timeout_connect(mocker):
+    async def sleep():
+        await asyncio.sleep(5)
+
+        return mocker.AsyncMock(spec=asyncio.StreamReader), mocker.AsyncMock(spec=asyncio.StreamWriter)
+
+    c = ConnectionManager(timeout=Timeout(connection=0))
+    c.open = mocker.AsyncMock(side_effect=sleep)
+
+    with pytest.raises(asyncio.TimeoutError):
+        await c.request(b'data')
+
+
+@pytest.mark.asyncio
+async def test_connection_manager_timeout_read(mocker):
+    async def sleep():
+        await asyncio.sleep(5)
+        return b'response'
+
+    reader = mocker.AsyncMock(spec=asyncio.StreamReader)
+    reader.read = mocker.AsyncMock(side_effect=sleep)
+
+    c = ConnectionManager(timeout=Timeout(response=0))
+    c.open = mocker.AsyncMock(return_value=(reader, mocker.AsyncMock(spec=asyncio.StreamWriter)))
+
+    with pytest.raises(asyncio.TimeoutError):
+        await c.request(b'data')
 
 
 @pytest.mark.asyncio

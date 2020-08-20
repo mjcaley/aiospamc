@@ -91,6 +91,30 @@ is used to load certificates to verify the connection.
 If `False` then an SSL connection is established, but the server certificate
 is not verified.
 
+Setting timeouts
+================
+
+`aiospamc` is configured by default to use a timeout of 600 seconds (or 10 minutes)
+from the point when a connection is attempted until a response comes in.
+
+If you would like more fine-grained control of timeouts then an
+`aiospamc.connections.Timeout` object can be passed in.
+
+You can configure any of the three optional parameters:
+* total - maximum time in seconds to wait for a connection and response
+* connection - time in seconds to wait for a connection to be established
+* response - time in seconds to wait for a response after sending the request
+
+Example
+.. code-block::
+
+    my_timeout = aiospamc.Timeout(total=60, connection=10, response=10)
+
+    await def check():
+        response = await aiospamc.check(example_message, timeout=my_timeout)
+
+        return response
+
 Making your own requests
 ========================
 

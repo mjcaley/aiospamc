@@ -9,6 +9,7 @@ from typing import SupportsBytes, Union
 
 import certifi
 
+from .connections import Timeout
 from .exceptions import BadResponse, ResponseException
 from .incremental_parser import ResponseParser, ParseError
 from .options import ActionOption, MessageClassOption
@@ -25,7 +26,8 @@ class Client:
                  port: int = 783,
                  user: str = None,
                  compress: bool = False,
-                 verify: Union[bool, str, Path] = None) -> None:
+                 verify: Union[bool, str, Path] = None,
+                 timeout: Timeout = None) -> None:
         '''Client constructor.
 
         :param socket_path: The path to the Unix socket for the SPAMD service.
@@ -36,19 +38,20 @@ class Client:
         :param verify: Use SSL for the connection.  If True, will use root certificates.
             If False, will not verify the certificate.  If a string to a path or a Path
             object, the connection will use the certificates found there.
+        :param timeout: Timeout settings.
 
         :raises ValueError: Raised if the constructor can't tell if it's using a TCP or a Unix domain socket connection.
         '''
 
         if socket_path:
-            from aiospamc.connections import UnixConnectionManager
-            self.connection = UnixConnectionManager(socket_path)
+            from .connections import UnixConnectionManager
+            self.connection = UnixConnectionManager(socket_path, timeout=timeout)
         elif host and port:
-            from aiospamc.connections import TcpConnectionManager
+            from .connections import TcpConnectionManager
             if verify is not None:
-                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify))
+                self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify), timeout=timeout)
             else:
-                self.connection = TcpConnectionManager(host, port)
+                self.connection = TcpConnectionManager(host, port, timeout=timeout)
         else:
             raise ValueError('Either "host" and "port" or "socket_path" must be specified.')
 
