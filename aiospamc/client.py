@@ -9,7 +9,7 @@ from typing import SupportsBytes, Union
 
 import certifi
 
-from .connections import Timeout
+from .connections import ConnectionManager, TcpConnectionManager, UnixConnectionManager, Timeout
 from .exceptions import BadResponse, ResponseException
 from .incremental_parser import ResponseParser, ParseError
 from .options import ActionOption, MessageClassOption
@@ -43,11 +43,10 @@ class Client:
         :raises ValueError: Raised if the constructor can't tell if it's using a TCP or a Unix domain socket connection.
         '''
 
+        self.connection: ConnectionManager
         if socket_path:
-            from .connections import UnixConnectionManager
             self.connection = UnixConnectionManager(socket_path, timeout=timeout)
         elif host and port:
-            from .connections import TcpConnectionManager
             if verify is not None:
                 self.connection = TcpConnectionManager(host, port, self.new_ssl_context(verify), timeout=timeout)
             else:
@@ -78,21 +77,22 @@ class Client:
             object, the connection will use the certificates found there.
         '''
 
-        if value is True:
-            return ssl.create_default_context(cafile=certifi.where())
-        elif value is False:
-            context = ssl.create_default_context(cafile=certifi.where())
-            context.check_hostname = False
-            context.verify_mode = ssl.CERT_NONE
-            return context
-
-        cert_path = Path(value).absolute()
-        if cert_path.is_dir():
-            return ssl.create_default_context(capath=str(cert_path))
-        elif cert_path.is_file():
-            return ssl.create_default_context(cafile=str(cert_path))
+        if isinstance(value, bool):
+            if value is True:
+                return ssl.create_default_context(cafile=certifi.where())
+            else:
+                context = ssl.create_default_context(cafile=certifi.where())
+                context.check_hostname = False
+                context.verify_mode = ssl.CERT_NONE
+                return context
         else:
-            raise FileNotFoundError(f'Certificate path does not exist at {value}')
+            cert_path = Path(value).absolute()
+            if cert_path.is_dir():
+                return ssl.create_default_context(capath=str(cert_path))
+            elif cert_path.is_file():
+                return ssl.create_default_context(cafile=str(cert_path))
+            else:
+                raise FileNotFoundError(f'Certificate path does not exist at {value}')
 
     async def send(self, request: Request) -> Response:
         '''Sends a request to the SPAMD service.

@@ -2,22 +2,23 @@
 
 '''Data structures used for function parameters.'''
 
-from collections import namedtuple
-from enum import IntEnum
+from enum import Enum, auto
+from typing import NamedTuple
 
 
-class MessageClassOption(IntEnum):
+class MessageClassOption(Enum):
     '''Option to be used for the MessageClass header.'''
 
-    spam = 1
-    ham = 2
+    spam = auto()
+    ham = auto()
 
 
-ActionOption = namedtuple('ActionOption', ['local', 'remote'])
-'''Option to be used in the DidRemove, DidSet, Set, and Remove headers.
+class ActionOption(NamedTuple):
+    '''Option to be used in the DidRemove, DidSet, Set, and Remove headers.
 
-local : bool
-    An action will be performed on the SPAMD service's local database.
-remote : bool
-    An action will be performed on the SPAMD service's remote database.
-'''
+    :param local: An action will be performed on the SPAMD service's local database.
+    :param remote: An action will be performed on the SPAMD service's remote database.
+    '''
+
+    local: bool
+    remote: bool

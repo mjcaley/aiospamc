@@ -33,6 +33,11 @@ steps:
     summaryFileLocation: '$(Build.StagingDirectory)/coverage.xml'
 
 - script: |
+    mypy aiospamc
+  displayName: 'Run mypy static type checking'
+  continueOnError: true
+
+- script: |
     sudo apt-get -y install spamassassin
   displayName: 'Install SpamAssassin'
 
