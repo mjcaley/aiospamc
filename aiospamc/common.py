@@ -3,7 +3,7 @@
 '''Common classes for the project.'''
 
 from typing import Any, Dict, Iterator, ItemsView, KeysView, Mapping, \
-    ValuesView, SupportsBytes, Union
+    ValuesView, Union
 
 from .header_values import HeaderValue
 from .incremental_parser import parse_header_value

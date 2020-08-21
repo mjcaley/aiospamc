@@ -32,84 +32,119 @@ class AIOSpamcConnectionFailed(AIOSpamcConnectionException):
 
 class ResponseException(Exception):
     '''Base class for exceptions raised from a response.'''
-    pass
+
+    def __init__(self, code: int, message: str) -> None:
+        self.code = code
+        super().__init__(message)
 
 
 class UsageException(ResponseException):
     '''Command line usage error.'''
-    code = 64
+
+    def __init__(self, message: str) -> None:
+        super().__init__(64, message)
 
 
 class DataErrorException(ResponseException):
     '''Data format error.'''
-    code = 65
+
+    def __init__(self, message: str) -> None:
+        super().__init__(65, message)
 
 
 class NoInputException(ResponseException):
     '''Cannot open input.'''
-    code = 66
+
+    def __init__(self, message: str) -> None:
+        super().__init__(66, message)
 
 
 class NoUserException(ResponseException):
     '''Addressee unknown.'''
-    code = 67
+
+    def __init__(self, message: str) -> None:
+        super().__init__(67, message)
 
 
 class NoHostException(ResponseException):
     '''Hostname unknown.'''
-    code = 68
+
+    def __init__(self, message: str) -> None:
+        super().__init__(68, message)
 
 
 class UnavailableException(ResponseException):
     '''Service unavailable.'''
-    code = 69
+
+    def __init__(self, message: str) -> None:
+        super().__init__(69, message)
 
 
 class InternalSoftwareException(ResponseException):
     '''Internal software error.'''
-    code = 70
+
+    def __init__(self, message: str) -> None:
+        super().__init__(70, message)
 
 
 class OSErrorException(ResponseException):
     '''System error (e.g. can't fork the process).'''
-    code = 71
+
+    def __init__(self, message: str) -> None:
+        super().__init__(71, message)
 
 
 class OSFileException(ResponseException):
     '''Critical operating system file missing.'''
-    code = 72
+
+    def __init__(self, message: str) -> None:
+        super().__init__(72, message)
 
 
 class CantCreateException(ResponseException):
     '''Can't create (user) output file.'''
-    code = 73
+
+    def __init__(self, message: str) -> None:
+        super().__init__(73, message)
 
 
 class IOErrorException(ResponseException):
     '''Input/output error.'''
-    code = 74
+
+    def __init__(self, message: str) -> None:
+        super().__init__(74, message)
 
 
 class TemporaryFailureException(ResponseException):
     '''Temporary failure, user is invited to try again.'''
-    code = 75
+
+    def __init__(self, message: str) -> None:
+        super().__init__(75, message)
 
 
 class ProtocolException(ResponseException):
     '''Remote error in protocol.'''
-    code = 76
+
+    def __init__(self, message: str) -> None:
+        super().__init__(76, message)
 
 
 class NoPermissionException(ResponseException):
     '''Permission denied.'''
-    code = 77
+
+    def __init__(self, message: str) -> None:
+        super().__init__(77, message)
 
 
 class ConfigException(ResponseException):
     '''Configuration error.'''
-    code = 78
+
+    def __init__(self, message: str) -> None:
+        super().__init__(78, message)
 
 
 class TimeoutException(ResponseException):
     '''Read timeout.'''
-    code = 79
+
+    def __init__(self, message: str) -> None:
+        super().__init__(79, message)

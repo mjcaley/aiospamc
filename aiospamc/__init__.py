@@ -4,7 +4,6 @@
 
 An asyncio-based library to communicate with SpamAssassin's SPAMD service.'''
 
-import asyncio
 from typing import SupportsBytes, Union
 
 from .client import Client
