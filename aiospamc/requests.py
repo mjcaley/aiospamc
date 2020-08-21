@@ -5,7 +5,7 @@
 from typing import Mapping, SupportsBytes, Union
 import zlib
 
-from .common import SpamcBody, SpamcHeaders
+from .common import SpamcHeaders
 from .header_values import ContentLengthValue, HeaderValue
 
 
@@ -14,7 +14,7 @@ class Request:
 
     def __init__(
         self,
-        verb: str = None,
+        verb: str,
         version: str = '1.5',
         headers: Mapping[str, Union[str, HeaderValue]] = None,
         body: Union[bytes, SupportsBytes] = b'',
@@ -31,7 +31,7 @@ class Request:
         self.verb = verb
         self.version = version
         self.headers = SpamcHeaders(headers=headers)
-        self.body = body
+        self.body = bytes(body)
 
     def __bytes__(self) -> bytes:
         if 'Compress' in self.headers.keys():
@@ -58,4 +58,10 @@ class Request:
             f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} ' \
             f'object at {id(self)}>'
 
-    body: Union[bytes, SupportsBytes] = SpamcBody()
+    @property
+    def body(self) -> bytes:
+        return self._body
+
+    @body.setter
+    def body(self, value: Union[bytes, SupportsBytes]) -> None:
+        self._body = bytes(value)

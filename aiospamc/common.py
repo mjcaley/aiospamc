@@ -9,16 +9,6 @@ from .header_values import HeaderValue
 from .incremental_parser import parse_header_value
 
 
-class SpamcBody:
-    '''Provides a descriptor for a bytes-like object.'''
-
-    def __get__(self, instance, owner) -> bytes:
-        return instance._body
-
-    def __set__(self, instance, value: Union[bytes, SupportsBytes]) -> None:
-        instance._body = bytes(value)
-
-
 class SpamcHeaders:
     '''Provides a dictionary-like interface for headers.'''
 

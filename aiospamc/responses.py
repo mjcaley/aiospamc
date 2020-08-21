@@ -6,11 +6,8 @@ from enum import IntEnum
 from typing import Mapping, SupportsBytes, Union
 import zlib
 
-from .common import SpamcBody, SpamcHeaders
-from .exceptions import (UsageException, DataErrorException, NoInputException, NoUserException,
-                         NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
-                         OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
-                         ProtocolException, NoPermissionException, ConfigException, TimeoutException, ResponseException)
+from .common import SpamcHeaders
+from .exceptions import *
 from .header_values import ContentLengthValue, HeaderValue
 
 
@@ -74,6 +71,7 @@ class Response:
 
         self.headers = SpamcHeaders(headers=headers)
 
+        self.status_code: Union[Status, int]
         try:
             self.status_code = Status(status_code)
         except ValueError:
@@ -115,7 +113,13 @@ class Response:
             f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} ' \
             f'object at {id(self)}>'
 
-    body: Union[bytes, SupportsBytes] = SpamcBody()
+    @property
+    def body(self) -> bytes:
+        return self._body
+
+    @body.setter
+    def body(self, value: Union[bytes, SupportsBytes]) -> None:
+        self._body = bytes(value)
 
     def raise_for_status(self) -> None:
         if isinstance(self.status_code, Status):

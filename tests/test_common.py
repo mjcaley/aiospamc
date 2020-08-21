@@ -1,17 +1,7 @@
 #!/usr/bin/env python3
 
-from aiospamc.common import SpamcBody, SpamcHeaders
+from aiospamc.common import SpamcHeaders
 from aiospamc.header_values import CompressValue, ContentLengthValue, GenericHeaderValue
-
-
-def test_body_get_set_value(mocker):
-    class Stub:
-        body = SpamcBody()
-    stub = Stub()
-    bytes_mock = mocker.MagicMock()
-    stub.body = bytes_mock
-
-    assert stub.body == bytes(bytes_mock)
 
 
 def test_headers_instantiates_none():

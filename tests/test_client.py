@@ -10,11 +10,7 @@ import certifi
 from aiospamc import Client, MessageClassOption, ActionOption
 from aiospamc.connections import TcpConnectionManager
 from aiospamc.connections import UnixConnectionManager
-from aiospamc.exceptions import (BadResponse, ResponseException,
-                                 UsageException, DataErrorException, NoInputException, NoUserException,
-                                 NoHostException, UnavailableException, InternalSoftwareException, OSErrorException,
-                                 OSFileException, CantCreateException, IOErrorException, TemporaryFailureException,
-                                 ProtocolException, NoPermissionException, ConfigException, TimeoutException)
+from aiospamc.exceptions import *
 from aiospamc.responses import Response
 
 
