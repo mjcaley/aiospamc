@@ -2,21 +2,23 @@
 aiospamc
 ========
 
-.. image:: https://img.shields.io/azure-devops/build/mjcaley/aiospamc/2/master
-    :target: https://dev.azure.com/mjcaley/aiospamc/_build
+|pypi| |docs| |build| |coverage| |license| |python|
 
-.. image:: https://img.shields.io/azure-devops/coverage/mjcaley/aiospamc/2/master
-    :target: https://dev.azure.com/mjcaley/aiospamc/_build
-
-.. image:: https://img.shields.io/readthedocs/aiospamc
-    :target: https://aiospamc.readthedocs.io/en/latest/
-
-.. image:: https://img.shields.io/github/license/mjcaley/aiospamc
-
-.. image:: https://img.shields.io/pypi/v/aiospamc
+.. |pypi| image:: https://img.shields.io/pypi/v/aiospamc
     :target: https://pypi.org/project/aiospamc/
 
-.. image:: https://img.shields.io/pypi/pyversions/aiospamc
+.. |build| image:: https://img.shields.io/azure-devops/build/mjcaley/aiospamc/2/master
+    :target: https://dev.azure.com/mjcaley/aiospamc/_build
+
+.. |coverage| image:: https://img.shields.io/azure-devops/coverage/mjcaley/aiospamc/2/master
+    :target: https://dev.azure.com/mjcaley/aiospamc/_build
+
+.. |docs| image:: https://img.shields.io/readthedocs/aiospamc
+    :target: https://aiospamc.readthedocs.io/en/latest/
+
+.. |license| image:: https://img.shields.io/github/license/mjcaley/aiospamc
+
+.. |python| image:: https://img.shields.io/pypi/pyversions/aiospamc
 
 -----------
 Description
