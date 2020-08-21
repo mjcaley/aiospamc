@@ -31,7 +31,7 @@ class SpamcHeaders:
     def __getitem__(self, key: str) -> HeaderValue:
         return self._headers[key]
 
-    def __setitem__(self, key: str, value: Union[HeaderValue, str]) -> None:
+    def __setitem__(self, key: str, value: Union[HeaderValue, Any]) -> None:
         if isinstance(value, HeaderValue):
             self._headers[key] = value
         else:
