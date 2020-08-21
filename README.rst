@@ -2,7 +2,7 @@
 aiospamc
 ========
 
-|pypi| |docs| |build| |coverage| |license| |python|
+|pypi| |docs| |license| |build| |coverage| |python|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/aiospamc
     :target: https://pypi.org/project/aiospamc/
@@ -17,6 +17,7 @@ aiospamc
     :target: https://aiospamc.readthedocs.io/en/latest/
 
 .. |license| image:: https://img.shields.io/github/license/mjcaley/aiospamc
+    :target: ./LICENSE
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/aiospamc
 
