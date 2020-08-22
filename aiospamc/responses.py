@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''Contains classes used for responses.'''
+"""Contains classes used for responses."""
 
 from enum import IntEnum
 from typing import Mapping, SupportsBytes, Union
@@ -12,25 +12,25 @@ from .header_values import ContentLengthValue, HeaderValue
 
 
 class Response:
-    '''Class to encapsulate response.'''
+    """Class to encapsulate response."""
 
     def __init__(
-            self,
-            version: str = '1.5',
-            status_code: int = 0,
-            message: str = '',
-            headers: Mapping[str, HeaderValue] = None,
-            body: bytes = b'',
-            **_
+        self,
+        version: str = "1.5",
+        status_code: int = 0,
+        message: str = "",
+        headers: Mapping[str, HeaderValue] = None,
+        body: bytes = b"",
+        **_,
     ):
-        '''Response constructor.
+        """Response constructor.
 
         :param version: Version reported by the SPAMD service response.
         :param status_code: Success or error code.
         :param message: Message associated with status code.
         :param body: Byte string representation of the body.
         :param headers: Collection of headers to be added.
-        '''
+        """
 
         self.version = version
         self.headers = SpamcHeaders(headers=headers)
@@ -39,32 +39,39 @@ class Response:
         self.body = body
 
     def __bytes__(self) -> bytes:
-        if 'Compress' in self.headers:
+        if "Compress" in self.headers:
             body = zlib.compress(self.body)
         else:
             body = self.body
 
         if len(body) > 0:
-            self.headers['Content-length'] = ContentLengthValue(length=len(body))
+            self.headers["Content-length"] = ContentLengthValue(length=len(body))
 
         status = self.status_code
-        message = self.message.encode('ascii')
+        message = self.message.encode("ascii")
 
-        return b'SPAMD/%(version)b ' \
-               b'%(status)d ' \
-               b'%(message)b\r\n' \
-               b'%(headers)b\r\n' \
-               b'%(body)b' % {b'version': self.version.encode('ascii'),
-                              b'status': status,
-                              b'message': message,
-                              b'headers': bytes(self.headers),
-                              b'body': body}
+        return (
+            b"SPAMD/%(version)b "
+            b"%(status)d "
+            b"%(message)b\r\n"
+            b"%(headers)b\r\n"
+            b"%(body)b"
+            % {
+                b"version": self.version.encode("ascii"),
+                b"status": status,
+                b"message": message,
+                b"headers": bytes(self.headers),
+                b"body": body,
+            }
+        )
 
     def __str__(self):
-        return f'<{self.status_code} - ' \
-            f'{self.message}: ' \
-            f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} ' \
-            f'object at {id(self)}>'
+        return (
+            f"<{self.status_code} - "
+            f"{self.message}: "
+            f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} '
+            f"object at {id(self)}>"
+        )
 
     @property
     def body(self) -> bytes:

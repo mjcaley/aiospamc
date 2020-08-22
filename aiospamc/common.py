@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 
-'''Common classes for the project.'''
+"""Common classes for the project."""
 
-from typing import Any, Dict, Iterator, ItemsView, KeysView, Mapping, \
-    ValuesView, Union
+from typing import Any, Dict, Iterator, ItemsView, KeysView, Mapping, ValuesView, Union
 
 from .header_values import HeaderValue
 from .incremental_parser import parse_header_value
 
 
 class SpamcHeaders:
-    '''Provides a dictionary-like interface for headers.'''
+    """Provides a dictionary-like interface for headers."""
 
     def __init__(self, *, headers: Mapping[str, Any] = None) -> None:
         self._headers: Dict[str, Any] = {}
@@ -19,13 +18,18 @@ class SpamcHeaders:
                 self[key] = value
 
     def __str__(self):
-        return f'<{".".join([self.__class__.__module__, self.__class__.__qualname__])} ' \
-            f'object at {id(self)}, ' \
+        return (
+            f'<{".".join([self.__class__.__module__, self.__class__.__qualname__])} '
+            f"object at {id(self)}, "
             f'keys: {", ".join(self._headers.keys())}>'
+        )
 
     def __bytes__(self) -> bytes:
-        return b''.join(
-            [b'%b: %b\r\n' % (name.encode('ascii'), bytes(value)) for name, value in self._headers.items()]
+        return b"".join(
+            [
+                b"%b: %b\r\n" % (name.encode("ascii"), bytes(value))
+                for name, value in self._headers.items()
+            ]
         )
 
     def __getitem__(self, key: str) -> HeaderValue:

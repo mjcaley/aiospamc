@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-'''aiospamc package.
+"""aiospamc package.
 
-An asyncio-based library to communicate with SpamAssassin's SPAMD service.'''
+An asyncio-based library to communicate with SpamAssassin's SPAMD service."""
 
 from typing import SupportsBytes, Union
 
@@ -12,26 +12,24 @@ from .options import ActionOption, MessageClassOption
 from .responses import Response
 
 
-__all__ = ('Client',
-           'MessageClassOption',
-           'ActionOption',
-           'Timeout')
+__all__ = ("Client", "MessageClassOption", "ActionOption", "Timeout")
 
-__author__ = 'Michael Caley'
-__copyright__ = 'Copyright 2016-2020 Michael Caley'
-__license__ = 'MIT'
-__version__ = '0.6.1'
-__email__ = 'mjcaley@darkarctic.com'
+__author__ = "Michael Caley"
+__copyright__ = "Copyright 2016-2020 Michael Caley"
+__license__ = "MIT"
+__version__ = "0.6.1"
+__email__ = "mjcaley@darkarctic.com"
 
 
 async def check(
-        message: Union[bytes, SupportsBytes],
-        *,
-        host: str = 'localhost',
-        port: int = 783,
-        timeout: Timeout = None,
-        **kwargs) -> Response:
-    '''Checks a message if it's spam and return a response with a score header.
+    message: Union[bytes, SupportsBytes],
+    *,
+    host: str = "localhost",
+    port: int = 783,
+    timeout: Timeout = None,
+    **kwargs,
+) -> Response:
+    """Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
@@ -62,7 +60,7 @@ async def check(
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
     :raises TimeoutException: Timeout during connection.
-    '''
+    """
 
     c = Client(host=host, port=port, timeout=timeout, **kwargs)
     response = await c.check(message)
@@ -71,13 +69,14 @@ async def check(
 
 
 async def headers(
-        message: Union[bytes, SupportsBytes],
-        *,
-        host: str = 'localhost',
-        port: int = 783,
-        timeout: Timeout = None,
-        **kwargs) -> Response:
-    '''Checks a message if it's spam and return the modified message headers.
+    message: Union[bytes, SupportsBytes],
+    *,
+    host: str = "localhost",
+    port: int = 783,
+    timeout: Timeout = None,
+    **kwargs,
+) -> Response:
+    """Checks a message if it's spam and return the modified message headers.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
@@ -110,7 +109,7 @@ async def headers(
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
     :raises TimeoutException: Timeout during connection.
-    '''
+    """
 
     c = Client(host=host, port=port, timeout=timeout, **kwargs)
     response = await c.headers(message)
@@ -119,12 +118,9 @@ async def headers(
 
 
 async def ping(
-        *,
-        host: str = 'localhost',
-        port: int = 783,
-        timeout: Timeout = None,
-        **kwargs) -> Response:
-    '''Sends a ping to the SPAMD service.
+    *, host: str = "localhost", port: int = 783, timeout: Timeout = None, **kwargs
+) -> Response:
+    """Sends a ping to the SPAMD service.
 
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
@@ -152,7 +148,7 @@ async def ping(
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
     :raises TimeoutException: Timeout during connection.
-    '''
+    """
 
     c = Client(host=host, port=port, timeout=timeout, **kwargs)
     response = await c.ping()
@@ -161,13 +157,14 @@ async def ping(
 
 
 async def process(
-        message: Union[bytes, SupportsBytes],
-        *,
-        host: str = 'localhost',
-        port: int = 783,
-        timeout: Timeout = None,
-        **kwargs) -> Response:
-    '''Checks a message if it's spam and return a response with a score header.
+    message: Union[bytes, SupportsBytes],
+    *,
+    host: str = "localhost",
+    port: int = 783,
+    timeout: Timeout = None,
+    **kwargs,
+) -> Response:
+    """Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
@@ -199,7 +196,7 @@ async def process(
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
     :raises TimeoutException: Timeout during connection.
-    '''
+    """
 
     c = Client(host=host, port=port, timeout=timeout, **kwargs)
     response = await c.process(message)
@@ -208,13 +205,14 @@ async def process(
 
 
 async def report(
-        message: Union[bytes, SupportsBytes],
-        *,
-        host: str = 'localhost',
-        port: int = 783,
-        timeout: Timeout = None,
-        **kwargs) -> Response:
-    '''Checks a message if it's spam and return a response with a score header.
+    message: Union[bytes, SupportsBytes],
+    *,
+    host: str = "localhost",
+    port: int = 783,
+    timeout: Timeout = None,
+    **kwargs,
+) -> Response:
+    """Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
@@ -245,7 +243,7 @@ async def report(
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
     :raises TimeoutException: Timeout during connection.
-    '''
+    """
 
     c = Client(host=host, port=port, timeout=timeout, **kwargs)
     response = await c.report(message)
@@ -254,13 +252,14 @@ async def report(
 
 
 async def report_if_spam(
-        message: Union[bytes, SupportsBytes],
-        *,
-        host: str = 'localhost',
-        port: int = 783,
-        timeout: Timeout = None,
-        **kwargs) -> Response:
-    '''Checks a message if it's spam and return a response with a score header.
+    message: Union[bytes, SupportsBytes],
+    *,
+    host: str = "localhost",
+    port: int = 783,
+    timeout: Timeout = None,
+    **kwargs,
+) -> Response:
+    """Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
@@ -292,7 +291,7 @@ async def report_if_spam(
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
     :raises TimeoutException: Timeout during connection.
-    '''
+    """
 
     c = Client(host=host, port=port, timeout=timeout, **kwargs)
     response = await c.report_if_spam(message)
@@ -300,13 +299,15 @@ async def report_if_spam(
     return response
 
 
-async def symbols(message: Union[bytes, SupportsBytes],
-                  *,
-                  host: str = 'localhost',
-                  port: int = 783,
-                  timeout: Timeout = None,
-                  **kwargs) -> Response:
-    '''Checks a message if it's spam and return a response with a score header.
+async def symbols(
+    message: Union[bytes, SupportsBytes],
+    *,
+    host: str = "localhost",
+    port: int = 783,
+    timeout: Timeout = None,
+    **kwargs,
+) -> Response:
+    """Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
@@ -338,7 +339,7 @@ async def symbols(message: Union[bytes, SupportsBytes],
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
     :raises TimeoutException: Timeout during connection.
-    '''
+    """
 
     c = Client(host=host, port=port, timeout=timeout, **kwargs)
     response = await c.symbols(message)
@@ -347,16 +348,17 @@ async def symbols(message: Union[bytes, SupportsBytes],
 
 
 async def tell(
-        message: Union[bytes, SupportsBytes],
-        message_class: Union[str, MessageClassOption],
-        *,
-        host: str = 'localhost',
-        port: int = 783,
-        remove_action: Union[str, ActionOption] = None,
-        set_action: Union[str, ActionOption] = None,
-        timeout: Timeout = None,
-        **kwargs) -> Response:
-    '''Checks a message if it's spam and return a response with a score header.
+    message: Union[bytes, SupportsBytes],
+    message_class: Union[str, MessageClassOption],
+    *,
+    host: str = "localhost",
+    port: int = 783,
+    remove_action: Union[str, ActionOption] = None,
+    set_action: Union[str, ActionOption] = None,
+    timeout: Timeout = None,
+    **kwargs,
+) -> Response:
+    """Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
     :param message_class: How to classify the message, either "ham" or "spam".
@@ -391,14 +393,14 @@ async def tell(
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
     :raises TimeoutException: Timeout during connection.
-    '''
+    """
 
     c = Client(host=host, port=port, timeout=timeout, **kwargs)
     response = await c.tell(
         message=message,
         message_class=message_class,
         remove_action=remove_action,
-        set_action=set_action
+        set_action=set_action,
     )
 
     return response

@@ -38,6 +38,11 @@ steps:
   continueOnError: true
 
 - script: |
+    black --check aiospamc
+  displayName: 'Run black'
+  continueOnError: true
+
+- script: |
     sudo apt-get -y install spamassassin
   displayName: 'Install SpamAssassin'
 

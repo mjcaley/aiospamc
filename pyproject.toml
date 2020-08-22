@@ -42,6 +42,15 @@ exclude_lines = [
 ]
 fail_under = 90.0
 
+[tool.black]
+target-version = ["py36"]
+exclude = """
+    utils |
+    docs |
+    tests |
+    example
+"""
+
 [tool.poetry.dependencies]
 python = "^3.6"
 certifi = "^2020.6"
@@ -56,6 +65,7 @@ cryptography = "^3.0"
 mock = "^4.0"
 coverage = {extras = ["toml"], version = "^5.2"}
 mypy = "^0.782"
+black = "^19.10b0"
 
 [build-system]
 requires = ["poetry>=1.0"]
