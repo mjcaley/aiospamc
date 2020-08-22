@@ -42,6 +42,15 @@ exclude_lines = [
 ]
 fail_under = 90.0
 
+[tool.black]
+target-version = ["py36"]
+exclude = """
+    utils |
+    docs |
+    tests |
+    example
+"""
+
 [tool.poetry.dependencies]
 python = "^3.6"
 certifi = "^2020.6"
