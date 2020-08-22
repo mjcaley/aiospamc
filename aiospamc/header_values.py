@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''Collection of request and response header value objects.'''
+"""Collection of request and response header value objects."""
 
 import getpass
 
@@ -12,14 +12,14 @@ class HeaderValue:
 
 
 class GenericHeaderValue(HeaderValue):
-    '''Generic header value.'''
-    
-    def __init__(self, value: str, encoding='utf8') -> None:
+    """Generic header value."""
+
+    def __init__(self, value: str, encoding="utf8") -> None:
         self.value = value
         self.encoding = encoding
 
     def __str__(self):
-        return f'value={repr(self.value)}, encoding={repr(self.encoding)}'
+        return f"value={repr(self.value)}, encoding={repr(self.encoding)}"
 
     def __bytes__(self) -> bytes:
         return self.value.encode(self.encoding)
@@ -31,26 +31,28 @@ class GenericHeaderValue(HeaderValue):
             return False
 
     def __repr__(self):
-        return f'{self.__class__.__qualname__}(' \
-            f'value={repr(self.value)}, ' \
-            f'encoding={repr(self.encoding)})'
+        return (
+            f"{self.__class__.__qualname__}("
+            f"value={repr(self.value)}, "
+            f"encoding={repr(self.encoding)})"
+        )
 
 
 class CompressValue(HeaderValue):
-    '''Compress header.  Specifies what encryption scheme to use.  So far only
+    """Compress header.  Specifies what encryption scheme to use.  So far only
     'zlib' is supported.
-    '''
+    """
 
-    def __init__(self, algorithm='zlib') -> None:
-        '''Constructor
+    def __init__(self, algorithm="zlib") -> None:
+        """Constructor
 
         :param algorithm: Compression algorithm to use.  Currently on zlib is supported.
-        '''
+        """
 
         self.algorithm = algorithm
 
     def __str__(self):
-        return f'algorithm={repr(self.algorithm)}'
+        return f"algorithm={repr(self.algorithm)}"
 
     def __eq__(self, other):
         try:
@@ -59,24 +61,24 @@ class CompressValue(HeaderValue):
             return False
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__qualname__}()'
+        return f"{self.__class__.__qualname__}()"
 
     def __bytes__(self) -> bytes:
-        return self.algorithm.encode('ascii')
+        return self.algorithm.encode("ascii")
 
 
 class ContentLengthValue(HeaderValue):
-    '''ContentLength header.  Indicates the length of the body in bytes.'''
+    """ContentLength header.  Indicates the length of the body in bytes."""
 
     def __init__(self, length: int = 0) -> None:
-        '''ContentLength constructor.
+        """ContentLength constructor.
 
         :param length: Length of the body.
-        '''
+        """
         self.length = length
 
     def __str__(self):
-        return f'length={repr(self.length)}'
+        return f"length={repr(self.length)}"
 
     def __eq__(self, other):
         try:
@@ -85,22 +87,22 @@ class ContentLengthValue(HeaderValue):
             return False
 
     def __bytes__(self) -> bytes:
-        return str(self.length).encode('ascii')
+        return str(self.length).encode("ascii")
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__qualname__}(length={repr(self.length)})'
+        return f"{self.__class__.__qualname__}(length={repr(self.length)})"
 
 
 class MessageClassValue(HeaderValue):
-    '''MessageClass header.  Used to specify whether a message is 'spam' or
+    """MessageClass header.  Used to specify whether a message is 'spam' or
     'ham.'
-    '''
+    """
 
     def __init__(self, value: MessageClassOption = None) -> None:
-        '''MessageClass constructor.
+        """MessageClass constructor.
 
         :param value: Specifies the classification of the message.
-        '''
+        """
 
         self.value = value or MessageClassOption.ham
 
@@ -114,25 +116,25 @@ class MessageClassValue(HeaderValue):
             return False
 
     def __bytes__(self) -> bytes:
-        return self.value.name.encode('ascii')
+        return self.value.name.encode("ascii")
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__qualname__}(value={repr(self.value)})'
+        return f"{self.__class__.__qualname__}(value={repr(self.value)})"
 
 
 class SetOrRemoveValue(HeaderValue):
-    '''Base class for headers that implement "local" and "remote" rules.'''
+    """Base class for headers that implement "local" and "remote" rules."""
 
     def __init__(self, action: ActionOption = None) -> None:
-        '''_SetRemoveBase constructor.
+        """_SetRemoveBase constructor.
 
         :param action: Actions to be done on local or remote.
-        '''
+        """
 
         self.action = action or ActionOption(local=False, remote=False)
 
     def __str__(self):
-        return f'local={self.action.local}, remote={self.action.remote}'
+        return f"local={self.action.local}, remote={self.action.remote}"
 
     def __eq__(self, other):
         try:
@@ -144,71 +146,85 @@ class SetOrRemoveValue(HeaderValue):
         if not self.action.local and not self.action.remote:
             # if nothing is set, then return a blank string so the request
             # doesn't get tainted
-            return b''
+            return b""
 
         values = []
         if self.action.local:
-            values.append(b'local')
+            values.append(b"local")
         if self.action.remote:
-            values.append(b'remote')
+            values.append(b"remote")
 
-        return b', '.join(values)
+        return b", ".join(values)
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__qualname__}(action={repr(self.action)})'
+        return f"{self.__class__.__qualname__}(action={repr(self.action)})"
 
 
 class SpamValue(HeaderValue):
-    '''Spam header.  Used by the SPAMD service to report on if the submitted
-    message was spam and the score/threshold that it used.'''
+    """Spam header.  Used by the SPAMD service to report on if the submitted
+    message was spam and the score/threshold that it used."""
 
-    def __init__(self, value: bool = False, score: float = 0.0, threshold: float = 0.0) -> None:
-        '''Spam header constructor.
+    def __init__(
+        self, value: bool = False, score: float = 0.0, threshold: float = 0.0
+    ) -> None:
+        """Spam header constructor.
 
         :param value: True if the message is spam, False if not.
         :param score: Score of the message after being scanned.
         :param threshold: Threshold of which the message would have been marked as spam.
-        '''
+        """
 
         self.value = value
         self.score = score
         self.threshold = threshold
 
     def __str__(self):
-        return f'value={str(self.value)}, score={self.score}, threshold={self.threshold}'
+        return (
+            f"value={str(self.value)}, score={self.score}, threshold={self.threshold}"
+        )
 
     def __eq__(self, other):
         try:
-            return all([self.value == other.value, self.score == other.score, self.threshold == other.threshold])
+            return all(
+                [
+                    self.value == other.value,
+                    self.score == other.score,
+                    self.threshold == other.threshold,
+                ]
+            )
         except AttributeError:
             return False
 
     def __bytes__(self) -> bytes:
-        return b'%b ; %.1f / %.1f' % (str(self.value).encode('ascii'),
-                                          self.score,
-                                          self.threshold)
+        return b"%b ; %.1f / %.1f" % (
+            str(self.value).encode("ascii"),
+            self.score,
+            self.threshold,
+        )
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__qualname__}(' \
-            f'value={repr(self.value)}, ' \
-            f'score={repr(self.score)}, ' \
-            f'threshold={repr(self.threshold)})'
+        return (
+            f"{self.__class__.__qualname__}("
+            f"value={repr(self.value)}, "
+            f"score={repr(self.score)}, "
+            f"threshold={repr(self.threshold)})"
+        )
 
 
 class UserValue(HeaderValue):
-    '''User header.  Used to specify which user the SPAMD service should use
-    when loading configuration files.'''
+    """User header.  Used to specify which user the SPAMD service should use
+    when loading configuration files."""
 
     def __init__(self, name: str = None) -> None:
-        '''User constructor.
+        """User constructor.
 
         :param name: Name of the user account.
-        '''
+        """
 
         self.name = name or getpass.getuser()
 
     def __str__(self):
-        return f'name={self.name}'
+        return f"name={self.name}"
 
     def __eq__(self, other):
         try:
@@ -217,7 +233,7 @@ class UserValue(HeaderValue):
             return False
 
     def __bytes__(self) -> bytes:
-        return self.name.encode('ascii')
+        return self.name.encode("ascii")
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__qualname__}(name={repr(self.name)})'
+        return f"{self.__class__.__qualname__}(name={repr(self.name)})"
