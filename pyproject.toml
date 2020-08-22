@@ -56,6 +56,7 @@ cryptography = "^3.0"
 mock = "^4.0"
 coverage = {extras = ["toml"], version = "^5.2"}
 mypy = "^0.782"
+black = "^19.10b0"
 
 [build-system]
 requires = ["poetry>=1.0"]
