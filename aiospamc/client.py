@@ -138,7 +138,7 @@ class Client:
         if self.user:
             request.headers["User"] = self.user
 
-        self.logger.debug(
+        self.logger.info(
             "Sending %s request",
             request.verb,
             extra={
@@ -148,9 +148,22 @@ class Client:
             },
         )
         data = await self.connection.request(bytes(request))
+        self.logger.info(
+            "Successfully received response",
+            extra={
+                "client_id": id(self),
+                "connection_id": id(self.connection),
+                "request_id": id(request),
+            },
+        )
         self.logger.debug(
-            "Received response",
-            extra={"client_id": id(self), "connection_id": id(self.connection)},
+            "Received response: %b",
+            data,
+            extra={
+                "client_id": id(self),
+                "connection_id": id(self.connection),
+                "rerquest_id": id(request),
+            },
         )
 
         try:
@@ -158,22 +171,50 @@ class Client:
                 parser = ResponseParser()
                 parsed_response = parser.parse(data)
                 response = Response(**parsed_response)
+
                 self.logger.debug(
                     "Successfully parse response",
                     extra={"client_id": id(self), "response_id": id(response),},
                 )
             except ParseError:
-                raise BadResponse
+                exception = BadResponse(data)
+                self.logger.exception(
+                    "Exception occurred when parsing response",
+                    exc_info=exception,
+                    stack_info=True,
+                    extra={
+                        "client_id": id(self),
+                        "connection_id": id(self.connection),
+                        "request_id": id(request),
+                    },
+                )
+
+                raise exception
+
             response.raise_for_status()
         except ResponseException as error:
             self.logger.exception(
-                "Exception parsing response: %s",
-                request.verb,
+                "Exception parsing response",
                 exc_info=error,
                 stack_info=True,
-                extra={"client_id": id(self)},
+                extra={
+                    "client_id": id(self),
+                    "connection_id": id(self.connection),
+                    "request_id": id(request),
+                },
             )
             raise
+
+        self.logger.debug(
+            "Received response %s",
+            response,
+            extra={
+                "client_id": id(self),
+                "connection_id": id(self.connection),
+                "request_id": id(request),
+                "response_id": id(response),
+            },
+        )
 
         return response
 
@@ -211,12 +252,20 @@ class Client:
         """
 
         request = Request("CHECK", body=message)
-        self.logger.debug(
+        self.logger.info(
             "Composed %s request",
             request.verb,
             extra={"client_id": id(self), "request_id": id(request)},
         )
         response = await self.send(request)
+        self.logger.info(
+            "Successfully received response",
+            extra={
+                "client_id": id(self),
+                "request_id": id(request),
+                "response_id": id(response),
+            },
+        )
 
         return response
 
@@ -255,13 +304,20 @@ class Client:
         """
 
         request = Request("HEADERS", body=message)
-        self.logger.debug(
+        self.logger.info(
             "Composed %s request",
             request.verb,
-            client_id=(self),
-            request_id=id(request),
+            extra={"client_id": id(self), "request_id": id(request)},
         )
         response = await self.send(request)
+        self.logger.info(
+            "Successfully received response",
+            extra={
+                "client_id": id(self),
+                "request_id": id(request),
+                "response_id": id(response),
+            },
+        )
 
         return response
 
@@ -292,13 +348,20 @@ class Client:
         """
 
         request = Request("PING")
-        self.logger.debug(
+        self.logger.info(
             "Composed %s request",
             request.verb,
-            client_id=(self),
-            request_id=id(request),
+            extra={"client_id": id(self), "request_id": id(request)},
         )
         response = await self.send(request)
+        self.logger.info(
+            "Successfully received response",
+            extra={
+                "client_id": id(self),
+                "request_id": id(request),
+                "response_id": id(response),
+            },
+        )
 
         return response
 
@@ -337,13 +400,20 @@ class Client:
         """
 
         request = Request("PROCESS", body=message)
-        self.logger.debug(
+        self.logger.info(
             "Composed %s request",
             request.verb,
-            client_id=(self),
-            request_id=id(request),
+            extra={"client_id": id(self), "request_id": id(request)},
         )
         response = await self.send(request)
+        self.logger.info(
+            "Successfully received response",
+            extra={
+                "client_id": id(self),
+                "request_id": id(request),
+                "response_id": id(response),
+            },
+        )
 
         return response
 
@@ -381,13 +451,20 @@ class Client:
         """
 
         request = Request("REPORT", body=message)
-        self.logger.debug(
+        self.logger.info(
             "Composed %s request",
             request.verb,
-            client_id=(self),
-            request_id=id(request),
+            extra={"client_id": id(self), "request_id": id(request)},
         )
         response = await self.send(request)
+        self.logger.info(
+            "Successfully received response",
+            extra={
+                "client_id": id(self),
+                "request_id": id(request),
+                "response_id": id(response),
+            },
+        )
 
         return response
 
@@ -426,13 +503,20 @@ class Client:
         """
 
         request = Request("REPORT_IFSPAM", body=message)
-        self.logger.debug(
+        self.logger.info(
             "Composed %s request",
             request.verb,
-            client_id=(self),
-            request_id=id(request),
+            extra={"client_id": id(self), "request_id": id(request)},
         )
         response = await self.send(request)
+        self.logger.info(
+            "Successfully received response",
+            extra={
+                "client_id": id(self),
+                "request_id": id(request),
+                "response_id": id(response),
+            },
+        )
 
         return response
 
@@ -471,13 +555,20 @@ class Client:
         """
 
         request = Request("SYMBOLS", body=message)
-        self.logger.debug(
+        self.logger.info(
             "Composed %s request",
             request.verb,
-            client_id=(self),
-            request_id=id(request),
+            extra={"client_id": id(self), "request_id": id(request)},
         )
         response = await self.send(request)
+        self.logger.info(
+            "Successfully received response",
+            extra={
+                "client_id": id(self),
+                "request_id": id(request),
+                "response_id": id(response),
+            },
+        )
 
         return response
 
@@ -532,12 +623,19 @@ class Client:
             request.headers["Remove"] = remove_action
         if set_action:
             request.headers["Set"] = set_action
-        self.logger.debug(
+        self.logger.info(
             "Composed %s request",
             request.verb,
-            client_id=(self),
-            request_id=id(request),
+            extra={"client_id": id(self), "request_id": id(request)},
         )
         response = await self.send(request)
+        self.logger.info(
+            "Successfully received response",
+            extra={
+                "client_id": id(self),
+                "request_id": id(request),
+                "response_id": id(response),
+            },
+        )
 
         return response
