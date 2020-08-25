@@ -87,6 +87,8 @@ class ConnectionManager:
         reader, writer = await self._connect()
 
         writer.write(data)
+        if writer.can_write_eof():
+            writer.write_eof()
         await writer.drain()
 
         response = await self._receive(reader)
