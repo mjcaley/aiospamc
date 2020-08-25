@@ -67,6 +67,10 @@ class ConnectionManager:
 
         writer.write(data)
         await writer.drain()
+        if writer.can_write_eof():
+            writer.write_eof()
+        else:
+            writer.write(b"\x00")
 
         response = await self._receive(reader)
 

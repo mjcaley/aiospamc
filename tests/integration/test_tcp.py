@@ -72,3 +72,11 @@ async def test_tell(spamd, spam):
     )
 
     assert result
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_message_without_newline(spamd):
+    result = await aiospamc.check(message=b'acb', host=spamd['tcp']['host'], port=spamd['tcp']['port'])
+
+    assert result
