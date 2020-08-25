@@ -5,6 +5,8 @@ import sys
 
 import pytest
 
+from aiospamc.requests import Request
+
 
 def pytest_addoption(parser):
     parser.addoption('--spamd-process-timeout', action='store', default=10, type=int)
@@ -54,13 +56,14 @@ def spam():
 
 @pytest.fixture
 def request_with_body():
-    return b'CHECK SPAMC/1.5\r\nContent-length: 10\r\n\r\nTest body\n'
+    body = b'Test body\n'
+    return Request(verb='CHECK', version='1.5', headers={'Content-length': len(body)}, body=body)
 
 
 @pytest.fixture
 def request_ping():
-    '''PING request in bytes.'''
-    return b'PING SPAMC/1.5\r\n\r\n'
+    '''PING request.'''
+    return Request(verb='PING')
 
 
 @pytest.fixture

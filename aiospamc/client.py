@@ -71,8 +71,7 @@ class Client:
         self.user = user
         self.compress = compress
 
-        self.logger = logging.getLogger(__name__)
-        self.logger.debug("Created instance of %r", self)
+        self.logger = logging.getLogger("aiospamc")
 
     def __repr__(self) -> str:
         return (
@@ -139,28 +138,43 @@ class Client:
         if self.user:
             request.headers["User"] = self.user
 
-        self.logger.debug("Sending request (%s)", id(request))
+        self.logger.debug(
+            "Sending %s request",
+            request.verb,
+            extra={
+                "client_id": id(self),
+                "connection_id": id(self.connection),
+                "request_id": id(self),
+            },
+        )
         data = await self.connection.request(bytes(request))
+        self.logger.debug(
+            "Received response",
+            extra={"client_id": id(self), "connection_id": id(self.connection)},
+        )
 
         try:
             try:
                 parser = ResponseParser()
                 parsed_response = parser.parse(data)
                 response = Response(**parsed_response)
+                self.logger.debug(
+                    "Successfully parse response",
+                    extra={"client_id": id(self), "response_id": id(response),},
+                )
             except ParseError:
                 raise BadResponse
             response.raise_for_status()
         except ResponseException as error:
             self.logger.exception(
-                "Exception for request (%s)when composing response: %s",
-                id(request),
-                error,
+                "Exception parsing response: %s",
+                request.verb,
+                exc_info=error,
+                stack_info=True,
+                extra={"client_id": id(self)},
             )
             raise
 
-        self.logger.debug(
-            "Received response (%s) for request (%s)", id(response), id(request)
-        )
         return response
 
     async def check(self, message: Union[bytes, SupportsBytes]) -> Response:
@@ -197,7 +211,11 @@ class Client:
         """
 
         request = Request("CHECK", body=message)
-        self.logger.debug("Composed %s request (%s)", request.verb, id(request))
+        self.logger.debug(
+            "Composed %s request",
+            request.verb,
+            extra={"client_id": id(self), "request_id": id(request)},
+        )
         response = await self.send(request)
 
         return response
@@ -237,7 +255,12 @@ class Client:
         """
 
         request = Request("HEADERS", body=message)
-        self.logger.debug("Composed %s request (%s)", request.verb, id(request))
+        self.logger.debug(
+            "Composed %s request",
+            request.verb,
+            client_id=(self),
+            request_id=id(request),
+        )
         response = await self.send(request)
 
         return response
@@ -269,7 +292,12 @@ class Client:
         """
 
         request = Request("PING")
-        self.logger.debug("Composed %s request (%s)", request.verb, id(request))
+        self.logger.debug(
+            "Composed %s request",
+            request.verb,
+            client_id=(self),
+            request_id=id(request),
+        )
         response = await self.send(request)
 
         return response
@@ -309,7 +337,12 @@ class Client:
         """
 
         request = Request("PROCESS", body=message)
-        self.logger.debug("Composed %s request (%s)", request.verb, id(request))
+        self.logger.debug(
+            "Composed %s request",
+            request.verb,
+            client_id=(self),
+            request_id=id(request),
+        )
         response = await self.send(request)
 
         return response
@@ -348,7 +381,12 @@ class Client:
         """
 
         request = Request("REPORT", body=message)
-        self.logger.debug("Composed %s request (%s)", request.verb, id(request))
+        self.logger.debug(
+            "Composed %s request",
+            request.verb,
+            client_id=(self),
+            request_id=id(request),
+        )
         response = await self.send(request)
 
         return response
@@ -388,7 +426,12 @@ class Client:
         """
 
         request = Request("REPORT_IFSPAM", body=message)
-        self.logger.debug("Composed %s request (%s)", request.verb, id(request))
+        self.logger.debug(
+            "Composed %s request",
+            request.verb,
+            client_id=(self),
+            request_id=id(request),
+        )
         response = await self.send(request)
 
         return response
@@ -428,7 +471,12 @@ class Client:
         """
 
         request = Request("SYMBOLS", body=message)
-        self.logger.debug("Composed %s request (%s)", request.verb, id(request))
+        self.logger.debug(
+            "Composed %s request",
+            request.verb,
+            client_id=(self),
+            request_id=id(request),
+        )
         response = await self.send(request)
 
         return response
@@ -484,7 +532,12 @@ class Client:
             request.headers["Remove"] = remove_action
         if set_action:
             request.headers["Set"] = set_action
-        self.logger.debug("Composed %s request (%s)", request.verb, id(request))
+        self.logger.debug(
+            "Composed %s request",
+            request.verb,
+            client_id=(self),
+            request_id=id(request),
+        )
         response = await self.send(request)
 
         return response

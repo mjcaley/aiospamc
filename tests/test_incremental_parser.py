@@ -375,6 +375,6 @@ def test_request_parser():
 
 def test_request_from_bytes(request_with_body):
     r = RequestParser()
-    result = r.parse(request_with_body)
+    result = r.parse(bytes(request_with_body))
 
     assert result is not None
