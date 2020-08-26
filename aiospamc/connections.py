@@ -78,7 +78,7 @@ class ConnectionManager:
             "Total response time to %s in %0.2f seconds",
             self.connection_string,
             end - start,
-            extras={"connection_id": id(self)},
+            extra={"connection_id": id(self)},
         )
 
         return response
@@ -116,8 +116,8 @@ class ConnectionManager:
         self.logger.info(
             "Successfully received data from %s in %0.2f seconds",
             self.connection_string,
-            end,
-            extras={"connection_id": id(self)},
+            end - start,
+            extra={"connection_id": id(self)},
         )
 
         return response
@@ -142,8 +142,8 @@ class ConnectionManager:
         self.logger.info(
             "Successfully connected to %s in %0.2f seconds",
             self.connection_string,
-            end,
-            extras={"connection_id": id(self)},
+            end - start,
+            extra={"connection_id": id(self)},
         )
 
         return reader, writer

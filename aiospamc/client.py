@@ -156,15 +156,6 @@ class Client:
                 "request_id": id(request),
             },
         )
-        self.logger.debug(
-            "Received response: %b",
-            data,
-            extra={
-                "client_id": id(self),
-                "connection_id": id(self.connection),
-                "rerquest_id": id(request),
-            },
-        )
 
         try:
             try:
