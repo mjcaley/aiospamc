@@ -72,7 +72,7 @@ def test_str():
 
 
 def test_request_from_parser_result(request_with_body):
-    p = RequestParser().parse(request_with_body)
+    p = RequestParser().parse(bytes(request_with_body))
     r = Request(**p)
 
     assert r is not None

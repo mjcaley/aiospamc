@@ -115,6 +115,28 @@ Example
 
         return response
 
+Logging
+=======
+
+`aiospamc` provides two loggers for monitoring.
+
+`aiospamc` is the name of the logger for logs from the `aiospamc.client.Client`
+class.
+
+`aiospamc.connections` is the name of the logger for logs that monitor TCP and
+Unix connections.  This can be used to monitor for issues with connecting, sending,
+and receiving data.
+
+Extra data that can be logged with messages include object IDs so you can trace
+log messages through the library.  These are named:
+
+* client_id
+* connection_id
+* request_id
+* response_id
+
+Refer to Python's logging documentation on how to consume these loggers.
+
 Making your own requests
 ========================
 

@@ -77,6 +77,12 @@ def mock_open_unix_connection_error(mocker):
     yield
 
 
+@pytest.fixture
+def mock_base_connection_string(mocker):
+    mocker.patch('aiospamc.connections.ConnectionManager.connection_string', return_value='<connection>')
+    yield
+
+
 def test_connection_manager_returns_logger():
     c = ConnectionManager()
 
@@ -84,7 +90,7 @@ def test_connection_manager_returns_logger():
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_request_sends_and_receives(mocker):
+async def test_connection_manager_request_sends_and_receives(mocker, mock_base_connection_string):
     test_input = b'request'
     expected = b'response'
 
@@ -100,7 +106,7 @@ async def test_connection_manager_request_sends_and_receives(mocker):
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_timeout_total(mocker):
+async def test_connection_manager_timeout_total(mocker, mock_base_connection_string):
     async def sleep():
         await asyncio.sleep(5)
 
@@ -114,7 +120,7 @@ async def test_connection_manager_timeout_total(mocker):
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_timeout_connect(mocker):
+async def test_connection_manager_timeout_connect(mocker, mock_base_connection_string):
     async def sleep():
         await asyncio.sleep(5)
 
@@ -128,7 +134,7 @@ async def test_connection_manager_timeout_connect(mocker):
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_timeout_read(mocker):
+async def test_connection_manager_timeout_read(mocker, mock_base_connection_string):
     async def sleep():
         await asyncio.sleep(5)
         return b'response'

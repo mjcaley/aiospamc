@@ -6,6 +6,7 @@ from .exceptions import AIOSpamcConnectionFailed
 import asyncio
 import logging
 from ssl import SSLContext
+from time import monotonic
 from typing import Tuple
 
 
@@ -41,7 +42,7 @@ class ConnectionManager:
 
     def __init__(self, timeout: Timeout = None) -> None:
         self.timeout = timeout or Timeout()
-        self._logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger("aiospamc.connections")
 
     @property
     def logger(self) -> logging.Logger:
@@ -58,7 +59,27 @@ class ConnectionManager:
         :param data: Data to send.
         """
 
-        response = await asyncio.wait_for(self._send(data), self.timeout.total)
+        start = monotonic()
+        try:
+            response = await asyncio.wait_for(self._send(data), self.timeout.total)
+        except asyncio.TimeoutError as e:
+            self.logger.exception(
+                "Timed out (total) to %s after %0.2f seconds",
+                self.connection_string,
+                monotonic() - start,
+                exc_info=e,
+                stack_info=True,
+                extra={"connection_id": id(self)},
+            )
+            raise
+
+        end = monotonic()
+        self.logger.info(
+            "Total response time to %s in %0.2f seconds",
+            self.connection_string,
+            end - start,
+            extra={"connection_id": id(self)},
+        )
 
         return response
 
@@ -77,12 +98,55 @@ class ConnectionManager:
         return response
 
     async def _receive(self, reader: asyncio.StreamReader) -> bytes:
-        response = await asyncio.wait_for(reader.read(), self.timeout.response)
+        start = monotonic()
+        try:
+            response = await asyncio.wait_for(reader.read(), self.timeout.response)
+        except asyncio.TimeoutError as e:
+            self.logger.exception(
+                "Timed out receiving data from %s after %0.2f seconds",
+                self.connection_string,
+                monotonic() - start,
+                exc_info=e,
+                stack_info=True,
+                extra={"connection_id": id(self)},
+            )
+            raise
+
+        end = monotonic()
+        self.logger.info(
+            "Successfully received data from %s in %0.2f seconds",
+            self.connection_string,
+            end - start,
+            extra={"connection_id": id(self)},
+        )
 
         return response
 
     async def _connect(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
-        return await asyncio.wait_for(self.open(), self.timeout.connection)
+        start = monotonic()
+        try:
+            reader, writer = await asyncio.wait_for(
+                self.open(), self.timeout.connection
+            )
+        except asyncio.TimeoutError as e:
+            self.logger.exception(
+                "Timed out connecting to %s after %0.2f seconds",
+                self.connection_string,
+                monotonic() - start,
+                exc_info=e,
+                extra={"connection_id": id(self)},
+            )
+            raise
+
+        end = monotonic()
+        self.logger.info(
+            "Successfully connected to %s in %0.2f seconds",
+            self.connection_string,
+            end - start,
+            extra={"connection_id": id(self)},
+        )
+
+        return reader, writer
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Opens a connection, returning the reader and writer objects."""
@@ -127,10 +191,11 @@ class TcpConnectionManager(ConnectionManager):
         except (ConnectionRefusedError, OSError) as error:
             raised = AIOSpamcConnectionFailed(error)
             self.logger.exception(
-                "Exception occurred when connecting to %s:%s: %s",
-                self.host,
-                self.port,
-                raised,
+                "Exception occurred when connecting to %s",
+                self.connection_string,
+                exc_info=raised,
+                stack_info=True,
+                extra={"connection_id": id(self)},
             )
             raise raised
 
@@ -165,7 +230,13 @@ class UnixConnectionManager(ConnectionManager):
             reader, writer = await asyncio.open_unix_connection(self.path)
         except (ConnectionRefusedError, OSError) as error:
             raised = AIOSpamcConnectionFailed(error)
-            self.logger.exception("Exception occurred when connecting: %s", raised)
+            self.logger.exception(
+                "Exception occurred when connecting to %s",
+                self.connection_string,
+                exc_info=raised,
+                stack_info=True,
+                extra={"connection_id": id(self)},
+            )
             raise raised
 
         return reader, writer
