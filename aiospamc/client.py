@@ -165,7 +165,10 @@ class Client:
 
                 self.logger.debug(
                     "Successfully parse response",
-                    extra={"client_id": id(self), "response_id": id(response),},
+                    extra={
+                        "client_id": id(self),
+                        "response_id": id(response),
+                    },
                 )
             except ParseError:
                 exception = BadResponse(data)
