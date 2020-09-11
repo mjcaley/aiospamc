@@ -7,138 +7,151 @@ from aiospamc.client import Client
 
 
 @pytest.fixture
-def mock_client_cls(mocker):
+def mock_request(mocker):
     client_cls = mocker.patch('aiospamc.Client', autospec=True)
     yield client_cls
 
 
+@pytest.fixture
+def mock_request(mocker):
+    yield mocker.patch("aiospamc.request")
+
+
 @pytest.mark.asyncio
-async def test_check_default_args_passed(mocker, mock_client_cls, spam):
+async def test_check_default_args_passed(mock_request, spam):
     await aiospamc.check(spam)
 
-    assert 'localhost' == mock_client_cls.call_args.kwargs['host']
-    assert 783 == mock_client_cls.call_args.kwargs['port']
+    assert 'CHECK' == mock_request.call_args.args[0]
+    assert 'localhost' == mock_request.call_args.kwargs['host']
+    assert 783 == mock_request.call_args.kwargs['port']
+    assert None == mock_request.call_kwargs['socket_path']
+    assert None == mock_request.await_kwargs['timeout']
+    assert None == mock_request.call_kwargs['verify']
+    assert None == mock_request.call_kwargs['user']
+    assert None == mock_request.call_kwargs['compress']
+    assert None == mock_request.call_kwargs['headers']
 
 
 @pytest.mark.asyncio
-async def test_check(mocker, mock_client_cls, spam):
-    mocker.spy(aiospamc, 'client')
+async def test_check(mock_request, spam):
     result = await aiospamc.check(spam)
 
-    assert result is mock_client_cls.return_value.check.return_value
-    assert spam is mock_client_cls.return_value.check.await_args.args[0]
+    assert result is mock_request.return_value
+    assert spam == mock_request.await_args.args[1]
 
 
 @pytest.mark.asyncio
-async def test_headers_default_args_passed(mocker, mock_client_cls, spam):
+async def test_headers_default_args_passed(mock_request, spam):
     await aiospamc.headers(spam)
 
-    assert 'localhost' == mock_client_cls.call_args.kwargs['host']
-    assert 783 == mock_client_cls.call_args.kwargs['port']
+    assert 'HEADERS' == mock_request.call_args.args[0]
+    assert 'localhost' == mock_request.call_args.kwargs['host']
+    assert 783 == mock_request.call_args.kwargs['port']
 
 
 @pytest.mark.asyncio
-async def test_headers(mocker, mock_client_cls, spam):
-    mocker.spy(aiospamc, 'headers')
+async def test_headers(mock_request, spam):
     result = await aiospamc.headers(spam)
 
-    assert result is mock_client_cls.return_value.headers.return_value
-    assert spam is mock_client_cls.return_value.headers.await_args.args[0]
+    assert result is mock_request.return_value
+    assert spam == mock_request.await_args.args[1]
 
 
 @pytest.mark.asyncio
-async def test_ping_default_args_passed(mocker, mock_client_cls):
+async def test_ping_default_args_passed(mocker, mock_request):
     await aiospamc.ping()
 
-    assert 'localhost' == mock_client_cls.call_args.kwargs['host']
-    assert 783 == mock_client_cls.call_args.kwargs['port']
+    assert 'PING' == mock_request.call_args.args[0]
+    assert 'localhost' == mock_request.call_args.kwargs['host']
+    assert 783 == mock_request.call_args.kwargs['port']
 
 
 @pytest.mark.asyncio
-async def test_ping(mock_client_cls):
+async def test_ping(mock_request):
     result = await aiospamc.ping()
 
-    assert result is mock_client_cls.return_value.ping.return_value
+    assert result is mock_request.return_value
 
 
 @pytest.mark.asyncio
-async def test_process_default_args_passed(mocker, mock_client_cls, spam):
+async def test_process_default_args_passed(mock_request, spam):
     await aiospamc.process(spam)
 
-    assert 'localhost' == mock_client_cls.call_args.kwargs['host']
-    assert 783 == mock_client_cls.call_args.kwargs['port']
+    assert 'PROCESS' == mock_request.call_args.args[0]
+    assert 'localhost' == mock_request.call_args.kwargs['host']
+    assert 783 == mock_request.call_args.kwargs['port']
 
 
 @pytest.mark.asyncio
-async def test_process(mocker, mock_client_cls, spam):
-    mocker.spy(aiospamc, 'process')
+async def test_process(mock_request, spam):
     result = await aiospamc.process(spam)
 
-    assert result is mock_client_cls.return_value.process.return_value
-    assert spam is mock_client_cls.return_value.process.await_args.args[0]
+    assert result is mock_request.return_value
+    assert spam == mock_request.await_args.args[1]
 
 
 @pytest.mark.asyncio
-async def test_report_default_args_passed(mocker, mock_client_cls, spam):
+async def test_report_default_args_passed(mock_request, spam):
     await aiospamc.report(spam)
 
-    assert 'localhost' == mock_client_cls.call_args.kwargs['host']
-    assert 783 == mock_client_cls.call_args.kwargs['port']
+    assert 'REPORT' == mock_request.call_args.args[0]
+    assert 'localhost' == mock_request.call_args.kwargs['host']
+    assert 783 == mock_request.call_args.kwargs['port']
 
 
 @pytest.mark.asyncio
-async def test_report(mocker, mock_client_cls, spam):
-    mocker.spy(aiospamc, 'client')
+async def test_report(mock_request, spam):
     result = await aiospamc.report(spam)
 
-    assert result is mock_client_cls.return_value.report.return_value
-    assert spam is mock_client_cls.return_value.report.await_args.args[0]
+    assert result is mock_request.return_value
+    assert spam == mock_request.await_args.args[1]
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam_default_args_passed(mocker, mock_client_cls, spam):
+async def test_report_if_spam_default_args_passed(mock_request, spam):
     await aiospamc.report_if_spam(spam)
 
-    assert 'localhost' == mock_client_cls.call_args.kwargs['host']
-    assert 783 == mock_client_cls.call_args.kwargs['port']
+    assert 'REPORT_IFSPAM' == mock_request.call_args.args[0]
+    assert 'localhost' == mock_request.call_args.kwargs['host']
+    assert 783 == mock_request.call_args.kwargs['port']
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam(mocker, mock_client_cls, spam):
-    mocker.spy(aiospamc, 'client')
+async def test_report_if_spam(mock_request, spam):
     result = await aiospamc.report_if_spam(spam)
 
-    assert result is mock_client_cls.return_value.report_if_spam.return_value
-    assert spam is mock_client_cls.return_value.report_if_spam.await_args.args[0]
+    assert result is mock_request.return_value
+    assert spam == mock_request.await_args.args[1]
 
 
 @pytest.mark.asyncio
-async def test_symbols_default_args_passed(mocker, mock_client_cls, spam):
+async def test_symbols_default_args_passed(mock_request, spam):
     await aiospamc.symbols(spam)
 
-    assert 'localhost' == mock_client_cls.call_args.kwargs['host']
-    assert 783 == mock_client_cls.call_args.kwargs['port']
+    assert 'SYMBOLS' == mock_request.call_args.args[0]
+    assert 'localhost' == mock_request.call_args.kwargs['host']
+    assert 783 == mock_request.call_args.kwargs['port']
 
 
 @pytest.mark.asyncio
-async def test_symbols(mocker, mock_client_cls, spam):
-    mocker.spy(aiospamc, 'client')
+async def test_symbols(mock_request, spam):
     result = await aiospamc.symbols(spam)
 
-    assert result is mock_client_cls.return_value.symbols.return_value
-    assert spam is mock_client_cls.return_value.symbols.await_args.args[0]
+    assert result is mock_request.return_value
+    assert spam == mock_request.await_args.args[1]
 
 
 @pytest.mark.asyncio
-async def test_tell_default_args_passed(mocker, mock_client_cls, spam):
+async def test_tell_default_args_passed(mocker, mock_request, spam):
     await aiospamc.tell(
         spam,
         message_class=mocker.Mock(),
         set_action=mocker.Mock(),
         remove_action=mocker.Mock())
 
-    assert 'localhost' == mock_client_cls.call_args.kwargs['host']
-    assert 783 == mock_client_cls.call_args.kwargs['port']
+    assert 'TELL' == mock_request.call_args.args[0]
+    assert 'localhost' == mock_request.call_args.kwargs['host']
+    assert 783 == mock_request.call_args.kwargs['port']
 
 
 @pytest.mark.asyncio
@@ -150,9 +163,7 @@ async def test_tell_default_args_passed(mocker, mock_client_cls, spam):
     ['spam', aiospamc.ActionOption(local=True, remote=False), 'local,remote'],
     ['spam', 'local,remote', aiospamc.ActionOption(local=True, remote=False)],
 ])
-async def test_tell(mocker, mock_client_cls, spam, message_class, remove_action, set_action):
-    mock_instance = mock_client_cls.return_value
-
+async def test_tell(mock_request, spam, message_class, remove_action, set_action):
     result = await aiospamc.tell(
         spam,
         message_class=message_class,
@@ -160,8 +171,8 @@ async def test_tell(mocker, mock_client_cls, spam, message_class, remove_action,
         set_action=set_action
     )
 
-    assert result is mock_instance.tell.return_value
-    assert spam == mock_instance.tell.await_args.kwargs['message']
-    assert message_class == mock_instance.tell.await_args.kwargs['message_class']
-    assert remove_action == mock_instance.tell.await_args.kwargs['remove_action']
-    assert set_action == mock_instance.tell.await_args.kwargs['set_action']
+    assert result is mock_request.return_value
+    assert spam == mock_request.await_args.args[1]
+    assert message_class == mock_request.await_args.kwargs['headers']['Message-class']
+    assert remove_action == mock_request.await_args.kwargs['headers']['Remove']
+    assert set_action == mock_request.await_args.kwargs['headers']['Set']
