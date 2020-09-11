@@ -4,12 +4,15 @@
 
 An asyncio-based library to communicate with SpamAssassin's SPAMD service."""
 
-from typing import SupportsBytes, Union
+from typing import Any, Mapping, Optional, SupportsBytes, Union
 
 from .client import Client
-from .connections import Timeout
+from .header_values import HeaderValue
+from .connections import Timeout, new_connection, new_ssl_context
 from .options import ActionOption, MessageClassOption
+from .incremental_parser import ResponseParser
 from .responses import Response
+from .requests import Request
 
 
 __all__ = ("Client", "MessageClassOption", "ActionOption", "Timeout")
@@ -21,13 +24,46 @@ __version__ = "0.6.1"
 __email__ = "mjcaley@darkarctic.com"
 
 
+async def request(verb: str,
+    message: Union[bytes, SupportsBytes] = None,
+    *,
+    host: str = "localhost",
+    port: int = 783,
+    socket_path: str = None,
+    timeout: Timeout = None,
+    verify: Optional[Any] = None,
+    user: Optional[str] = None,
+    compress: bool = False,
+    headers: Optional[Mapping[str, Union[str, HeaderValue]]] = None) -> Response:
+
+    ssl_context = new_ssl_context(verify)
+    connection = new_connection(host, port, socket_path, timeout, ssl_context)
+    parser = ResponseParser()
+
+    request = Request(verb, headers=headers)
+    if user:
+        request.headers["User"] = user
+    if compress:
+        request.headers["Compress"] = compress
+    if message:
+        request.body = bytes(message)
+
+    response = await connection.request(bytes(request))
+    parsed_response = parser.parse(response)
+
+    return parsed_response
+
+
 async def check(
     message: Union[bytes, SupportsBytes],
     *,
     host: str = "localhost",
     port: int = 783,
+    socket_path: str = None,
     timeout: Timeout = None,
-    **kwargs,
+    verify: Optional[Any] = None,
+    user: str = None,
+    compress: bool = None
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -62,10 +98,7 @@ async def check(
     :raises TimeoutException: Timeout during connection.
     """
 
-    c = Client(host=host, port=port, timeout=timeout, **kwargs)
-    response = await c.check(message)
-
-    return response
+    return await request("CHECK", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
 
 
 async def headers(
@@ -73,8 +106,11 @@ async def headers(
     *,
     host: str = "localhost",
     port: int = 783,
+    socket_path: str = None,
     timeout: Timeout = None,
-    **kwargs,
+    verify: Optional[Any] = None,
+    user: str = None,
+    compress: bool = None
 ) -> Response:
     """Checks a message if it's spam and return the modified message headers.
 
@@ -111,14 +147,18 @@ async def headers(
     :raises TimeoutException: Timeout during connection.
     """
 
-    c = Client(host=host, port=port, timeout=timeout, **kwargs)
-    response = await c.headers(message)
-
-    return response
+    return await request("HEADERS", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
 
 
 async def ping(
-    *, host: str = "localhost", port: int = 783, timeout: Timeout = None, **kwargs
+    *,
+    host: str = "localhost",
+    port: int = 783,
+    socket_path: str = None,
+    timeout: Timeout = None,
+    verify: Optional[Any] = None,
+    user: str = None,
+    compress: bool = None
 ) -> Response:
     """Sends a ping to the SPAMD service.
 
@@ -150,10 +190,7 @@ async def ping(
     :raises TimeoutException: Timeout during connection.
     """
 
-    c = Client(host=host, port=port, timeout=timeout, **kwargs)
-    response = await c.ping()
-
-    return response
+    return await request("PING", host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
 
 
 async def process(
@@ -161,8 +198,11 @@ async def process(
     *,
     host: str = "localhost",
     port: int = 783,
+    socket_path: str = None,
     timeout: Timeout = None,
-    **kwargs,
+    verify: Optional[Any] = None,
+    user: str = None,
+    compress: bool = None
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -198,10 +238,7 @@ async def process(
     :raises TimeoutException: Timeout during connection.
     """
 
-    c = Client(host=host, port=port, timeout=timeout, **kwargs)
-    response = await c.process(message)
-
-    return response
+    return await request("PROCESS", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
 
 
 async def report(
@@ -209,8 +246,11 @@ async def report(
     *,
     host: str = "localhost",
     port: int = 783,
+    socket_path: str = None,
     timeout: Timeout = None,
-    **kwargs,
+    verify: Optional[Any] = None,
+    user: str = None,
+    compress: bool = None
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -245,10 +285,7 @@ async def report(
     :raises TimeoutException: Timeout during connection.
     """
 
-    c = Client(host=host, port=port, timeout=timeout, **kwargs)
-    response = await c.report(message)
-
-    return response
+    return await request("REPORT", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
 
 
 async def report_if_spam(
@@ -256,8 +293,11 @@ async def report_if_spam(
     *,
     host: str = "localhost",
     port: int = 783,
+    socket_path: str = None,
     timeout: Timeout = None,
-    **kwargs,
+    verify: Optional[Any] = None,
+    user: str = None,
+    compress: bool = None
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -293,10 +333,7 @@ async def report_if_spam(
     :raises TimeoutException: Timeout during connection.
     """
 
-    c = Client(host=host, port=port, timeout=timeout, **kwargs)
-    response = await c.report_if_spam(message)
-
-    return response
+    return await request("REPORT_IFSPAM", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
 
 
 async def symbols(
@@ -304,8 +341,11 @@ async def symbols(
     *,
     host: str = "localhost",
     port: int = 783,
+    socket_path: str = None,
     timeout: Timeout = None,
-    **kwargs,
+    verify: Optional[Any] = None,
+    user: str = None,
+    compress: bool = None
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -341,22 +381,22 @@ async def symbols(
     :raises TimeoutException: Timeout during connection.
     """
 
-    c = Client(host=host, port=port, timeout=timeout, **kwargs)
-    response = await c.symbols(message)
-
-    return response
+    return await request("SYMBOLS", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
 
 
 async def tell(
     message: Union[bytes, SupportsBytes],
     message_class: Union[str, MessageClassOption],
+    remove_action: Union[str, ActionOption] = None,
+    set_action: Union[str, ActionOption] = None,
     *,
     host: str = "localhost",
     port: int = 783,
-    remove_action: Union[str, ActionOption] = None,
-    set_action: Union[str, ActionOption] = None,
+    socket_path: str = None,
     timeout: Timeout = None,
-    **kwargs,
+    verify: Optional[Any] = None,
+    user: str = None,
+    compress: bool = None
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -395,12 +435,10 @@ async def tell(
     :raises TimeoutException: Timeout during connection.
     """
 
-    c = Client(host=host, port=port, timeout=timeout, **kwargs)
-    response = await c.tell(
-        message=message,
-        message_class=message_class,
-        remove_action=remove_action,
-        set_action=set_action,
-    )
+    headers = {"Message-class": message_class}
+    if remove_action:
+        headers["Remove"] = remove_action
+    if set_action:
+        headers["Set"] = set_action
 
-    return response
+    return await request("TELL", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress, headers=headers)
