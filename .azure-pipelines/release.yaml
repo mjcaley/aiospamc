@@ -13,7 +13,7 @@ variables:
 steps:
 - template: 'templates/ci_steps.yaml'
   parameters:
-    PythonVersion: '3.8'
+    PythonVersion: '3.9'
 
 - script: |
     $HOME/.poetry/bin/poetry config pypi-token.pypi "$API_KEY"
