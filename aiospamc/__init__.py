@@ -4,18 +4,18 @@
 
 An asyncio-based library to communicate with SpamAssassin's SPAMD service."""
 
-from typing import Any, Mapping, Optional, SupportsBytes, Union
+from typing import Any, Callable, Mapping, Optional, SupportsBytes, Union
+from ssl import SSLContext
 
-from .client import Client
 from .header_values import HeaderValue
-from .connections import Timeout, new_connection, new_ssl_context
+from .connections import Timeout, new_connection, new_ssl_context, ConnectionManager
 from .options import ActionOption, MessageClassOption
 from .incremental_parser import ResponseParser
 from .responses import Response
 from .requests import Request
 
 
-__all__ = ("Client", "MessageClassOption", "ActionOption", "Timeout")
+__all__ = ("MessageClassOption", "ActionOption", "Timeout")
 
 __author__ = "Michael Caley"
 __copyright__ = "Copyright 2016-2020 Michael Caley"
@@ -24,7 +24,14 @@ __version__ = "0.6.1"
 __email__ = "mjcaley@darkarctic.com"
 
 
-async def request(verb: str,
+ConnectionFactory = Callable[
+    [str, int, str, Optional[Timeout], Optional[SSLContext]], ConnectionManager
+]
+SSLFactory = Callable[[Any], SSLContext]
+
+
+async def request(
+    verb: str,
     message: Union[bytes, SupportsBytes] = None,
     *,
     host: str = "localhost",
@@ -34,17 +41,21 @@ async def request(verb: str,
     verify: Optional[Any] = None,
     user: Optional[str] = None,
     compress: bool = False,
-    headers: Optional[Mapping[str, Union[str, HeaderValue]]] = None) -> Response:
+    headers: Optional[Mapping[str, Union[str, HeaderValue]]] = None,
+    parser_cls: Any = ResponseParser,
+    ssl_factory: SSLFactory = new_ssl_context,
+    connection_factory: ConnectionFactory = new_connection,
+) -> Response:
 
-    ssl_context = new_ssl_context(verify)
-    connection = new_connection(host, port, socket_path, timeout, ssl_context)
-    parser = ResponseParser()
+    ssl_context = ssl_factory(verify)
+    connection = connection_factory(host, port, socket_path, timeout, ssl_context)
+    parser = parser_cls()
 
     request = Request(verb, headers=headers)
     if user:
         request.headers["User"] = user
     if compress:
-        request.headers["Compress"] = compress
+        request.headers["Compress"] = "zlib"
     if message:
         request.body = bytes(message)
 
@@ -63,7 +74,7 @@ async def check(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None
+    compress: bool = None,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -98,7 +109,17 @@ async def check(
     :raises TimeoutException: Timeout during connection.
     """
 
-    return await request("CHECK", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
+    return await request(
+        "CHECK",
+        message,
+        host=host,
+        port=port,
+        socket_path=socket_path,
+        timeout=timeout,
+        verify=verify,
+        user=user,
+        compress=compress,
+    )
 
 
 async def headers(
@@ -110,7 +131,7 @@ async def headers(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None
+    compress: bool = None,
 ) -> Response:
     """Checks a message if it's spam and return the modified message headers.
 
@@ -147,7 +168,17 @@ async def headers(
     :raises TimeoutException: Timeout during connection.
     """
 
-    return await request("HEADERS", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
+    return await request(
+        "HEADERS",
+        message,
+        host=host,
+        port=port,
+        socket_path=socket_path,
+        timeout=timeout,
+        verify=verify,
+        user=user,
+        compress=compress,
+    )
 
 
 async def ping(
@@ -158,7 +189,7 @@ async def ping(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None
+    compress: bool = None,
 ) -> Response:
     """Sends a ping to the SPAMD service.
 
@@ -190,7 +221,16 @@ async def ping(
     :raises TimeoutException: Timeout during connection.
     """
 
-    return await request("PING", host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
+    return await request(
+        "PING",
+        host=host,
+        port=port,
+        socket_path=socket_path,
+        timeout=timeout,
+        verify=verify,
+        user=user,
+        compress=compress,
+    )
 
 
 async def process(
@@ -202,7 +242,7 @@ async def process(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None
+    compress: bool = None,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -238,7 +278,17 @@ async def process(
     :raises TimeoutException: Timeout during connection.
     """
 
-    return await request("PROCESS", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
+    return await request(
+        "PROCESS",
+        message,
+        host=host,
+        port=port,
+        socket_path=socket_path,
+        timeout=timeout,
+        verify=verify,
+        user=user,
+        compress=compress,
+    )
 
 
 async def report(
@@ -250,7 +300,7 @@ async def report(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None
+    compress: bool = None,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -285,7 +335,17 @@ async def report(
     :raises TimeoutException: Timeout during connection.
     """
 
-    return await request("REPORT", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
+    return await request(
+        "REPORT",
+        message,
+        host=host,
+        port=port,
+        socket_path=socket_path,
+        timeout=timeout,
+        verify=verify,
+        user=user,
+        compress=compress,
+    )
 
 
 async def report_if_spam(
@@ -297,7 +357,7 @@ async def report_if_spam(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None
+    compress: bool = None,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -333,7 +393,17 @@ async def report_if_spam(
     :raises TimeoutException: Timeout during connection.
     """
 
-    return await request("REPORT_IFSPAM", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
+    return await request(
+        "REPORT_IFSPAM",
+        message,
+        host=host,
+        port=port,
+        socket_path=socket_path,
+        timeout=timeout,
+        verify=verify,
+        user=user,
+        compress=compress,
+    )
 
 
 async def symbols(
@@ -345,7 +415,7 @@ async def symbols(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None
+    compress: bool = None,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -381,7 +451,17 @@ async def symbols(
     :raises TimeoutException: Timeout during connection.
     """
 
-    return await request("SYMBOLS", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress)
+    return await request(
+        "SYMBOLS",
+        message,
+        host=host,
+        port=port,
+        socket_path=socket_path,
+        timeout=timeout,
+        verify=verify,
+        user=user,
+        compress=compress,
+    )
 
 
 async def tell(
@@ -396,7 +476,7 @@ async def tell(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None
+    compress: bool = None,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -441,4 +521,15 @@ async def tell(
     if set_action:
         headers["Set"] = set_action
 
-    return await request("TELL", message, host=host, port=port, socket_path=socket_path, timeout=timeout, verify=verify, user=user, compress=compress, headers=headers)
+    return await request(
+        "TELL",
+        message,
+        host=host,
+        port=port,
+        socket_path=socket_path,
+        timeout=timeout,
+        verify=verify,
+        user=user,
+        compress=compress,
+        headers=headers,
+    )
