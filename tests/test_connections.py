@@ -1,8 +1,13 @@
-from aiospamc.exceptions import AIOSpamcConnectionFailed
-from aiospamc.connections import ConnectionManager, TcpConnectionManager, UnixConnectionManager, Timeout
-
 import asyncio
+import ssl
+from pathlib import Path
+
 import pytest
+
+from aiospamc.exceptions import AIOSpamcConnectionFailed
+from aiospamc.connections import ConnectionManager, TcpConnectionManager, UnixConnectionManager, Timeout, new_ssl_context
+
+import certifi
 
 
 @pytest.fixture
@@ -170,7 +175,7 @@ def test_tcp_connection_manager_init(mocker, tcp_address):
 
     assert tcp_address[0] == t.host
     assert tcp_address[1] == t.port
-    assert mock_ssl_context is t.ssl
+    assert mock_ssl_context is t.ssl_context
 
 
 @pytest.mark.asyncio
@@ -239,3 +244,45 @@ def test_unix_connection_manager_connection_string(unix_socket):
     u = UnixConnectionManager(unix_socket)
 
     assert unix_socket == u.connection_string
+
+
+def test_ssl_context_from_true(mocker):
+    s = mocker.spy(ssl, 'create_default_context')
+    new_ssl_context(True)
+
+    assert s.call_args.kwargs['cafile'] == certifi.where()
+
+
+def test_ssl_context_from_false(mocker):
+    mocker.spy(ssl, 'create_default_context')
+    s = new_ssl_context(False)
+
+    assert ssl.create_default_context.call_args.kwargs['cafile'] == certifi.where()
+    assert s.check_hostname is False
+    assert s.verify_mode == ssl.CERT_NONE
+
+
+def test_ssl_context_from_dir(mocker, tmp_path):
+    mocker.spy(ssl, 'create_default_context')
+    temp = Path(str(tmp_path))
+    s = new_ssl_context(temp)
+
+    assert ssl.create_default_context.call_args.kwargs['capath'] == str(temp)
+
+
+def test_ssl_context_from_file(mocker, tmp_path):
+    mocker.spy(ssl, 'create_default_context')
+    file = tmp_path / 'certs.pem'
+    with open(str(file), 'wb') as dest:
+        with open(certifi.where(), 'rb') as source:
+            dest.writelines(source.readlines())
+    s = new_ssl_context(str(file))
+
+    assert ssl.create_default_context.call_args.kwargs['cafile'] == str(file)
+
+
+def test_ssl_context_file_not_found(tmp_path):
+    file = tmp_path / 'nonexistent.pem'
+
+    with pytest.raises(FileNotFoundError):
+        new_ssl_context(str(file))
