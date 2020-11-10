@@ -2,7 +2,17 @@
 
 """Frontend functions for the package."""
 
-from typing import Any, Callable, Dict, Mapping, Optional, SupportsBytes, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Mapping,
+    NamedTuple,
+    Optional,
+    SupportsBytes,
+    Type,
+    Union,
+)
 from ssl import SSLContext
 
 from .header_values import HeaderValue
@@ -26,6 +36,15 @@ ConnectionFactory = Callable[
 SSLFactory = Callable[[Any], Optional[SSLContext]]
 
 
+class Client(NamedTuple):
+    ssl_context_factory: SSLFactory
+    connection_factory: ConnectionFactory
+    parser_factory: Type[ResponseParser]
+
+
+DEFAULT_CLIENT = Client(new_ssl_context, new_connection, ResponseParser)
+
+
 async def request(
     verb: str,
     message: Union[bytes, SupportsBytes] = None,
@@ -38,14 +57,15 @@ async def request(
     user: Optional[str] = None,
     compress: bool = False,
     headers: Optional[Mapping[str, Union[str, HeaderValue]]] = None,
-    parser_cls: Any = ResponseParser,
-    ssl_factory: SSLFactory = new_ssl_context,
-    connection_factory: ConnectionFactory = new_connection,
+    client: Client = None,
 ) -> Response:
-
-    ssl_context = ssl_factory(verify)
-    connection = connection_factory(host, port, socket_path, timeout, ssl_context)
-    parser = parser_cls()
+    if not client:
+        client = DEFAULT_CLIENT
+    ssl_context = client.ssl_context_factory(verify)
+    connection = client.connection_factory(
+        host, port, socket_path, timeout, ssl_context
+    )
+    parser = client.parser_factory()
 
     request = Request(verb, headers=headers)
     if user:
@@ -57,8 +77,9 @@ async def request(
 
     response = await connection.request(bytes(request))
     parsed_response = parser.parse(response)
+    response_obj = Response(**parsed_response)
 
-    return parsed_response
+    return response_obj
 
 
 async def check(

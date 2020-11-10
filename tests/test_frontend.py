@@ -2,8 +2,9 @@
 
 import pytest
 
-from aiospamc.frontend import request, check, headers, process, ping, report, report_if_spam, symbols, tell
+from aiospamc.frontend import request, check, headers, process, ping, report, report_if_spam, symbols, tell, Client
 from aiospamc.options import ActionOption, MessageClassOption
+from aiospamc.responses import Response
 
 
 @pytest.fixture
@@ -12,36 +13,31 @@ def mock_request(mocker):
 
 
 @pytest.fixture
-def mock_connection_manager(mocker):
-    conn_manager_mock = mocker.Mock()
-    conn_manager_mock.return_value.request = mocker.AsyncMock()
+def mock_client_dependency(mocker):
+    ssl_factory = mocker.Mock()
+    connection_factory = mocker.Mock()
+    connection_factory.return_value.request = mocker.AsyncMock()
+    parser_factory = mocker.Mock()
+    parser_factory.return_value.parse.return_value = {}
 
-    yield conn_manager_mock
+    return Client(ssl_factory, connection_factory, parser_factory)
 
 
 @pytest.mark.asyncio
-async def test_request_verify_passed_to_ssl_factory(
-    mocker, spam, mock_connection_manager
-):
-    ssl_mock = mocker.Mock()
+async def test_request_verify_passed_to_ssl_factory(mocker, spam, mock_client_dependency):
     verify_mock = mocker.Mock()
     await request(
         "CHECK",
         spam,
         verify=verify_mock,
-        ssl_factory=ssl_mock,
-        connection_factory=mock_connection_manager,
-        parser_cls=mocker.Mock(),
+        client=mock_client_dependency
     )
 
-    assert verify_mock == ssl_mock.call_args.args[0]
+    assert verify_mock == mock_client_dependency.ssl_context_factory.call_args.args[0]
 
 
 @pytest.mark.asyncio
-async def test_request_connection_factory_args_passed(
-    mocker, spam, mock_connection_manager
-):
-    ssl_mock = mocker.Mock()
+async def test_request_connection_factory_args_passed(mocker, spam, mock_client_dependency):
     path_mock = mocker.Mock()
     timeout_mock = mocker.Mock()
     await request(
@@ -49,76 +45,62 @@ async def test_request_connection_factory_args_passed(
         spam,
         socket_path=path_mock,
         timeout=timeout_mock,
-        ssl_factory=ssl_mock,
-        connection_factory=mock_connection_manager,
-        parser_cls=mocker.Mock(),
+        client=mock_client_dependency
     )
 
-    assert "localhost" == mock_connection_manager.call_args.args[0]
-    assert 783 == mock_connection_manager.call_args.args[1]
-    assert path_mock == mock_connection_manager.call_args.args[2]
-    assert timeout_mock == mock_connection_manager.call_args.args[3]
-    assert ssl_mock.return_value == mock_connection_manager.call_args.args[4]
+    assert "localhost" == mock_client_dependency.connection_factory.call_args.args[0]
+    assert 783 == mock_client_dependency.connection_factory.call_args.args[1]
+    assert path_mock == mock_client_dependency.connection_factory.call_args.args[2]
+    assert timeout_mock == mock_client_dependency.connection_factory.call_args.args[3]
+    assert mock_client_dependency.ssl_context_factory.return_value == mock_client_dependency.connection_factory.call_args.args[4]
 
 
 @pytest.mark.asyncio
-async def test_request_parser_cls_instantiated(mocker, spam, mock_connection_manager):
-    parser_mock = mocker.Mock()
+async def test_request_parser_cls_instantiated(spam, mock_client_dependency):
     await request(
         "CHECK",
         spam,
         verify=True,
-        ssl_factory=mocker.Mock(),
-        connection_factory=mock_connection_manager,
-        parser_cls=parser_mock,
+        client=mock_client_dependency
     )
 
-    assert parser_mock.is_called
+    assert mock_client_dependency.parser_factory.is_called
 
 
 @pytest.mark.asyncio
-async def test_request_parsed_response_is_returned(
-    mocker, spam, mock_connection_manager
-):
-    parser_mock = mocker.Mock()
+async def test_request_parsed_response_is_returned(spam, mock_client_dependency):
     result = await request(
         "CHECK",
         spam,
         verify=True,
-        ssl_factory=mocker.Mock(),
-        connection_factory=mock_connection_manager,
-        parser_cls=parser_mock,
+        client=mock_client_dependency
     )
 
-    assert result is parser_mock.return_value.parse.return_value
+    assert isinstance(result, Response)
 
 
 @pytest.mark.asyncio
-async def test_request_passes_user_arg(mocker, spam, mock_connection_manager):
+async def test_request_passes_user_arg(spam, mock_client_dependency):
     result = await request(
         "CHECK",
         spam,
         user = "username",
-        ssl_factory=mocker.Mock(),
-        connection_factory=mock_connection_manager,
-        parser_cls=mocker.Mock(),
+        client=mock_client_dependency
     )
 
-    assert b"\r\nUser: username\r\n" in mock_connection_manager.return_value.request.call_args.args[0]
+    assert b"\r\nUser: username\r\n" in mock_client_dependency.connection_factory.return_value.request.call_args.args[0]
 
 
 @pytest.mark.asyncio
-async def test_request_passes_compress_arg(mocker, spam, mock_connection_manager):
+async def test_request_passes_compress_arg(spam, mock_client_dependency):
     await request(
         "CHECK",
         spam,
         compress = True,
-        ssl_factory=mocker.Mock(),
-        connection_factory=mock_connection_manager,
-        parser_cls=mocker.Mock(),
+        client=mock_client_dependency
     )
 
-    assert b"\r\nCompress: zlib\r\n" in mock_connection_manager.return_value.request.call_args.args[0]
+    assert b"\r\nCompress: zlib\r\n" in mock_client_dependency.connection_factory.return_value.request.call_args.args[0]
 
 
 @pytest.mark.asyncio
@@ -190,7 +172,7 @@ async def test_headers(mock_request, spam):
 
 
 @pytest.mark.asyncio
-async def test_ping_default_args_passed(mocker, mock_request):
+async def test_ping_default_args_passed(mock_request):
     await ping()
 
     assert "PING" == mock_request.call_args.args[0]
