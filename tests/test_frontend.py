@@ -2,13 +2,13 @@
 
 import pytest
 
-import aiospamc
-from aiospamc.client import Client
+from aiospamc.frontend import request, check, headers, process, ping, report, report_if_spam, symbols, tell
+from aiospamc.options import ActionOption, MessageClassOption
 
 
 @pytest.fixture
 def mock_request(mocker):
-    yield mocker.patch("aiospamc.request")
+    yield mocker.patch("aiospamc.frontend.request")
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ async def test_request_verify_passed_to_ssl_factory(
 ):
     ssl_mock = mocker.Mock()
     verify_mock = mocker.Mock()
-    await aiospamc.request(
+    await request(
         "CHECK",
         spam,
         verify=verify_mock,
@@ -44,7 +44,7 @@ async def test_request_connection_factory_args_passed(
     ssl_mock = mocker.Mock()
     path_mock = mocker.Mock()
     timeout_mock = mocker.Mock()
-    await aiospamc.request(
+    await request(
         "CHECK",
         spam,
         socket_path=path_mock,
@@ -64,7 +64,7 @@ async def test_request_connection_factory_args_passed(
 @pytest.mark.asyncio
 async def test_request_parser_cls_instantiated(mocker, spam, mock_connection_manager):
     parser_mock = mocker.Mock()
-    await aiospamc.request(
+    await request(
         "CHECK",
         spam,
         verify=True,
@@ -81,7 +81,7 @@ async def test_request_parsed_response_is_returned(
     mocker, spam, mock_connection_manager
 ):
     parser_mock = mocker.Mock()
-    result = await aiospamc.request(
+    result = await request(
         "CHECK",
         spam,
         verify=True,
@@ -95,7 +95,7 @@ async def test_request_parsed_response_is_returned(
 
 @pytest.mark.asyncio
 async def test_request_passes_user_arg(mocker, spam, mock_connection_manager):
-    result = await aiospamc.request(
+    result = await request(
         "CHECK",
         spam,
         user = "username",
@@ -109,7 +109,7 @@ async def test_request_passes_user_arg(mocker, spam, mock_connection_manager):
 
 @pytest.mark.asyncio
 async def test_request_passes_compress_arg(mocker, spam, mock_connection_manager):
-    await aiospamc.request(
+    await request(
         "CHECK",
         spam,
         compress = True,
@@ -128,7 +128,7 @@ async def test_check_default_args_passed(mock_request, spam, mocker):
     verify_mock = mocker.Mock()
     user_mock = mocker.Mock()
     compress_mock = mocker.Mock()
-    await aiospamc.check(
+    await check(
         spam,
         socket_path=socket_path_mock,
         timeout=timeout_mock,
@@ -149,7 +149,7 @@ async def test_check_default_args_passed(mock_request, spam, mocker):
 
 @pytest.mark.asyncio
 async def test_check(mock_request, spam):
-    result = await aiospamc.check(spam)
+    result = await check(spam)
 
     assert result is mock_request.return_value
     assert spam == mock_request.await_args.args[1]
@@ -162,7 +162,7 @@ async def test_headers_default_args_passed(mock_request, spam, mocker):
     verify_mock = mocker.Mock()
     user_mock = mocker.Mock()
     compress_mock = mocker.Mock()
-    await aiospamc.headers(
+    await headers(
         spam,
         socket_path=socket_path_mock,
         timeout=timeout_mock,
@@ -183,7 +183,7 @@ async def test_headers_default_args_passed(mock_request, spam, mocker):
 
 @pytest.mark.asyncio
 async def test_headers(mock_request, spam):
-    result = await aiospamc.headers(spam)
+    result = await headers(spam)
 
     assert result is mock_request.return_value
     assert spam == mock_request.await_args.args[1]
@@ -191,7 +191,7 @@ async def test_headers(mock_request, spam):
 
 @pytest.mark.asyncio
 async def test_ping_default_args_passed(mocker, mock_request):
-    await aiospamc.ping()
+    await ping()
 
     assert "PING" == mock_request.call_args.args[0]
     assert "localhost" == mock_request.call_args.kwargs["host"]
@@ -200,14 +200,14 @@ async def test_ping_default_args_passed(mocker, mock_request):
 
 @pytest.mark.asyncio
 async def test_ping(mock_request):
-    result = await aiospamc.ping()
+    result = await ping()
 
     assert result is mock_request.return_value
 
 
 @pytest.mark.asyncio
 async def test_process_default_args_passed(mock_request, spam):
-    await aiospamc.process(spam)
+    await process(spam)
 
     assert "PROCESS" == mock_request.call_args.args[0]
     assert "localhost" == mock_request.call_args.kwargs["host"]
@@ -216,7 +216,7 @@ async def test_process_default_args_passed(mock_request, spam):
 
 @pytest.mark.asyncio
 async def test_process(mock_request, spam):
-    result = await aiospamc.process(spam)
+    result = await process(spam)
 
     assert result is mock_request.return_value
     assert spam == mock_request.await_args.args[1]
@@ -224,7 +224,7 @@ async def test_process(mock_request, spam):
 
 @pytest.mark.asyncio
 async def test_report_default_args_passed(mock_request, spam):
-    await aiospamc.report(spam)
+    await report(spam)
 
     assert "REPORT" == mock_request.call_args.args[0]
     assert "localhost" == mock_request.call_args.kwargs["host"]
@@ -233,7 +233,7 @@ async def test_report_default_args_passed(mock_request, spam):
 
 @pytest.mark.asyncio
 async def test_report(mock_request, spam):
-    result = await aiospamc.report(spam)
+    result = await report(spam)
 
     assert result is mock_request.return_value
     assert spam == mock_request.await_args.args[1]
@@ -241,7 +241,7 @@ async def test_report(mock_request, spam):
 
 @pytest.mark.asyncio
 async def test_report_if_spam_default_args_passed(mock_request, spam):
-    await aiospamc.report_if_spam(spam)
+    await report_if_spam(spam)
 
     assert "REPORT_IFSPAM" == mock_request.call_args.args[0]
     assert "localhost" == mock_request.call_args.kwargs["host"]
@@ -250,7 +250,7 @@ async def test_report_if_spam_default_args_passed(mock_request, spam):
 
 @pytest.mark.asyncio
 async def test_report_if_spam(mock_request, spam):
-    result = await aiospamc.report_if_spam(spam)
+    result = await report_if_spam(spam)
 
     assert result is mock_request.return_value
     assert spam == mock_request.await_args.args[1]
@@ -258,7 +258,7 @@ async def test_report_if_spam(mock_request, spam):
 
 @pytest.mark.asyncio
 async def test_symbols_default_args_passed(mock_request, spam):
-    await aiospamc.symbols(spam)
+    await symbols(spam)
 
     assert "SYMBOLS" == mock_request.call_args.args[0]
     assert "localhost" == mock_request.call_args.kwargs["host"]
@@ -267,7 +267,7 @@ async def test_symbols_default_args_passed(mock_request, spam):
 
 @pytest.mark.asyncio
 async def test_symbols(mock_request, spam):
-    result = await aiospamc.symbols(spam)
+    result = await symbols(spam)
 
     assert result is mock_request.return_value
     assert spam == mock_request.await_args.args[1]
@@ -275,7 +275,7 @@ async def test_symbols(mock_request, spam):
 
 @pytest.mark.asyncio
 async def test_tell_default_args_passed(mocker, mock_request, spam):
-    await aiospamc.tell(spam, message_class=mocker.Mock())
+    await tell(spam, message_class=mocker.Mock())
 
     assert "TELL" == mock_request.call_args.args[0]
     assert "localhost" == mock_request.call_args.kwargs["host"]
@@ -290,14 +290,14 @@ async def test_tell_default_args_passed(mocker, mock_request, spam):
     [
         ["ham", "local,remote", "local,remote"],
         ["spam", "local,remote", "local,remote"],
-        [aiospamc.MessageClassOption.ham, "local,remote", "local,remote"],
-        [aiospamc.MessageClassOption.spam, "local,remote", "local,remote"],
-        ["spam", aiospamc.ActionOption(local=True, remote=False), "local,remote"],
-        ["spam", "local,remote", aiospamc.ActionOption(local=True, remote=False)],
+        [MessageClassOption.ham, "local,remote", "local,remote"],
+        [MessageClassOption.spam, "local,remote", "local,remote"],
+        ["spam", ActionOption(local=True, remote=False), "local,remote"],
+        ["spam", "local,remote", ActionOption(local=True, remote=False)],
     ],
 )
 async def test_tell(mock_request, spam, message_class, remove_action, set_action):
-    result = await aiospamc.tell(
+    result = await tell(
         spam,
         message_class=message_class,
         remove_action=remove_action,
