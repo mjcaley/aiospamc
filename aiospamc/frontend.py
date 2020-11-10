@@ -2,7 +2,7 @@
 
 """Frontend functions for the package."""
 
-from typing import Any, Callable, Mapping, Optional, SupportsBytes, Union
+from typing import Any, Callable, Dict, Mapping, Optional, SupportsBytes, Union
 from ssl import SSLContext
 
 from .header_values import HeaderValue
@@ -14,9 +14,9 @@ from .requests import Request
 
 
 ConnectionFactory = Callable[
-    [str, int, str, Optional[Timeout], Optional[SSLContext]], ConnectionManager
+    [Optional[str], Optional[int], Optional[str], Optional[Timeout], Optional[SSLContext]], ConnectionManager
 ]
-SSLFactory = Callable[[Any], SSLContext]
+SSLFactory = Callable[[Any], Optional[SSLContext]]
 
 
 async def request(
@@ -63,7 +63,7 @@ async def check(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None,
+    compress: bool = True,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -120,7 +120,7 @@ async def headers(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None,
+    compress: bool = True,
 ) -> Response:
     """Checks a message if it's spam and return the modified message headers.
 
@@ -178,7 +178,7 @@ async def ping(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None,
+    compress: bool = True,
 ) -> Response:
     """Sends a ping to the SPAMD service.
 
@@ -231,7 +231,7 @@ async def process(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None,
+    compress: bool = True,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -289,7 +289,7 @@ async def report(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None,
+    compress: bool = True,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -346,7 +346,7 @@ async def report_if_spam(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None,
+    compress: bool = True,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -404,7 +404,7 @@ async def symbols(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None,
+    compress: bool = True,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -465,7 +465,7 @@ async def tell(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = None,
+    compress: bool = True,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -504,7 +504,7 @@ async def tell(
     :raises TimeoutException: Timeout during connection.
     """
 
-    headers = {"Message-class": message_class}
+    headers: Dict[str, Any] = {"Message-class": message_class}
     if remove_action:
         headers["Remove"] = remove_action
     if set_action:

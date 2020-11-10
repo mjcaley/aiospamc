@@ -261,7 +261,7 @@ def new_ssl_context(verify: Optional[Any]) -> Optional[ssl.SSLContext]:
     """
 
     if verify is None:
-        return
+        return None
     elif verify is True:
         return ssl.create_default_context(cafile=certifi.where())
     elif verify is False:
@@ -279,7 +279,7 @@ def new_ssl_context(verify: Optional[Any]) -> Optional[ssl.SSLContext]:
             raise FileNotFoundError(f"Certificate path does not exist at {verify}")
 
 
-def new_connection(host: str, port: int, socket_path: str, timeout: Timeout = None, context: Optional[ssl.SSLContext] = None) -> ConnectionManager:
+def new_connection(host: Optional[str], port: Optional[int], socket_path: Optional[str], timeout: Optional[Timeout] = None, context: Optional[ssl.SSLContext] = None) -> ConnectionManager:
     if socket_path:
         return UnixConnectionManager(socket_path, timeout=timeout)
     elif host and port:
