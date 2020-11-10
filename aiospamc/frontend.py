@@ -14,7 +14,14 @@ from .requests import Request
 
 
 ConnectionFactory = Callable[
-    [Optional[str], Optional[int], Optional[str], Optional[Timeout], Optional[SSLContext]], ConnectionManager
+    [
+        Optional[str],
+        Optional[int],
+        Optional[str],
+        Optional[Timeout],
+        Optional[SSLContext],
+    ],
+    ConnectionManager,
 ]
 SSLFactory = Callable[[Any], Optional[SSLContext]]
 

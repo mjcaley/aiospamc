@@ -166,7 +166,11 @@ class ConnectionManager:
 
 class TcpConnectionManager(ConnectionManager):
     def __init__(
-        self, host: str, port: int, ssl_context: ssl.SSLContext = None, timeout: Timeout = None
+        self,
+        host: str,
+        port: int,
+        ssl_context: ssl.SSLContext = None,
+        timeout: Timeout = None,
     ) -> None:
         """TcpConnectionManager constructor.
 
@@ -279,7 +283,13 @@ def new_ssl_context(verify: Optional[Any]) -> Optional[ssl.SSLContext]:
             raise FileNotFoundError(f"Certificate path does not exist at {verify}")
 
 
-def new_connection(host: Optional[str], port: Optional[int], socket_path: Optional[str], timeout: Optional[Timeout] = None, context: Optional[ssl.SSLContext] = None) -> ConnectionManager:
+def new_connection(
+    host: Optional[str],
+    port: Optional[int],
+    socket_path: Optional[str],
+    timeout: Optional[Timeout] = None,
+    context: Optional[ssl.SSLContext] = None,
+) -> ConnectionManager:
     if socket_path:
         return UnixConnectionManager(socket_path, timeout=timeout)
     elif host and port:

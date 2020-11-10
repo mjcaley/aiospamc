@@ -5,7 +5,16 @@
 An asyncio-based library to communicate with SpamAssassin's SPAMD service."""
 
 from .connections import Timeout
-from .frontend import check, headers, ping, process, report, report_if_spam, symbols, tell
+from .frontend import (
+    check,
+    headers,
+    ping,
+    process,
+    report,
+    report_if_spam,
+    symbols,
+    tell,
+)
 from .options import ActionOption, MessageClassOption
 
 __all__ = ("MessageClassOption", "ActionOption", "Timeout")
