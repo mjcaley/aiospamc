@@ -1,5 +1,6 @@
 import asyncio
 import ssl
+import sys
 from pathlib import Path
 
 import pytest
@@ -209,12 +210,13 @@ def test_tcp_connection_manager_connection_string(tcp_address):
     assert f'{tcp_address[0]}:{tcp_address[1]}' == t.connection_string
 
 
-def test_unix_connection_manager_init(mocker):
+def test_unix_connection_manager_init():
     u = UnixConnectionManager('spamd.sock')
 
     assert 'spamd.sock' == u.path
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not supported on Windows")
 @pytest.mark.asyncio
 async def test_unix_connection_manager_open(mock_open_unix_connection):
     u = UnixConnectionManager('spamd.sock')
@@ -224,6 +226,7 @@ async def test_unix_connection_manager_open(mock_open_unix_connection):
     assert mock_open_unix_connection[1] is writer
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not supported on Windows")
 @pytest.mark.asyncio
 async def test_unix_connection_manager_open_refused(mock_open_unix_connection_refused):
     u = UnixConnectionManager('spamd.sock')
@@ -232,6 +235,7 @@ async def test_unix_connection_manager_open_refused(mock_open_unix_connection_re
         await u.open()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not supported on Windows")
 @pytest.mark.asyncio
 async def test_unix_connection_manager_open_refused(mock_open_unix_connection_error):
     u = UnixConnectionManager('spamd.sock')
