@@ -4,20 +4,20 @@ import pytest
 
 from email.message import EmailMessage
 
-from aiospamc import Client
+import aiospamc
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
-async def test_spam(stub_connection_manager, response_spam_header, spam):
-    c = Client()
-    c.connection = stub_connection_manager(return_value=response_spam_header)
-    result = await c.check(spam)
+async def test_spam(spam):
+    result = await aiospamc.check(spam)
 
     assert result
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
-async def test_gtk_encoding(stub_connection_manager, response_ok):
+async def test_gtk_encoding():
     message = EmailMessage()
     message.add_header('From', 'wevsty <example@example.com>')
     message.add_header('Subject', '=?UTF-8?B?5Lit5paH5rWL6K+V?=')
@@ -29,8 +29,6 @@ async def test_gtk_encoding(stub_connection_manager, response_ok):
     message.set_content('这是Unicode文字.'
                         'This is Unicode characters.')
 
-    c = Client()
-    c.connection = stub_connection_manager(return_value=response_ok)
-    result = await c.check(message)
+    result = await aiospamc.check(message)
 
     assert result
