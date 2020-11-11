@@ -91,7 +91,7 @@ async def check(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = True,
+    compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -148,7 +148,7 @@ async def headers(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = True,
+    compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return the modified message headers.
 
@@ -206,7 +206,7 @@ async def ping(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = True,
+    compress: bool = False,
 ) -> Response:
     """Sends a ping to the SPAMD service.
 
@@ -259,7 +259,7 @@ async def process(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = True,
+    compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -317,7 +317,7 @@ async def report(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = True,
+    compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -374,7 +374,7 @@ async def report_if_spam(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = True,
+    compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -432,7 +432,7 @@ async def symbols(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = True,
+    compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -493,7 +493,7 @@ async def tell(
     timeout: Timeout = None,
     verify: Optional[Any] = None,
     user: str = None,
-    compress: bool = True,
+    compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
