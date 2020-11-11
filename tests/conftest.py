@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 
-import asyncio
+import datetime
+from functools import partial
+from pathlib import Path
+from shutil import which
+from subprocess import DEVNULL, TimeoutExpired, Popen
 import sys
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography import x509
 
 import pytest
 
@@ -10,10 +19,6 @@ from aiospamc.requests import Request
 
 def pytest_addoption(parser):
     parser.addoption('--spamd-process-timeout', action='store', default=10, type=int)
-
-
-if sys.platform == 'win32':
-    collect_ignore = ['connections/test_unix_connection.py', 'connections/test_unix_connection_manager.py']
 
 
 @pytest.fixture
@@ -60,12 +65,14 @@ def request_with_body():
     return Request(verb='CHECK', version='1.5', headers={'Content-length': len(body)}, body=body)
 
 
+# Deprecated
 @pytest.fixture
 def request_ping():
     '''PING request.'''
     return Request(verb='PING')
 
 
+# Deprecated
 @pytest.fixture
 def response_empty():
     '''Empty response.'''
@@ -90,6 +97,7 @@ def response_tell():
     return b'SPAMD/1.1 0 EX_OK\r\n\r\n\r\n'
 
 
+# Deprecated
 @pytest.fixture
 def response_spam_header():
     '''Response with Spam header in bytes.'''
@@ -102,12 +110,14 @@ def response_with_body():
     return b'SPAMD/1.5 0 EX_OK\r\nContent-length: 10\r\n\r\nTest body\n'
 
 
+# Deprecated
 @pytest.fixture
 def response_empty_body():
     '''Response with Content-length header, but empty body in bytes.'''
     return b'SPAMD/1.5 0 EX_OK\r\nContent-length: 0\r\n\r\n'
 
 
+# Deprecated
 @pytest.fixture
 def response_invalid():
     '''Invalid response in bytes.'''
@@ -217,47 +227,138 @@ def ex_undefined():
     return b'SPAMD/1.5 999 EX_UNDEFINED\r\n\r\n'
 
 
-# Mock fixtures for asyncio objects/functions
+# Integration fixtures
 
-@pytest.fixture
-def connection_refused(mocker):
-    tcp_open = mocker.patch('asyncio.open_connection', side_effect=[ConnectionRefusedError()])
+@pytest.fixture(scope='session')
+def certificate(tmp_path_factory):
+    certs_path = tmp_path_factory.mktemp('localhost_certs')
+    key = rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
+    subject = issuer = x509.Name([
+        x509.NameAttribute(x509.NameOID.COUNTRY_NAME, "CA"),
+        x509.NameAttribute(x509.NameOID.STATE_OR_PROVINCE_NAME, "Ontario"),
+        x509.NameAttribute(x509.NameOID.LOCALITY_NAME, "Toronto"),
+        x509.NameAttribute(x509.NameOID.ORGANIZATION_NAME, "mjcaley"),
+        x509.NameAttribute(x509.NameOID.COMMON_NAME, "aiospamc")
+    ])
+    cert = x509.CertificateBuilder().subject_name(
+        subject
+    ).issuer_name(
+        issuer
+    ).public_key(
+        key.public_key()
+    ).serial_number(
+        x509.random_serial_number()
+    ).not_valid_before(
+        datetime.datetime.utcnow()
+    ).not_valid_after(
+        datetime.datetime.utcnow() + datetime.timedelta(days=7)
+    ).add_extension(
+        x509.SubjectAlternativeName([x509.DNSName("localhost")]), critical=False
+    ).sign(key, hashes.SHA256(), default_backend())
+
+    key_path = certs_path / 'localhost.key'
+    with open(str(key_path), 'wb') as key_file:
+        key_file.write(key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        ))
+    cert_path = certs_path / 'localhost.cert'
+    with open(str(cert_path), 'wb') as cert_file:
+        cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
+
+    yield key_path, cert_path
+
+
+@pytest.fixture(scope='session')
+def spamd_tcp_options():
+    port = 1783
+
+    return {'host': 'localhost', 'port': port}
+
+
+@pytest.fixture(scope='session')
+def spamd_ssl_options(certificate):
+    port = 11783
+
+    return {
+        'host': 'localhost',
+        'port': port,
+        'key': str(certificate[0]),
+        'cert': str(certificate[1])
+    }
+
+
+@pytest.fixture(scope='session')
+def spamd_unix_options(tmp_path_factory):
+    path = tmp_path_factory.mktemp('sockets') / 'spamd.sock'
+
     if sys.platform == 'win32':
-        yield
+        return None
     else:
-        unix_open = mocker.patch('asyncio.open_unix_connection', side_effect=[ConnectionRefusedError()])
-        yield
+        return {'socket': str(path)}
 
 
-@pytest.fixture
-def mock_connection(mocker, response_ok):
-    from itertools import cycle
+@pytest.fixture(scope='session')
+def spamd(spamd_tcp_options, spamd_ssl_options, spamd_unix_options, tmp_path_factory, request):
+    spamd_path = str(Path(which('spamd')).parent)
+    spamd_start = 'info: spamd: server started on'
+    log_file = tmp_path_factory.mktemp('spamd') / 'spamd.log'
 
-    reader = mocker.MagicMock(spec=asyncio.StreamReader)
-    reader.read.side_effect = cycle([response_ok])
-    writer = mocker.MagicMock(spec=asyncio.StreamWriter)
+    options = [
+        f'--syslog={str(log_file)}',
+        '--local',
+        '--allow-tell',
+        f'--listen={spamd_tcp_options["host"]}:{spamd_tcp_options["port"]}',
+        f'--listen=ssl:{spamd_ssl_options["host"]}:{spamd_ssl_options["port"]}',
+        '--server-key',
+        f'{spamd_ssl_options["key"]}',
+        '--server-cert',
+        f'{spamd_ssl_options["cert"]}'
+    ]
+    if spamd_unix_options:
+        options += [f'--socketpath={spamd_unix_options["socket"]}']
 
-    conn_string = mocker.patch('aiospamc.connections.Connection.connection_string',
-                        return_value='MockConnectionString')
-    conn_open = mocker.patch('aiospamc.connections.Connection.open',
-                      return_value=(reader, writer))
-    tcp_open = mocker.patch('aiospamc.connections.tcp_connection.TcpConnection.open',
-                     return_value=(reader, writer))
-    unix_open = mocker.patch('aiospamc.connections.unix_connection.UnixConnection.open',
-                      return_value=(reader, writer))
+    process = Popen(
+        ['spamd', *options],
+        cwd=spamd_path,
+        stdout=DEVNULL, stderr=DEVNULL,
+        universal_newlines=True
+    )
 
-    if sys.platform == 'win32':
-        yield reader.read
+    def terminate(process):
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
+    request.addfinalizer(partial(terminate, process))
+
+    timeout = datetime.datetime.utcnow() + datetime.timedelta(
+        seconds=request.config.getoption('--spamd-process-timeout')
+    )
+    while not log_file.exists():
+        if datetime.datetime.utcnow() > timeout:
+            raise TimeoutError
+
+    running = False
+    with open(str(log_file), 'r') as log:
+        while not running:
+            if datetime.datetime.utcnow() > timeout:
+                raise TimeoutError
+
+            log.seek(0)
+            for line in log:
+                if spamd_start in line:
+                    running = True
+                    break
+
+    if running:
+        yield {
+            'tcp': spamd_tcp_options,
+            'ssl': spamd_ssl_options,
+            'unix': spamd_unix_options
+        }
     else:
-        yield reader.read
-
-
-@pytest.fixture
-def stub_connection_manager(mocker):
-    def inner(return_value=None, side_effect=None):
-        connection = mocker.Mock()
-        connection.request = mocker.AsyncMock(return_value=return_value, side_effect=side_effect)
-
-        return connection
-
-    yield inner
+        raise ChildProcessError
