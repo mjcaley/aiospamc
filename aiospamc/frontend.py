@@ -2,6 +2,7 @@
 
 """Frontend functions for the package."""
 
+from aiospamc.exceptions import BadResponse
 from typing import (
     Any,
     Callable,
@@ -18,7 +19,7 @@ from ssl import SSLContext
 from .header_values import HeaderValue
 from .connections import Timeout, new_connection, new_ssl_context, ConnectionManager
 from .options import ActionOption, MessageClassOption
-from .incremental_parser import ResponseParser
+from .incremental_parser import ParseError, ResponseParser
 from .responses import Response
 from .requests import Request
 
@@ -76,7 +77,10 @@ async def request(
         request.body = bytes(message)
 
     response = await connection.request(bytes(request))
-    parsed_response = parser.parse(response)
+    try:
+        parsed_response = parser.parse(response)
+    except ParseError as e:
+        raise BadResponse(e, response)
     response_obj = Response(**parsed_response)
 
     return response_obj
@@ -92,6 +96,7 @@ async def check(
     verify: Optional[Any] = None,
     user: str = None,
     compress: bool = False,
+    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -126,6 +131,8 @@ async def check(
     :raises TimeoutException: Timeout during connection.
     """
 
+    client = kwargs.get("client")
+
     return await request(
         "CHECK",
         message,
@@ -136,6 +143,7 @@ async def check(
         verify=verify,
         user=user,
         compress=compress,
+        client=client,
     )
 
 
@@ -149,6 +157,7 @@ async def headers(
     verify: Optional[Any] = None,
     user: str = None,
     compress: bool = False,
+    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return the modified message headers.
 
@@ -185,6 +194,8 @@ async def headers(
     :raises TimeoutException: Timeout during connection.
     """
 
+    client = kwargs.get("client")
+
     return await request(
         "HEADERS",
         message,
@@ -195,6 +206,7 @@ async def headers(
         verify=verify,
         user=user,
         compress=compress,
+        client=client,
     )
 
 
@@ -207,6 +219,7 @@ async def ping(
     verify: Optional[Any] = None,
     user: str = None,
     compress: bool = False,
+    **kwargs,
 ) -> Response:
     """Sends a ping to the SPAMD service.
 
@@ -238,6 +251,8 @@ async def ping(
     :raises TimeoutException: Timeout during connection.
     """
 
+    client = kwargs.get("client")
+
     return await request(
         "PING",
         host=host,
@@ -247,6 +262,7 @@ async def ping(
         verify=verify,
         user=user,
         compress=compress,
+        client=client,
     )
 
 
@@ -260,6 +276,7 @@ async def process(
     verify: Optional[Any] = None,
     user: str = None,
     compress: bool = False,
+    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -295,6 +312,8 @@ async def process(
     :raises TimeoutException: Timeout during connection.
     """
 
+    client = kwargs.get("client")
+
     return await request(
         "PROCESS",
         message,
@@ -305,6 +324,7 @@ async def process(
         verify=verify,
         user=user,
         compress=compress,
+        client=client,
     )
 
 
@@ -318,6 +338,7 @@ async def report(
     verify: Optional[Any] = None,
     user: str = None,
     compress: bool = False,
+    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -352,6 +373,8 @@ async def report(
     :raises TimeoutException: Timeout during connection.
     """
 
+    client = kwargs.get("client")
+
     return await request(
         "REPORT",
         message,
@@ -362,6 +385,7 @@ async def report(
         verify=verify,
         user=user,
         compress=compress,
+        client=client,
     )
 
 
@@ -375,6 +399,7 @@ async def report_if_spam(
     verify: Optional[Any] = None,
     user: str = None,
     compress: bool = False,
+    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -410,6 +435,8 @@ async def report_if_spam(
     :raises TimeoutException: Timeout during connection.
     """
 
+    client = kwargs.get("client")
+
     return await request(
         "REPORT_IFSPAM",
         message,
@@ -420,6 +447,7 @@ async def report_if_spam(
         verify=verify,
         user=user,
         compress=compress,
+        client=client,
     )
 
 
@@ -433,6 +461,7 @@ async def symbols(
     verify: Optional[Any] = None,
     user: str = None,
     compress: bool = False,
+    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -468,6 +497,8 @@ async def symbols(
     :raises TimeoutException: Timeout during connection.
     """
 
+    client = kwargs.get("client")
+
     return await request(
         "SYMBOLS",
         message,
@@ -478,6 +509,7 @@ async def symbols(
         verify=verify,
         user=user,
         compress=compress,
+        client=client,
     )
 
 
@@ -494,6 +526,7 @@ async def tell(
     verify: Optional[Any] = None,
     user: str = None,
     compress: bool = False,
+    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -532,6 +565,8 @@ async def tell(
     :raises TimeoutException: Timeout during connection.
     """
 
+    client = kwargs.get("client")
+
     headers: Dict[str, Any] = {"Message-class": message_class}
     if remove_action:
         headers["Remove"] = remove_action
@@ -549,4 +584,5 @@ async def tell(
         user=user,
         compress=compress,
         headers=headers,
+        client=client,
     )

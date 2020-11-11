@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+from aiospamc.exceptions import BadResponse
 import pytest
 
 from aiospamc.frontend import request, check, headers, process, ping, report, report_if_spam, symbols, tell, Client
+from aiospamc.incremental_parser import ResponseParser
 from aiospamc.options import ActionOption, MessageClassOption
 from aiospamc.responses import Response
 
@@ -13,14 +15,23 @@ def mock_request(mocker):
 
 
 @pytest.fixture
-def mock_client_dependency(mocker):
+def mock_client_dependency(mocker, response_ok):
     ssl_factory = mocker.Mock()
     connection_factory = mocker.Mock()
-    connection_factory.return_value.request = mocker.AsyncMock()
-    parser_factory = mocker.Mock()
-    parser_factory.return_value.parse.return_value = {}
+    connection_factory.return_value.request = mocker.AsyncMock(return_value=response_ok)
+    parser_factory = mocker.Mock(side_effect=lambda: ResponseParser())
 
     return Client(ssl_factory, connection_factory, parser_factory)
+
+
+@pytest.fixture
+def mock_client_response(mock_client_dependency):
+    def inner(response):
+        mock_client_dependency.connection_factory.return_value.request.return_value = response
+        
+        return mock_client_dependency
+
+    return inner
 
 
 @pytest.mark.asyncio
