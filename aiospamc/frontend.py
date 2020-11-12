@@ -7,7 +7,6 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Mapping,
     NamedTuple,
     Optional,
     SupportsBytes,
@@ -16,7 +15,6 @@ from typing import (
 )
 from ssl import SSLContext
 
-from .header_values import HeaderValue
 from .connections import Timeout, new_connection, new_ssl_context, ConnectionManager
 from .options import ActionOption, MessageClassOption
 from .incremental_parser import ParseError, ResponseParser
@@ -47,43 +45,49 @@ DEFAULT_CLIENT = Client(new_ssl_context, new_connection, ResponseParser)
 
 
 async def request(
-    verb: str,
-    message: Union[bytes, SupportsBytes] = None,
-    *,
+    req: Request, connection: ConnectionManager, parser: ResponseParser
+) -> Response:
+    """Sends a request and returns the parsed response.
+
+    :param req: The request to send.
+    :param connection: An instance of a connection.
+    :param parser: An instance of a response parser.
+
+    :return: The parsed response.
+
+    :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
+    """
+
+    response = await connection.request(bytes(req))
+    try:
+        parsed_response = parser.parse(response)
+    except ParseError as e:
+        raise BadResponse(response) from e
+    response_obj = Response(**parsed_response)
+
+    return response_obj
+
+
+def _new_connection(
+    connection_factory: ConnectionFactory,
+    ssl_context_factory: SSLFactory,
     host: str = "localhost",
     port: int = 783,
     socket_path: str = None,
     timeout: Timeout = None,
-    verify: Optional[Any] = None,
-    user: Optional[str] = None,
-    compress: bool = False,
-    headers: Optional[Mapping[str, Union[str, HeaderValue]]] = None,
-    client: Client = None,
-) -> Response:
-    if not client:
-        client = DEFAULT_CLIENT
-    ssl_context = client.ssl_context_factory(verify)
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
-    )
-    parser = client.parser_factory()
+    verify: Any = None,
+) -> ConnectionManager:
+    ssl_context = ssl_context_factory(verify)
+    connection = connection_factory(host, port, socket_path, timeout, ssl_context)
 
-    request = Request(verb, headers=headers)
+    return connection
+
+
+def _add_headers(req: Request, user: Optional[str], compress: Optional[bool]) -> None:
     if user:
-        request.headers["User"] = user
+        req.headers["User"] = user
     if compress:
-        request.headers["Compress"] = "zlib"
-    if message:
-        request.body = bytes(message)
-
-    response = await connection.request(bytes(request))
-    try:
-        parsed_response = parser.parse(response)
-    except ParseError as e:
-        raise BadResponse(e, response)
-    response_obj = Response(**parsed_response)
-
-    return response_obj
+        req.headers["Compress"] = "zlib"
 
 
 async def check(
@@ -131,20 +135,22 @@ async def check(
     :raises TimeoutException: Timeout during connection.
     """
 
-    client = kwargs.get("client")
+    client = kwargs.get("client", DEFAULT_CLIENT)
 
-    return await request(
-        "CHECK",
-        message,
-        host=host,
-        port=port,
-        socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
-        user=user,
-        compress=compress,
-        client=client,
+    req = Request("CHECK", body=bytes(message))
+    _add_headers(req, user, compress)
+    connection = _new_connection(
+        client.connection_factory,
+        client.ssl_context_factory,
+        host,
+        port,
+        socket_path,
+        timeout,
+        verify,
     )
+    parser = client.parser_factory()
+
+    return await request(req, connection, parser)
 
 
 async def headers(
@@ -194,20 +200,22 @@ async def headers(
     :raises TimeoutException: Timeout during connection.
     """
 
-    client = kwargs.get("client")
+    client = kwargs.get("client", DEFAULT_CLIENT)
 
-    return await request(
-        "HEADERS",
-        message,
-        host=host,
-        port=port,
-        socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
-        user=user,
-        compress=compress,
-        client=client,
+    req = Request("HEADERS", body=bytes(message))
+    _add_headers(req, user, compress)
+    connection = _new_connection(
+        client.connection_factory,
+        client.ssl_context_factory,
+        host,
+        port,
+        socket_path,
+        timeout,
+        verify,
     )
+    parser = client.parser_factory()
+
+    return await request(req, connection, parser)
 
 
 async def ping(
@@ -217,8 +225,6 @@ async def ping(
     socket_path: str = None,
     timeout: Timeout = None,
     verify: Optional[Any] = None,
-    user: str = None,
-    compress: bool = False,
     **kwargs,
 ) -> Response:
     """Sends a ping to the SPAMD service.
@@ -251,19 +257,21 @@ async def ping(
     :raises TimeoutException: Timeout during connection.
     """
 
-    client = kwargs.get("client")
+    client = kwargs.get("client", DEFAULT_CLIENT)
 
-    return await request(
-        "PING",
-        host=host,
-        port=port,
-        socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
-        user=user,
-        compress=compress,
-        client=client,
+    req = Request("PING")
+    connection = _new_connection(
+        client.connection_factory,
+        client.ssl_context_factory,
+        host,
+        port,
+        socket_path,
+        timeout,
+        verify,
     )
+    parser = client.parser_factory()
+
+    return await request(req, connection, parser)
 
 
 async def process(
@@ -312,20 +320,22 @@ async def process(
     :raises TimeoutException: Timeout during connection.
     """
 
-    client = kwargs.get("client")
+    client = kwargs.get("client", DEFAULT_CLIENT)
 
-    return await request(
-        "PROCESS",
-        message,
-        host=host,
-        port=port,
-        socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
-        user=user,
-        compress=compress,
-        client=client,
+    req = Request("PROCESS", body=bytes(message))
+    _add_headers(req, user, compress)
+    connection = _new_connection(
+        client.connection_factory,
+        client.ssl_context_factory,
+        host,
+        port,
+        socket_path,
+        timeout,
+        verify,
     )
+    parser = client.parser_factory()
+
+    return await request(req, connection, parser)
 
 
 async def report(
@@ -373,20 +383,22 @@ async def report(
     :raises TimeoutException: Timeout during connection.
     """
 
-    client = kwargs.get("client")
+    client = kwargs.get("client", DEFAULT_CLIENT)
 
-    return await request(
-        "REPORT",
-        message,
-        host=host,
-        port=port,
-        socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
-        user=user,
-        compress=compress,
-        client=client,
+    req = Request("REPORT", body=bytes(message))
+    _add_headers(req, user, compress)
+    connection = _new_connection(
+        client.connection_factory,
+        client.ssl_context_factory,
+        host,
+        port,
+        socket_path,
+        timeout,
+        verify,
     )
+    parser = client.parser_factory()
+
+    return await request(req, connection, parser)
 
 
 async def report_if_spam(
@@ -435,20 +447,22 @@ async def report_if_spam(
     :raises TimeoutException: Timeout during connection.
     """
 
-    client = kwargs.get("client")
+    client = kwargs.get("client", DEFAULT_CLIENT)
 
-    return await request(
-        "REPORT_IFSPAM",
-        message,
-        host=host,
-        port=port,
-        socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
-        user=user,
-        compress=compress,
-        client=client,
+    req = Request("REPORT_IFSPAM", body=bytes(message))
+    _add_headers(req, user, compress)
+    connection = _new_connection(
+        client.connection_factory,
+        client.ssl_context_factory,
+        host,
+        port,
+        socket_path,
+        timeout,
+        verify,
     )
+    parser = client.parser_factory()
+
+    return await request(req, connection, parser)
 
 
 async def symbols(
@@ -497,20 +511,22 @@ async def symbols(
     :raises TimeoutException: Timeout during connection.
     """
 
-    client = kwargs.get("client")
+    client = kwargs.get("client", DEFAULT_CLIENT)
 
-    return await request(
-        "SYMBOLS",
-        message,
-        host=host,
-        port=port,
-        socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
-        user=user,
-        compress=compress,
-        client=client,
+    req = Request("SYMBOLS", body=bytes(message))
+    _add_headers(req, user, compress)
+    connection = _new_connection(
+        client.connection_factory,
+        client.ssl_context_factory,
+        host,
+        port,
+        socket_path,
+        timeout,
+        verify,
     )
+    parser = client.parser_factory()
+
+    return await request(req, connection, parser)
 
 
 async def tell(
@@ -565,24 +581,25 @@ async def tell(
     :raises TimeoutException: Timeout during connection.
     """
 
-    client = kwargs.get("client")
+    client = kwargs.get("client", DEFAULT_CLIENT)
 
     headers: Dict[str, Any] = {"Message-class": message_class}
     if remove_action:
         headers["Remove"] = remove_action
     if set_action:
         headers["Set"] = set_action
+    req = Request("TELL", headers=headers, body=bytes(message))
+    _add_headers(req, user, compress)
 
-    return await request(
-        "TELL",
-        message,
-        host=host,
-        port=port,
-        socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
-        user=user,
-        compress=compress,
-        headers=headers,
-        client=client,
+    connection = _new_connection(
+        client.connection_factory,
+        client.ssl_context_factory,
+        host,
+        port,
+        socket_path,
+        timeout,
+        verify,
     )
+    parser = client.parser_factory()
+
+    return await request(req, connection, parser)
