@@ -73,11 +73,13 @@ class Response:
         )
 
     def __eq__(self, other: Any) -> bool:
-        return self.version == other.version and \
-            self.headers == other.headers and \
-            self.status_code == other.status_code and \
-            self.message == other.message and \
-            self.body == other.body
+        return (
+            self.version == other.version
+            and self.headers == other.headers
+            and self.status_code == other.status_code
+            and self.message == other.message
+            and self.body == other.body
+        )
 
     @property
     def body(self) -> bytes:
