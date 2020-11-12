@@ -49,7 +49,6 @@ target-version = ["py36"]
 exclude = """
     utils |
     docs |
-    tests |
     example
 """
 

@@ -2,8 +2,7 @@
 
 """Contains classes used for responses."""
 
-from enum import IntEnum
-from typing import Mapping, SupportsBytes, Union
+from typing import Any, Mapping, SupportsBytes, Union
 import zlib
 
 from .common import SpamcHeaders
@@ -71,6 +70,15 @@ class Response:
             f"{self.message}: "
             f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} '
             f"object at {id(self)}>"
+        )
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            self.version == other.version
+            and self.headers == other.headers
+            and self.status_code == other.status_code
+            and self.message == other.message
+            and self.body == other.body
         )
 
     @property
