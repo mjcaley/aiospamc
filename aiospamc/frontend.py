@@ -103,9 +103,14 @@ async def check(
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
+    :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
-    :param kwargs:
-        Additional options to pass to the :class:`aiospamc.client.Client` instance.
+    :param verify:
+        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        `False` will use SSL, but not verify the root certificates. Passing a string to a filename
+        will use the path to verify the root certificates.
+    :param user: Username to pass to the SPAMD service.
+    :param compress: Enable compress of the request body.
 
     :return:
         A successful response with a "Spam" header showing if the message is
@@ -164,10 +169,14 @@ async def headers(
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
+    :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
-    :param kwargs:
-        Additional options to pass to the :class:`aiospamc.client.Client`
-        instance.
+    :param verify:
+        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        `False` will use SSL, but not verify the root certificates. Passing a string to a filename
+        will use the path to verify the root certificates.
+    :param user: Username to pass to the SPAMD service.
+    :param compress: Enable compress of the request body.
 
     :return:
         A successful response with a "Spam" header showing if the message is
@@ -217,17 +226,18 @@ async def ping(
     socket_path: str = None,
     timeout: Timeout = None,
     verify: Optional[Any] = None,
-    user: str = None,
-    compress: bool = False,
     **kwargs,
 ) -> Response:
     """Sends a ping to the SPAMD service.
 
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
+    :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
-    :param kwargs:
-        Additional options to pass to the :class:`aiospamc.client.Client` instance.
+    :param verify:
+        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        `False` will use SSL, but not verify the root certificates. Passing a string to a filename
+        will use the path to verify the root certificates.
 
     :return: A response with "PONG".
 
@@ -260,8 +270,6 @@ async def ping(
         socket_path=socket_path,
         timeout=timeout,
         verify=verify,
-        user=user,
-        compress=compress,
         client=client,
     )
 
@@ -283,9 +291,14 @@ async def process(
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
+    :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
-    :param kwargs:
-        Additional options to pass to the :class:`aiospamc.client.Client` instance.
+    :param verify:
+        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        `False` will use SSL, but not verify the root certificates. Passing a string to a filename
+        will use the path to verify the root certificates.
+    :param user: Username to pass to the SPAMD service.
+    :param compress: Enable compress of the request body.
 
     :return:
         A successful response with a "Spam" header showing if the message is
@@ -345,9 +358,14 @@ async def report(
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
+    :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
-    :param kwargs:
-        Additional options to pass to the :class:`aiospamc.client.Client` instance.
+    :param verify:
+        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        `False` will use SSL, but not verify the root certificates. Passing a string to a filename
+        will use the path to verify the root certificates.
+    :param user: Username to pass to the SPAMD service.
+    :param compress: Enable compress of the request body.
 
     :return:
         A successful response with a "Spam" header showing if the message is
@@ -406,9 +424,14 @@ async def report_if_spam(
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
+    :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
-    :param kwargs:
-        Additional options to pass to the :class:`aiospamc.client.Client` instance.
+    :param verify:
+        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        `False` will use SSL, but not verify the root certificates. Passing a string to a filename
+        will use the path to verify the root certificates.
+    :param user: Username to pass to the SPAMD service.
+    :param compress: Enable compress of the request body.
 
     :return:
         A successful response with a "Spam" header showing if the message is
@@ -463,14 +486,19 @@ async def symbols(
     compress: bool = False,
     **kwargs,
 ) -> Response:
-    """Checks a message if it's spam and return a response with a score header.
+    """Checks a message if it's spam and return a response with rules that matched.
 
     :param message: Copy of the message.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
+    :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
-    :param kwargs:
-        Additional options to pass to the :class:`aiospamc.client.Client` instance.
+    :param verify:
+        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        `False` will use SSL, but not verify the root certificates. Passing a string to a filename
+        will use the path to verify the root certificates.
+    :param user: Username to pass to the SPAMD service.
+    :param compress: Enable compress of the request body.
 
     :return:
         A successful response with a "Spam" header showing if the message is
@@ -531,15 +559,20 @@ async def tell(
     """Checks a message if it's spam and return a response with a score header.
 
     :param message: Copy of the message.
-    :param message_class: How to classify the message, either "ham" or "spam".
-    :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
-    :param port: Port number for the SPAMD service, defaults to 783.
+    :param message_class: Classify the message as 'spam' or 'ham'.
     :param remove_action: Remove message class for message in database.
     :param set_action:
         Set message class for message in database.  Either `ham` or `spam`.
+    :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
+    :param port: Port number for the SPAMD service, defaults to 783.
+    :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
-    :param kwargs:
-        Additional options to pass to the :class:`aiospamc.client.Client` instance.
+    :param verify:
+        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        `False` will use SSL, but not verify the root certificates. Passing a string to a filename
+        will use the path to verify the root certificates.
+    :param user: Username to pass to the SPAMD service.
+    :param compress: Enable compress of the request body.
 
     :return:
         A successful response with "DidSet" and/or "DidRemove" headers along with the
