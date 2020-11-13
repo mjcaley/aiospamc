@@ -35,7 +35,6 @@ steps:
 - script: |
     mypy aiospamc
   displayName: 'Run mypy static type checking'
-  continueOnError: true
 
 - script: |
     black --check "$BUILD_SOURCESDIRECTORY"
