@@ -2,7 +2,7 @@
 
 """Contains all requests that can be made to the SPAMD service."""
 
-from typing import Mapping, SupportsBytes, Union
+from typing import Dict, SupportsBytes, Union
 import zlib
 
 from .header_values import ContentLengthValue, HeaderValue
@@ -15,7 +15,7 @@ class Request:
         self,
         verb: str,
         version: str = "1.5",
-        headers: Mapping[str, HeaderValue] = None,
+        headers: Dict[str, HeaderValue] = None,
         body: Union[bytes, SupportsBytes] = b"",
         **_,
     ) -> None:
@@ -41,9 +41,14 @@ class Request:
         if len(body) > 0:
             self.headers["Content-length"] = ContentLengthValue(length=len(body))
 
-        encoded_headers = b"\r\n".join([
-            b"%b : %b" % (key.encode("ascii"), bytes(value)) for key, value in self.headers.items()
-        ]) + b"\r\n"
+        encoded_headers = (
+            b"".join(
+                [
+                    b"%b : %b\r\n" % (key.encode("ascii"), bytes(value))
+                    for key, value in self.headers.items()
+                ]
+            )
+        )
 
         request = (
             b"%(verb)b " b"SPAMC/%(version)b" b"\r\n" b"%(headers)b\r\n" b"%(body)b"

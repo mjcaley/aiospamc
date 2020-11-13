@@ -2,15 +2,15 @@
 
 """Data structures used for function parameters."""
 
-from enum import Enum, auto
+from enum import Enum
 from typing import NamedTuple
 
 
 class MessageClassOption(Enum):
     """Option to be used for the MessageClass header."""
 
-    spam = auto()
-    ham = auto()
+    spam = "spam"
+    ham = "ham"
 
 
 class ActionOption(NamedTuple):

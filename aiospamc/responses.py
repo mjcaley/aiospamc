@@ -2,7 +2,7 @@
 
 """Contains classes used for responses."""
 
-from typing import Any, Mapping, SupportsBytes, Union
+from typing import Any, Dict, SupportsBytes, Union
 import zlib
 
 from .exceptions import *
@@ -17,7 +17,7 @@ class Response:
         version: str = "1.5",
         status_code: int = 0,
         message: str = "",
-        headers: Mapping[str, HeaderValue] = None,
+        headers: Dict[str, HeaderValue] = None,
         body: bytes = b"",
         **_,
     ):
@@ -46,9 +46,14 @@ class Response:
             self.headers["Content-length"] = ContentLengthValue(length=len(body))
 
         status = self.status_code
-        encoded_headers = b"\r\n".join([
-            b"%b : %b" % (key.encode("ascii"), bytes(value)) for key, value in self.headers.items()
-        ]) + b"\r\n"
+        encoded_headers = (
+            b"".join(
+                [
+                    b"%b : %b\r\n" % (key.encode("ascii"), bytes(value))
+                    for key, value in self.headers.items()
+                ]
+            )
+        )
         message = self.message.encode("ascii")
 
         return (

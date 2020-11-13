@@ -62,7 +62,10 @@ def spam():
 def request_with_body():
     body = b"Test body\n"
     return Request(
-        verb="CHECK", version="1.5", headers={"Content-length": ContentLengthValue(len(body))}, body=body
+        verb="CHECK",
+        version="1.5",
+        headers={"Content-length": ContentLengthValue(len(body))},
+        body=body,
     )
 
 
