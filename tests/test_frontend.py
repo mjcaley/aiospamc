@@ -96,14 +96,17 @@ async def test_request_returns_response(mock_client_dependency, mocker):
     assert expected == result
 
 
-@pytest.mark.parametrize("func,expected_verb", [
-    (check, "CHECK"),
-    (headers, "HEADERS"),
-    (process, "PROCESS"),
-    (report, "REPORT"),
-    (report_if_spam, "REPORT_IFSPAM"),
-    (symbols, "SYMBOLS"),
-])
+@pytest.mark.parametrize(
+    "func,expected_verb",
+    [
+        (check, "CHECK"),
+        (headers, "HEADERS"),
+        (process, "PROCESS"),
+        (report, "REPORT"),
+        (report_if_spam, "REPORT_IFSPAM"),
+        (symbols, "SYMBOLS"),
+    ],
+)
 @pytest.mark.asyncio
 async def test_functions_with_default_parameters(
     func, expected_verb, mock_client_dependency, spam, mocker
@@ -118,14 +121,17 @@ async def test_functions_with_default_parameters(
     assert spam == req.body
 
 
-@pytest.mark.parametrize("func,expected_verb", [
-    (check, "CHECK"),
-    (headers, "HEADERS"),
-    (process, "PROCESS"),
-    (report, "REPORT"),
-    (report_if_spam, "REPORT_IFSPAM"),
-    (symbols, "SYMBOLS"),
-])
+@pytest.mark.parametrize(
+    "func,expected_verb",
+    [
+        (check, "CHECK"),
+        (headers, "HEADERS"),
+        (process, "PROCESS"),
+        (report, "REPORT"),
+        (report_if_spam, "REPORT_IFSPAM"),
+        (symbols, "SYMBOLS"),
+    ],
+)
 @pytest.mark.asyncio
 async def test_functions_with_optional_parameters(
     func, expected_verb, mock_client_dependency, spam, mocker
@@ -140,9 +146,17 @@ async def test_functions_with_optional_parameters(
     assert spam == req.body
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols,
-])
+@pytest.mark.parametrize(
+    "func",
+    [
+        check,
+        headers,
+        process,
+        report,
+        report_if_spam,
+        symbols,
+    ],
+)
 @pytest.mark.asyncio
 async def test_functions_returns_response(func, mock_client_dependency, spam, mocker):
     req_spy = mocker.spy(aiospamc.frontend, "request")
@@ -423,9 +437,9 @@ async def test_request_raises_undefined(mock_client_response, mocker, ex_undefin
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_bad_response(
     func, mock_client_response, response_invalid, mocker
@@ -436,9 +450,9 @@ async def test_raises_bad_response(
         await func(mocker.MagicMock(), client=mock_client)
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_usage(func, mock_client_response, mocker, ex_usage):
     mock_client = mock_client_response(ex_usage)
@@ -450,9 +464,9 @@ async def test_raises_usage(func, mock_client_response, mocker, ex_usage):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_data_err(func, mock_client_response, mocker, ex_data_err):
     mock_client = mock_client_response(ex_data_err)
@@ -464,9 +478,9 @@ async def test_raises_data_err(func, mock_client_response, mocker, ex_data_err):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_no_input(func, mock_client_response, mocker, ex_no_input):
     mock_client = mock_client_response(ex_no_input)
@@ -478,9 +492,9 @@ async def test_raises_no_input(func, mock_client_response, mocker, ex_no_input):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_no_user(func, mock_client_response, mocker, ex_no_user):
     mock_client = mock_client_response(ex_no_user)
@@ -492,9 +506,9 @@ async def test_raises_no_user(func, mock_client_response, mocker, ex_no_user):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_no_host(func, mock_client_response, mocker, ex_no_host):
     mock_client = mock_client_response(ex_no_host)
@@ -506,9 +520,9 @@ async def test_raises_no_host(func, mock_client_response, mocker, ex_no_host):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_unavailable(func, mock_client_response, mocker, ex_unavailable):
     mock_client = mock_client_response(ex_unavailable)
@@ -520,9 +534,9 @@ async def test_raises_unavailable(func, mock_client_response, mocker, ex_unavail
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_software(func, mock_client_response, mocker, ex_software):
     mock_client = mock_client_response(ex_software)
@@ -534,9 +548,9 @@ async def test_raises_software(func, mock_client_response, mocker, ex_software):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_os_error(func, mock_client_response, mocker, ex_os_err):
     mock_client = mock_client_response(ex_os_err)
@@ -548,9 +562,9 @@ async def test_raises_os_error(func, mock_client_response, mocker, ex_os_err):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_os_file(func, mock_client_response, mocker, ex_os_file):
     mock_client = mock_client_response(ex_os_file)
@@ -562,9 +576,9 @@ async def test_raises_os_file(func, mock_client_response, mocker, ex_os_file):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_cant_create(func, mock_client_response, mocker, ex_cant_create):
     mock_client = mock_client_response(ex_cant_create)
@@ -576,9 +590,9 @@ async def test_raises_cant_create(func, mock_client_response, mocker, ex_cant_cr
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_io_error(func, mock_client_response, mocker, ex_io_err):
     mock_client = mock_client_response(ex_io_err)
@@ -590,9 +604,9 @@ async def test_raises_io_error(func, mock_client_response, mocker, ex_io_err):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_temporary_failure(
     func, mock_client_response, mocker, ex_temp_fail
@@ -606,9 +620,9 @@ async def test_raises_temporary_failure(
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_protocol(func, mock_client_response, mocker, ex_protocol):
     mock_client = mock_client_response(ex_protocol)
@@ -620,9 +634,9 @@ async def test_raises_protocol(func, mock_client_response, mocker, ex_protocol):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_no_permission(func, mock_client_response, mocker, ex_no_perm):
     mock_client = mock_client_response(ex_no_perm)
@@ -634,9 +648,9 @@ async def test_raises_no_permission(func, mock_client_response, mocker, ex_no_pe
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_config(func, mock_client_response, mocker, ex_config):
     mock_client = mock_client_response(ex_config)
@@ -648,9 +662,9 @@ async def test_raises_config(func, mock_client_response, mocker, ex_config):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_timeout(func, mock_client_response, mocker, ex_timeout):
     mock_client = mock_client_response(ex_timeout)
@@ -662,9 +676,9 @@ async def test_raises_timeout(func, mock_client_response, mocker, ex_timeout):
         )
 
 
-@pytest.mark.parametrize("func", [
-    check, headers, process, report, report_if_spam, symbols
-])
+@pytest.mark.parametrize(
+    "func", [check, headers, process, report, report_if_spam, symbols]
+)
 @pytest.mark.asyncio
 async def test_raises_undefined(func, mock_client_response, mocker, ex_undefined):
     mock_client = mock_client_response(ex_undefined)
