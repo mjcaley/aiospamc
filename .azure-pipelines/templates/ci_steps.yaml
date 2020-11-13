@@ -38,7 +38,7 @@ steps:
   continueOnError: true
 
 - script: |
-    black --check aiospamc
+    black --check "$BUILD_SOURCESDIRECTORY"
   displayName: 'Run black'
   continueOnError: true
 
