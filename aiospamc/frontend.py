@@ -2,7 +2,6 @@
 
 """Frontend functions for the package."""
 
-from aiospamc.exceptions import BadResponse
 from typing import (
     Any,
     Callable,
@@ -16,6 +15,7 @@ from typing import (
 from ssl import SSLContext
 
 from .connections import Timeout, new_connection, new_ssl_context, ConnectionManager
+from .exceptions import BadResponse
 from .options import ActionOption, MessageClassOption
 from .incremental_parser import ParseError, ResponseParser
 from .responses import Response
@@ -64,6 +64,7 @@ async def request(
     except ParseError as e:
         raise BadResponse(response) from e
     response_obj = Response(**parsed_response)
+    response_obj.raise_for_status()
 
     return response_obj
 
