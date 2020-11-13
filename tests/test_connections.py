@@ -100,13 +100,38 @@ async def test_connection_manager_request_sends_and_receives(
 
     c = ConnectionManager()
     reader = mocker.AsyncMock(spec=asyncio.StreamReader)
-    writer = mocker.AsyncMock(spec=asyncio.StreamWriter)
     reader.read.return_value = expected
+    writer = mocker.AsyncMock(spec=asyncio.StreamWriter)
     c.open = mocker.AsyncMock(return_value=(reader, writer))
     result = await c.request(test_input)
 
     assert expected == result
     writer.write.assert_called_with(test_input)
+    writer.can_write_eof.assert_called()
+    writer.write_eof.assert_called()
+    writer.drain.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_connection_manager_request_sends_without_eof(
+    mocker, mock_base_connection_string
+):
+    test_input = b"request"
+    expected = b"response"
+
+    c = ConnectionManager()
+    reader = mocker.AsyncMock(spec=asyncio.StreamReader)
+    reader.read.return_value = expected
+    writer = mocker.AsyncMock(spec=asyncio.StreamWriter)
+    writer.can_write_eof.return_value = False
+    c.open = mocker.AsyncMock(return_value=(reader, writer))
+    result = await c.request(test_input)
+
+    assert expected == result
+    writer.write.assert_called_with(test_input)
+    writer.can_write_eof.assert_called()
+    writer.write_eof.assert_not_called()
+    writer.drain.assert_awaited()
 
 
 @pytest.mark.asyncio
