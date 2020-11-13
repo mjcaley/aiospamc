@@ -1419,7 +1419,9 @@ async def test_report_if_spam_raises_usage(mock_client_response, mocker, ex_usag
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam_raises_data_err(mock_client_response, mocker, ex_data_err):
+async def test_report_if_spam_raises_data_err(
+    mock_client_response, mocker, ex_data_err
+):
     mock_client = mock_client_response(ex_data_err)
 
     with pytest.raises(DataErrorException):
@@ -1430,7 +1432,9 @@ async def test_report_if_spam_raises_data_err(mock_client_response, mocker, ex_d
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam_raises_no_input(mock_client_response, mocker, ex_no_input):
+async def test_report_if_spam_raises_no_input(
+    mock_client_response, mocker, ex_no_input
+):
     mock_client = mock_client_response(ex_no_input)
 
     with pytest.raises(NoInputException):
@@ -1463,7 +1467,9 @@ async def test_report_if_spam_raises_no_host(mock_client_response, mocker, ex_no
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam_raises_unavailable(mock_client_response, mocker, ex_unavailable):
+async def test_report_if_spam_raises_unavailable(
+    mock_client_response, mocker, ex_unavailable
+):
     mock_client = mock_client_response(ex_unavailable)
 
     with pytest.raises(UnavailableException):
@@ -1474,7 +1480,9 @@ async def test_report_if_spam_raises_unavailable(mock_client_response, mocker, e
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam_raises_software(mock_client_response, mocker, ex_software):
+async def test_report_if_spam_raises_software(
+    mock_client_response, mocker, ex_software
+):
     mock_client = mock_client_response(ex_software)
 
     with pytest.raises(InternalSoftwareException):
@@ -1507,7 +1515,9 @@ async def test_report_if_spam_raises_os_file(mock_client_response, mocker, ex_os
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam_raises_cant_create(mock_client_response, mocker, ex_cant_create):
+async def test_report_if_spam_raises_cant_create(
+    mock_client_response, mocker, ex_cant_create
+):
     mock_client = mock_client_response(ex_cant_create)
 
     with pytest.raises(CantCreateException):
@@ -1542,7 +1552,9 @@ async def test_report_if_spam_raises_temporary_failure(
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam_raises_protocol(mock_client_response, mocker, ex_protocol):
+async def test_report_if_spam_raises_protocol(
+    mock_client_response, mocker, ex_protocol
+):
     mock_client = mock_client_response(ex_protocol)
 
     with pytest.raises(ProtocolException):
@@ -1553,7 +1565,9 @@ async def test_report_if_spam_raises_protocol(mock_client_response, mocker, ex_p
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam_raises_no_permission(mock_client_response, mocker, ex_no_perm):
+async def test_report_if_spam_raises_no_permission(
+    mock_client_response, mocker, ex_no_perm
+):
     mock_client = mock_client_response(ex_no_perm)
 
     with pytest.raises(NoPermissionException):
@@ -1586,7 +1600,9 @@ async def test_report_if_spam_raises_timeout(mock_client_response, mocker, ex_ti
 
 
 @pytest.mark.asyncio
-async def test_report_if_spam_raises_undefined(mock_client_response, mocker, ex_undefined):
+async def test_report_if_spam_raises_undefined(
+    mock_client_response, mocker, ex_undefined
+):
     mock_client = mock_client_response(ex_undefined)
 
     with pytest.raises(ResponseException):
