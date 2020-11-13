@@ -224,6 +224,7 @@ def ex_undefined():
 
 # Integration fixtures
 
+
 @pytest.fixture(scope="session")
 def certificate(tmp_path_factory):
     certs_path = tmp_path_factory.mktemp("localhost_certs")
