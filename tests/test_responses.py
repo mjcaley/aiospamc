@@ -5,6 +5,7 @@ import pytest
 import zlib
 
 from aiospamc.exceptions import *
+from aiospamc.header_values import CompressValue
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.responses import Response
 
@@ -40,7 +41,9 @@ def test_bytes_status():
 def test_bytes_headers(x_headers):
     r = Response(version="1.5", status_code=0, message="EX_OK", headers=x_headers)
     result = bytes(r).partition(b"\r\n")[2]
-    expected = bytes(r.headers)
+    expected = b"\r\n".join([
+            b"%b : %b" % (key.encode("ascii"), bytes(value)) for key, value in r.headers.items()
+        ]) + b"\r\n"
 
     assert result.startswith(expected)
     assert result.endswith(b"\r\n\r\n")
@@ -60,7 +63,7 @@ def test_bytes_body_compressed():
         version="1.5",
         status_code=0,
         message="EX_OK",
-        headers={"Compress": "zlib"},
+        headers={"Compress": CompressValue()},
         body=test_input,
     )
     result = bytes(r).rpartition(b"\r\n")[2]

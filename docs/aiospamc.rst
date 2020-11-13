@@ -4,14 +4,6 @@ aiospamc package
 Submodules
 ----------
 
-aiospamc.common module
-----------------------
-
-.. automodule:: aiospamc.common
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 aiospamc.connections module
 ---------------------------
 

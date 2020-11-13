@@ -14,6 +14,7 @@ from cryptography import x509
 
 import pytest
 
+from aiospamc.header_values import ContentLengthValue
 from aiospamc.requests import Request
 
 
@@ -61,7 +62,7 @@ def spam():
 def request_with_body():
     body = b"Test body\n"
     return Request(
-        verb="CHECK", version="1.5", headers={"Content-length": len(body)}, body=body
+        verb="CHECK", version="1.5", headers={"Content-length": ContentLengthValue(len(body))}, body=body
     )
 
 

@@ -16,6 +16,7 @@ from ssl import SSLContext
 
 from .connections import Timeout, new_connection, new_ssl_context, ConnectionManager
 from .exceptions import BadResponse
+from .header_values import CompressValue, MessageClassValue, SetOrRemoveValue, UserValue
 from .options import ActionOption, MessageClassOption
 from .incremental_parser import ParseError, ResponseParser
 from .responses import Response
@@ -86,9 +87,9 @@ def _new_connection(
 
 def _add_headers(req: Request, user: Optional[str], compress: Optional[bool]) -> None:
     if user:
-        req.headers["User"] = user
+        req.headers["User"] = UserValue(user)
     if compress:
-        req.headers["Compress"] = "zlib"
+        req.headers["Compress"] = CompressValue()
 
 
 async def check(
@@ -621,11 +622,11 @@ async def tell(
 
     client = kwargs.get("client", DEFAULT_CLIENT)
 
-    headers: Dict[str, Any] = {"Message-class": message_class}
+    headers: Dict[str, Any] = {"Message-class": MessageClassValue(message_class)}
     if remove_action:
-        headers["Remove"] = remove_action
+        headers["Remove"] = SetOrRemoveValue(remove_action)
     if set_action:
-        headers["Set"] = set_action
+        headers["Set"] = SetOrRemoveValue(set_action)
     req = Request("TELL", headers=headers, body=bytes(message))
     _add_headers(req, user, compress)
 

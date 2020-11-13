@@ -5,7 +5,6 @@
 from typing import Mapping, SupportsBytes, Union
 import zlib
 
-from .common import SpamcHeaders
 from .header_values import ContentLengthValue, HeaderValue
 
 
@@ -16,7 +15,7 @@ class Request:
         self,
         verb: str,
         version: str = "1.5",
-        headers: Mapping[str, Union[str, HeaderValue]] = None,
+        headers: Mapping[str, HeaderValue] = None,
         body: Union[bytes, SupportsBytes] = b"",
         **_,
     ) -> None:
@@ -30,7 +29,7 @@ class Request:
 
         self.verb = verb
         self.version = version
-        self.headers = SpamcHeaders(headers=headers)
+        self.headers = headers or {}
         self.body = bytes(body)
 
     def __bytes__(self) -> bytes:
@@ -42,6 +41,10 @@ class Request:
         if len(body) > 0:
             self.headers["Content-length"] = ContentLengthValue(length=len(body))
 
+        encoded_headers = b"\r\n".join([
+            b"%b : %b" % (key.encode("ascii"), bytes(value)) for key, value in self.headers.items()
+        ]) + b"\r\n"
+
         request = (
             b"%(verb)b " b"SPAMC/%(version)b" b"\r\n" b"%(headers)b\r\n" b"%(body)b"
         )
@@ -49,7 +52,7 @@ class Request:
         return request % {
             b"verb": self.verb.encode("ascii"),
             b"version": self.version.encode("ascii"),
-            b"headers": bytes(self.headers),
+            b"headers": encoded_headers,
             b"body": body,
         }
 

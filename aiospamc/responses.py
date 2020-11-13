@@ -5,7 +5,6 @@
 from typing import Any, Mapping, SupportsBytes, Union
 import zlib
 
-from .common import SpamcHeaders
 from .exceptions import *
 from .header_values import ContentLengthValue, HeaderValue
 
@@ -32,7 +31,7 @@ class Response:
         """
 
         self.version = version
-        self.headers = SpamcHeaders(headers=headers)
+        self.headers = headers or {}
         self.status_code = status_code
         self.message = message
         self.body = body
@@ -47,6 +46,9 @@ class Response:
             self.headers["Content-length"] = ContentLengthValue(length=len(body))
 
         status = self.status_code
+        encoded_headers = b"\r\n".join([
+            b"%b : %b" % (key.encode("ascii"), bytes(value)) for key, value in self.headers.items()
+        ]) + b"\r\n"
         message = self.message.encode("ascii")
 
         return (
@@ -59,7 +61,7 @@ class Response:
                 b"version": self.version.encode("ascii"),
                 b"status": status,
                 b"message": message,
-                b"headers": bytes(self.headers),
+                b"headers": encoded_headers,
                 b"body": body,
             }
         )
