@@ -32,6 +32,9 @@ class SpamcHeaders:
             ]
         )
 
+    def __eq__(self, other: Any) -> bool:
+        return self._headers == other._headers
+
     def __getitem__(self, key: str) -> HeaderValue:
         return self._headers[key]
 

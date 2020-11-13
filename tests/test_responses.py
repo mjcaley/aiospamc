@@ -10,98 +10,107 @@ from aiospamc.responses import Response
 
 
 def test_init_version():
-    r = Response(version='4.2', status_code=0, message='EX_OK')
-    result = bytes(r).split(b' ')[0]
+    r = Response(version="4.2", status_code=0, message="EX_OK")
+    result = bytes(r).split(b" ")[0]
 
-    assert result == b'SPAMD/4.2'
+    assert result == b"SPAMD/4.2"
 
 
 def test_init_status_code():
-    r = Response(version='1.5', status_code=0, message='EX_OK')
-    result = bytes(r).split(b' ')[1]
+    r = Response(version="1.5", status_code=0, message="EX_OK")
+    result = bytes(r).split(b" ")[1]
 
     assert result == str(0).encode()
 
 
 def test_init_message():
-    r = Response(version='1.5', status_code=0, message='EX_OK')
-    result = bytes(r).split(b'\r\n')[0]
+    r = Response(version="1.5", status_code=0, message="EX_OK")
+    result = bytes(r).split(b"\r\n")[0]
 
-    assert result.endswith('EX_OK'.encode())
+    assert result.endswith("EX_OK".encode())
 
 
 def test_bytes_status():
-    r = Response(status_code=999, message='Test message')
-    result = bytes(r).partition(b'\r\n')[0]
+    r = Response(status_code=999, message="Test message")
+    result = bytes(r).partition(b"\r\n")[0]
 
-    assert b'999 Test message' in result
+    assert b"999 Test message" in result
 
 
 def test_bytes_headers(x_headers):
-    r = Response(version='1.5', status_code=0, message='EX_OK', headers=x_headers)
-    result = bytes(r).partition(b'\r\n')[2]
+    r = Response(version="1.5", status_code=0, message="EX_OK", headers=x_headers)
+    result = bytes(r).partition(b"\r\n")[2]
     expected = bytes(r.headers)
 
     assert result.startswith(expected)
-    assert result.endswith(b'\r\n\r\n')
+    assert result.endswith(b"\r\n\r\n")
 
 
 def test_bytes_body():
-    test_input = b'Test body\n'
-    r = Response(version='1.5', status_code=0, message='EX_OK', body=test_input)
-    result = bytes(r).rpartition(b'\r\n')[2]
+    test_input = b"Test body\n"
+    r = Response(version="1.5", status_code=0, message="EX_OK", body=test_input)
+    result = bytes(r).rpartition(b"\r\n")[2]
 
     assert result == test_input
 
 
 def test_bytes_body_compressed():
-    test_input = b'Test body\n'
-    r = Response(version='1.5', status_code=0, message='EX_OK', headers={'Compress': 'zlib'}, body=test_input)
-    result = bytes(r).rpartition(b'\r\n')[2]
+    test_input = b"Test body\n"
+    r = Response(
+        version="1.5",
+        status_code=0,
+        message="EX_OK",
+        headers={"Compress": "zlib"},
+        body=test_input,
+    )
+    result = bytes(r).rpartition(b"\r\n")[2]
 
     assert result == zlib.compress(test_input)
 
 
 def test_str():
-    r = Response(status_code=0, message='EX_OK')
+    r = Response(status_code=0, message="EX_OK")
     result = str(r)
 
-    assert result == f'<0 - EX_OK: aiospamc.responses.Response object at {id(r)}>'
+    assert result == f"<0 - EX_OK: aiospamc.responses.Response object at {id(r)}>"
 
 
 def test_raise_for_status_ok():
-    r = Response(version='1.5', status_code=0, message='')
+    r = Response(version="1.5", status_code=0, message="")
 
     assert r.raise_for_status() is None
 
 
-@pytest.mark.parametrize('status_code, exception', [
-    (64, UsageException),
-    (65, DataErrorException),
-    (66, NoInputException),
-    (67, NoUserException),
-    (68, NoHostException),
-    (69, UnavailableException),
-    (70, InternalSoftwareException),
-    (71, OSErrorException),
-    (72, OSFileException),
-    (73, CantCreateException),
-    (74, IOErrorException),
-    (75, TemporaryFailureException),
-    (76, ProtocolException),
-    (77, NoPermissionException),
-    (78, ConfigException),
-    (79, TimeoutException),
-])
+@pytest.mark.parametrize(
+    "status_code, exception",
+    [
+        (64, UsageException),
+        (65, DataErrorException),
+        (66, NoInputException),
+        (67, NoUserException),
+        (68, NoHostException),
+        (69, UnavailableException),
+        (70, InternalSoftwareException),
+        (71, OSErrorException),
+        (72, OSFileException),
+        (73, CantCreateException),
+        (74, IOErrorException),
+        (75, TemporaryFailureException),
+        (76, ProtocolException),
+        (77, NoPermissionException),
+        (78, ConfigException),
+        (79, TimeoutException),
+    ],
+)
 def test_raise_for_status(status_code, exception):
-    r = Response(version='1.5', status_code=status_code, message='')
+    r = Response(version="1.5", status_code=status_code, message="")
 
     with pytest.raises(exception):
         r.raise_for_status()
 
 
 def test_raise_for_undefined_status():
-    r = Response(version='1.5', status_code=999, message='')
+    r = Response(version="1.5", status_code=999, message="")
 
     with pytest.raises(ResponseException):
         r.raise_for_status()

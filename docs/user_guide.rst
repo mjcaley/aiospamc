@@ -6,8 +6,8 @@ User Guide
 Requirements
 ************
 
-* Python 3.6 or later is required to use the new async/await syntax provided by the asyncio library.
-* SpamAssassin running as a service.
+* Python 3.6 or later
+* SpamAssassin running as a service
 
 *******
 Install
@@ -72,15 +72,11 @@ spam as well as the score.
         sep=''
     )
 
-All the frontend functions instantiate the :class:`aiospamc.client.Client`
-class behind the scenes.  Additional keywords arguments can be found in the
-class constructor documentation.
-
 Connect using SSL
 =================
 
-Each frontend function and :class:`aiospamc.client.Client` has a `verify`
-parameter which allows configuring an SSL connection.
+Each frontend function has a `verify` parameter which allows configuring an SSL
+connection.
 
 If `True` is supplied, then root certificates from the `certifi` project
 will be used to verify the connection.
@@ -120,8 +116,7 @@ Logging
 
 `aiospamc` provides two loggers for monitoring.
 
-`aiospamc` is the name of the logger for logs from the `aiospamc.client.Client`
-class.
+`aiospamc` is the name of the logger for logs from the client.
 
 `aiospamc.connections` is the name of the logger for logs that monitor TCP and
 Unix connections.  This can be used to monitor for issues with connecting, sending,
@@ -136,59 +131,6 @@ log messages through the library.  These are named:
 * response_id
 
 Refer to Python's logging documentation on how to consume these loggers.
-
-Making your own requests
-========================
-
-If a request that isn't built into aiospamc is needed a new request can be
-created and sent.
-
-A new request can be made by instantiating the
-:class:`aiospamc.requests.Request` class.  The
-:attr:`aiospamc.requests.Request.verb` defines the method/verb of the request.
-
-The :class:`aiospamc.requests.Request` class provides a headers attribute that has
-a dictionary-like interface.  Defined headers can be referenced in the :ref:`headers`
-section in :doc:`protocol`.
-
-Once a request is composed, the :class:`aiospamc.client.Client` class can be
-instantiated and the request can be sent through the
-:meth:`aiospamc.client.Client.send` method.  The method will automatically
-add the `User` and `Compress` headers if required.
-
-For example:
-
-.. code-block::
-
-    import asyncio
-
-    import aiospamc
-    from aiospamc import Client
-    from aiospamc.exceptions import ResponseException
-    from aiospamc.requests import Request
-    
-    example_message = ('From: John Doe <jdoe@machine.example>'
-                       'To: Mary Smith <mary@example.net>'
-                       'Subject: Saying Hello'
-                       'Date: Fri, 21 Nov 1997 09:55:06 -0600'
-                       'Message-ID: <1234@local.machine.example>'
-                       ''
-                       'This is a message just to say hello.'
-                       'So, "Hello".').encode('ascii')
-
-    loop = asyncio.get_event_loop()
-    client = aiospamc.Client(host='localhost')
-
-    async def is_spam(message):
-        request = Request(verb='CHECK', body=message.encode())
-        try:
-            response = await client.send(request)
-            return response.get_header('Spam').value
-        except aiospamc.ResponseException:
-            raise
-
-    spam_result = loop.run_until_complete(is_spam(example_message))
-    print('Example message is spam:', spam_result)
 
 Interpreting results
 ====================

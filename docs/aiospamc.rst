@@ -4,14 +4,6 @@ aiospamc package
 Submodules
 ----------
 
-aiospamc.client module
-----------------------
-
-.. automodule:: aiospamc.client
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 aiospamc.common module
 ----------------------
 
@@ -32,6 +24,14 @@ aiospamc.exceptions module
 --------------------------
 
 .. automodule:: aiospamc.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.frontend module
+----------------------
+
+.. automodule:: aiospamc.frontend
    :members:
    :undoc-members:
    :show-inheritance:
