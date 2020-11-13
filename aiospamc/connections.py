@@ -284,9 +284,9 @@ def new_ssl_context(verify: Optional[Any]) -> Optional[ssl.SSLContext]:
 
 
 def new_connection(
-    host: Optional[str],
-    port: Optional[int],
-    socket_path: Optional[str],
+    host: Optional[str] = None,
+    port: Optional[int] = None,
+    socket_path: Optional[str] = None,
     timeout: Optional[Timeout] = None,
     context: Optional[ssl.SSLContext] = None,
 ) -> ConnectionManager:

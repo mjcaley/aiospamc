@@ -11,6 +11,7 @@ from aiospamc.connections import (
     TcpConnectionManager,
     UnixConnectionManager,
     Timeout,
+    new_connection,
     new_ssl_context,
 )
 
@@ -99,13 +100,38 @@ async def test_connection_manager_request_sends_and_receives(
 
     c = ConnectionManager()
     reader = mocker.AsyncMock(spec=asyncio.StreamReader)
-    writer = mocker.AsyncMock(spec=asyncio.StreamWriter)
     reader.read.return_value = expected
+    writer = mocker.AsyncMock(spec=asyncio.StreamWriter)
     c.open = mocker.AsyncMock(return_value=(reader, writer))
     result = await c.request(test_input)
 
     assert expected == result
     writer.write.assert_called_with(test_input)
+    writer.can_write_eof.assert_called()
+    writer.write_eof.assert_called()
+    writer.drain.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_connection_manager_request_sends_without_eof(
+    mocker, mock_base_connection_string
+):
+    test_input = b"request"
+    expected = b"response"
+
+    c = ConnectionManager()
+    reader = mocker.AsyncMock(spec=asyncio.StreamReader)
+    reader.read.return_value = expected
+    writer = mocker.AsyncMock(spec=asyncio.StreamWriter)
+    writer.can_write_eof.return_value = False
+    c.open = mocker.AsyncMock(return_value=(reader, writer))
+    result = await c.request(test_input)
+
+    assert expected == result
+    writer.write.assert_called_with(test_input)
+    writer.can_write_eof.assert_called()
+    writer.write_eof.assert_not_called()
+    writer.drain.assert_awaited()
 
 
 @pytest.mark.asyncio
@@ -259,6 +285,12 @@ def test_unix_connection_manager_connection_string(unix_socket):
     assert unix_socket == u.connection_string
 
 
+def test_ssl_context_from_none():
+    result = new_ssl_context(None)
+
+    assert result is None
+
+
 def test_ssl_context_from_true(mocker):
     s = mocker.spy(ssl, "create_default_context")
     new_ssl_context(True)
@@ -299,3 +331,26 @@ def test_ssl_context_file_not_found(tmp_path):
 
     with pytest.raises(FileNotFoundError):
         new_ssl_context(str(file))
+
+
+def test_new_connection_returns_unix_manager():
+    result = new_connection(socket_path="test.sock")
+
+    assert isinstance(result, UnixConnectionManager)
+
+
+def test_new_connection_returns_tcp_manager():
+    result = new_connection(host="localhost", port=783)
+
+    assert isinstance(result, TcpConnectionManager)
+
+
+def test_new_connection_returns_tcp_manager_with_ssl(mocker):
+    result = new_connection(host="localhost", port=783, context=mocker.Mock())
+
+    assert isinstance(result, TcpConnectionManager)
+
+
+def test_new_connection_raises_on_missing_parameters():
+    with pytest.raises(ValueError):
+        new_connection()
