@@ -41,13 +41,11 @@ def test_bytes_status():
 def test_bytes_headers(x_headers):
     r = Response(version="1.5", status_code=0, message="EX_OK", headers=x_headers)
     result = bytes(r).partition(b"\r\n")[2]
-    expected = (
-        b"\r\n".join(
-            [
-                b"%b: %b" % (key.encode("ascii"), bytes(value))
-                for key, value in r.headers.items()
-            ]
-        )
+    expected = b"".join(
+        [
+            b"%b: %b\r\n" % (key.encode("ascii"), bytes(value))
+            for key, value in r.headers.items()
+        ]
     )
 
     assert result.startswith(expected)

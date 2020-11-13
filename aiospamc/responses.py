@@ -46,13 +46,11 @@ class Response:
             self.headers["Content-length"] = ContentLengthValue(length=len(body))
 
         status = self.status_code
-        encoded_headers = (
-            b"".join(
-                [
-                    b"%b: %b\r\n" % (key.encode("ascii"), bytes(value))
-                    for key, value in self.headers.items()
-                ]
-            )
+        encoded_headers = b"".join(
+            [
+                b"%b: %b\r\n" % (key.encode("ascii"), bytes(value))
+                for key, value in self.headers.items()
+            ]
         )
         message = self.message.encode("ascii")
 

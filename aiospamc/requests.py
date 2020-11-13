@@ -41,13 +41,11 @@ class Request:
         if len(body) > 0:
             self.headers["Content-length"] = ContentLengthValue(length=len(body))
 
-        encoded_headers = (
-            b"".join(
-                [
-                    b"%b: %b\r\n" % (key.encode("ascii"), bytes(value))
-                    for key, value in self.headers.items()
-                ]
-            )
+        encoded_headers = b"".join(
+            [
+                b"%b: %b\r\n" % (key.encode("ascii"), bytes(value))
+                for key, value in self.headers.items()
+            ]
         )
 
         request = (
