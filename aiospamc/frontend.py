@@ -16,8 +16,9 @@ from ssl import SSLContext
 
 from .connections import Timeout, new_connection, new_ssl_context, ConnectionManager
 from .exceptions import BadResponse
+from .header_values import CompressValue, MessageClassValue, SetOrRemoveValue, UserValue
 from .options import ActionOption, MessageClassOption
-from .incremental_parser import ParseError, ResponseParser
+from .incremental_parser import ParseError, ResponseParser, parse_set_remove_value
 from .responses import Response
 from .requests import Request
 
@@ -86,9 +87,9 @@ def _new_connection(
 
 def _add_headers(req: Request, user: Optional[str], compress: Optional[bool]) -> None:
     if user:
-        req.headers["User"] = user
+        req.headers["User"] = UserValue(user)
     if compress:
-        req.headers["Compress"] = "zlib"
+        req.headers["Compress"] = CompressValue()
 
 
 async def check(
@@ -582,8 +583,7 @@ async def tell(
     :param message: Copy of the message.
     :param message_class: Classify the message as 'spam' or 'ham'.
     :param remove_action: Remove message class for message in database.
-    :param set_action:
-        Set message class for message in database.  Either `ham` or `spam`.
+    :param set_action: Set message class for message in database.
     :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
     :param port: Port number for the SPAMD service, defaults to 783.
     :param socket_path: Path to Unix socket.
@@ -621,11 +621,13 @@ async def tell(
 
     client = kwargs.get("client", DEFAULT_CLIENT)
 
-    headers: Dict[str, Any] = {"Message-class": message_class}
+    headers: Dict[str, Any] = {
+        "Message-class": MessageClassValue(MessageClassOption(message_class))
+    }
     if remove_action:
-        headers["Remove"] = remove_action
+        headers["Remove"] = parse_set_remove_value(remove_action)
     if set_action:
-        headers["Set"] = set_action
+        headers["Set"] = parse_set_remove_value(set_action)
     req = Request("TELL", headers=headers, body=bytes(message))
     _add_headers(req, user, compress)
 

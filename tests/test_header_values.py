@@ -4,6 +4,7 @@ import pytest
 
 from aiospamc.options import ActionOption, MessageClassOption
 from aiospamc.header_values import (
+    HeaderValue,
     GenericHeaderValue,
     CompressValue,
     ContentLengthValue,
@@ -12,6 +13,11 @@ from aiospamc.header_values import (
     SpamValue,
     UserValue,
 )
+
+
+def test_header_value_bytes_raises():
+    with pytest.raises(NotImplementedError):
+        bytes(HeaderValue())
 
 
 def test_header_bytes():

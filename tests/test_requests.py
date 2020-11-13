@@ -42,7 +42,12 @@ def test_bytes_protocol():
 def test_bytes_headers(x_headers):
     r = Request(verb="TEST", headers=x_headers)
     result = bytes(r).partition(b"\r\n")[2]
-    expected = bytes(r.headers)
+    expected = b"\r\n".join(
+        [
+            b"%b: %b" % (key.encode("ascii"), bytes(value))
+            for key, value in r.headers.items()
+        ]
+    )
 
     assert result.startswith(expected)
     assert result.endswith(b"\r\n\r\n")

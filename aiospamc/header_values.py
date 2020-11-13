@@ -8,7 +8,8 @@ from .options import ActionOption, MessageClassOption
 
 
 class HeaderValue:
-    pass
+    def __bytes__(self):
+        raise NotImplementedError
 
 
 class GenericHeaderValue(HeaderValue):
