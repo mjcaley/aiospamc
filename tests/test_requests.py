@@ -45,7 +45,7 @@ def test_bytes_headers(x_headers):
     expected = (
         b"\r\n".join(
             [
-                b"%b : %b" % (key.encode("ascii"), bytes(value))
+                b"%b: %b" % (key.encode("ascii"), bytes(value))
                 for key, value in r.headers.items()
             ]
         )

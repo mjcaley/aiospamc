@@ -44,7 +44,7 @@ class Request:
         encoded_headers = (
             b"".join(
                 [
-                    b"%b : %b\r\n" % (key.encode("ascii"), bytes(value))
+                    b"%b: %b\r\n" % (key.encode("ascii"), bytes(value))
                     for key, value in self.headers.items()
                 ]
             )

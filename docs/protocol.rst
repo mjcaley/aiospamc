@@ -20,8 +20,8 @@ The current requests are :ref:`check_request`, :ref:`headers_request`,
 :ref:`tell_request`::
 
     METHOD SPAMC/1.5\r\n
-    HEADER_NAME1 : HEADER_VALUE1\r\n
-    HEADER_NAME2 : HEADER_VALUE2\r\n
+    HEADER_NAME1: HEADER_VALUE1\r\n
+    HEADER_NAME2: HEADER_VALUE2\r\n
     ...
     \r\n
     REQUEST_BODY
@@ -34,11 +34,16 @@ the headers is a newline.  If there is a message body it’s included after all
 headers::
 
     SPAMD/1.5 STATUS_CODE MESSAGE\r\n
-    HEADER_NAME1 : HEADER_VALUE1\r\n
-    HEADER_NAME2 : HEADER_VALUE2\r\n
+    HEADER_NAME1: HEADER_VALUE1\r\n
+    HEADER_NAME2: HEADER_VALUE2\r\n
     ...
     \r\n
     RESPONSE_BODY
+
+.. note::
+    The header name and value are separated by a `:` character.  For built-in
+    headers the name must not have any whitespace surrounding it.  It will be
+    parsed exactly as it's represented.
 
 The following are descriptions of the requests that can be sent and examples of
 the responses that you can expect to receive.
