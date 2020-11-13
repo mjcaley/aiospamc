@@ -65,14 +65,12 @@ def request_with_body():
     )
 
 
-# Deprecated
 @pytest.fixture
 def request_ping():
     """PING request."""
     return Request(verb="PING")
 
 
-# Deprecated
 @pytest.fixture
 def response_empty():
     """Empty response."""
@@ -97,7 +95,6 @@ def response_tell():
     return b"SPAMD/1.1 0 EX_OK\r\n\r\n\r\n"
 
 
-# Deprecated
 @pytest.fixture
 def response_spam_header():
     """Response with Spam header in bytes."""
@@ -110,14 +107,12 @@ def response_with_body():
     return b"SPAMD/1.5 0 EX_OK\r\nContent-length: 10\r\n\r\nTest body\n"
 
 
-# Deprecated
 @pytest.fixture
 def response_empty_body():
     """Response with Content-length header, but empty body in bytes."""
     return b"SPAMD/1.5 0 EX_OK\r\nContent-length: 0\r\n\r\n"
 
 
-# Deprecated
 @pytest.fixture
 def response_invalid():
     """Invalid response in bytes."""
