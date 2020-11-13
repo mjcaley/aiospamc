@@ -16,6 +16,12 @@ class GenericHeaderValue(HeaderValue):
     """Generic header value."""
 
     def __init__(self, value: str, encoding="utf8") -> None:
+        """Generic header constructor.
+
+        :param value: Value of the header.
+        :param encoding: String encoding to use, defaults to "utf8".
+        """
+
         self.value = value
         self.encoding = encoding
 
@@ -47,7 +53,7 @@ class CompressValue(HeaderValue):
     def __init__(self, algorithm="zlib") -> None:
         """Constructor
 
-        :param algorithm: Compression algorithm to use.  Currently on zlib is supported.
+        :param algorithm: Compression algorithm to use.  Currently only zlib is supported.
         """
 
         self.algorithm = algorithm
