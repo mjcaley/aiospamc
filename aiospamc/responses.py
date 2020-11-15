@@ -2,11 +2,32 @@
 
 """Contains classes used for responses."""
 
+from enum import IntEnum
 from typing import Any, Dict, SupportsBytes, Union
 import zlib
 
 from .exceptions import *
 from .header_values import ContentLengthValue, HeaderValue
+
+
+class StatusCode(IntEnum):
+    EX_OK = 0
+    EX_USAGE = 64
+    EX_DATAERR = 65
+    EX_NOINPUT = 66
+    EX_NOUSER = 67
+    EX_NOHOST = 68
+    EX_UNAVAILABLE = 69
+    EX_SOFTWARE = 70
+    EX_OSERR = 71
+    EX_OSFILE = 72
+    EX_CANTCREAT = 73
+    EX_IOERR = 74
+    EX_TEMPFAIL = 75
+    EX_PROTOCOL = 76
+    EX_NOPERM = 77
+    EX_CONFIG = 78
+    EX_TIMEOUT = 79
 
 
 class Response:
@@ -15,7 +36,7 @@ class Response:
     def __init__(
         self,
         version: str = "1.5",
-        status_code: int = 0,
+        status_code: Union[StatusCode, int] = 0,
         message: str = "",
         headers: Dict[str, HeaderValue] = None,
         body: bytes = b"",
@@ -32,6 +53,7 @@ class Response:
 
         self.version = version
         self.headers = headers or {}
+        self._status_code = 0
         self.status_code = status_code
         self.message = message
         self.body = body
@@ -85,6 +107,17 @@ class Response:
             and self.message == other.message
             and self.body == other.body
         )
+
+    @property
+    def status_code(self) -> Union[StatusCode, int]:
+        return self._status_code
+
+    @status_code.setter
+    def status_code(self, code: Union[StatusCode, int]) -> None:
+        try:
+            self._status_code = StatusCode(code)
+        except ValueError:
+            self._status_code = code
 
     @property
     def body(self) -> bytes:
