@@ -12,7 +12,7 @@ async def test_verify_false(spamd):
         host=spamd["ssl"]["host"], port=spamd["ssl"]["port"], verify=False
     )
 
-    assert result
+    assert 0 == result.status_code
 
 
 @pytest.mark.integration
@@ -22,7 +22,7 @@ async def test_check(spamd, spam):
         spam, host=spamd["ssl"]["host"], port=spamd["ssl"]["port"], verify=False
     )
 
-    assert result
+    assert 0 == result.status_code
 
 
 @pytest.mark.integration
@@ -32,7 +32,7 @@ async def test_headers(spamd, spam):
         spam, host=spamd["ssl"]["host"], port=spamd["ssl"]["port"], verify=False
     )
 
-    assert result
+    assert 0 == result.status_code
 
 
 @pytest.mark.integration
@@ -44,7 +44,7 @@ async def test_ping(spamd):
         verify=spamd["ssl"]["cert"],
     )
 
-    assert result
+    assert 0 == result.status_code
 
 
 @pytest.mark.integration
@@ -54,7 +54,7 @@ async def test_process(spamd, spam):
         spam, host=spamd["ssl"]["host"], port=spamd["ssl"]["port"], verify=False
     )
 
-    assert result
+    assert 0 == result.status_code
 
 
 @pytest.mark.integration
@@ -64,7 +64,7 @@ async def test_report(spamd, spam):
         spam, host=spamd["ssl"]["host"], port=spamd["ssl"]["port"], verify=False
     )
 
-    assert result
+    assert 0 == result.status_code
 
 
 @pytest.mark.integration
@@ -74,7 +74,7 @@ async def test_report_if_spam(spamd, spam):
         spam, host=spamd["ssl"]["host"], port=spamd["ssl"]["port"], verify=False
     )
 
-    assert result
+    assert 0 == result.status_code
 
 
 @pytest.mark.integration
@@ -84,7 +84,7 @@ async def test_symbols(spamd, spam):
         spam, host=spamd["ssl"]["host"], port=spamd["ssl"]["port"], verify=False
     )
 
-    assert result
+    assert 0 == result.status_code
 
 
 @pytest.mark.integration
@@ -98,7 +98,7 @@ async def test_tell(spamd, spam):
         verify=False,
     )
 
-    assert result
+    assert 0 == result.status_code
 
 
 @pytest.mark.integration
@@ -108,4 +108,4 @@ async def test_message_without_newline(spamd):
         message=b"acb", host=spamd["tcp"]["host"], port=spamd["tcp"]["port"]
     )
 
-    assert result
+    assert 0 == result.status_code
