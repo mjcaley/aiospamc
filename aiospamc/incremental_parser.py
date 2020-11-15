@@ -6,6 +6,7 @@ from enum import Enum, auto
 import re
 from typing import Any, Callable, Mapping, Tuple, Union, Dict
 
+from .exceptions import ParseError, NotEnoughDataError, TooMuchDataError
 from .header_values import (
     CompressValue,
     ContentLengthValue,
@@ -17,30 +18,6 @@ from .header_values import (
     UserValue,
 )
 from .options import ActionOption, MessageClassOption
-
-
-class ParseError(Exception):
-    """Error occurred while parsing."""
-
-    def __init__(self, message=None) -> None:
-        """Construct parsing exception with optional message.
-
-        :param message: User friendly message.
-        """
-
-        self.message = message
-
-
-class NotEnoughDataError(ParseError):
-    """Expected more data than what the protocol content specified."""
-
-    pass
-
-
-class TooMuchDataError(ParseError):
-    """Too much data was received than what the protocol content specified."""
-
-    pass
 
 
 class States(Enum):

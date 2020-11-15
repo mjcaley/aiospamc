@@ -12,11 +12,8 @@ from aiospamc.header_values import (
     UserValue,
 )
 from aiospamc.incremental_parser import (
-    NotEnoughDataError,
     Parser,
-    ParseError,
     States,
-    TooMuchDataError,
     parse_request_status,
     parse_response_status,
     parse_content_length_value,
@@ -29,6 +26,7 @@ from aiospamc.incremental_parser import (
     ResponseParser,
     RequestParser,
 )
+from aiospamc.exceptions import ParseError, NotEnoughDataError, TooMuchDataError
 from aiospamc.options import MessageClassOption, ActionOption
 
 

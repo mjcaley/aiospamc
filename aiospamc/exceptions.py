@@ -3,7 +3,6 @@
 """Collection of exceptions."""
 
 
-# Exceptions raised from the Client object
 class ClientException(Exception):
     """Base class for exceptions raised from the client."""
 
@@ -153,3 +152,27 @@ class TimeoutException(ResponseException):
 
     def __init__(self, message: str) -> None:
         super().__init__(79, message)
+
+
+class ParseError(Exception):
+    """Error occurred while parsing."""
+
+    def __init__(self, message=None) -> None:
+        """Construct parsing exception with optional message.
+
+        :param message: User friendly message.
+        """
+
+        self.message = message
+
+
+class NotEnoughDataError(ParseError):
+    """Expected more data than what the protocol content specified."""
+
+    pass
+
+
+class TooMuchDataError(ParseError):
+    """Too much data was received than what the protocol content specified."""
+
+    pass

@@ -15,10 +15,10 @@ from typing import (
 from ssl import SSLContext
 
 from .connections import Timeout, new_connection, new_ssl_context, ConnectionManager
-from .exceptions import BadResponse
-from .header_values import CompressValue, MessageClassValue, SetOrRemoveValue, UserValue
+from .exceptions import BadResponse, ParseError
+from .header_values import CompressValue, MessageClassValue, UserValue
 from .options import ActionOption, MessageClassOption
-from .incremental_parser import ParseError, ResponseParser, parse_set_remove_value
+from .incremental_parser import ResponseParser, parse_set_remove_value
 from .responses import Response
 from .requests import Request
 
