@@ -10,7 +10,7 @@ from .exceptions import *
 from .header_values import ContentLengthValue, HeaderValue
 
 
-class StatusCode(IntEnum):
+class Status(IntEnum):
     EX_OK = 0
     EX_USAGE = 64
     EX_DATAERR = 65
@@ -36,7 +36,7 @@ class Response:
     def __init__(
         self,
         version: str = "1.5",
-        status_code: Union[StatusCode, int] = 0,
+        status_code: Union[Status, int] = 0,
         message: str = "",
         headers: Dict[str, HeaderValue] = None,
         body: bytes = b"",
@@ -53,7 +53,7 @@ class Response:
 
         self.version = version
         self.headers = headers or {}
-        self._status_code = 0
+        self._status_code: Union[Status, int]
         self.status_code = status_code
         self.message = message
         self.body = body
@@ -109,13 +109,13 @@ class Response:
         )
 
     @property
-    def status_code(self) -> Union[StatusCode, int]:
+    def status_code(self) -> Union[Status, int]:
         return self._status_code
 
     @status_code.setter
-    def status_code(self, code: Union[StatusCode, int]) -> None:
+    def status_code(self, code: Union[Status, int]) -> None:
         try:
-            self._status_code = StatusCode(code)
+            self._status_code = Status(code)
         except ValueError:
             self._status_code = code
 
