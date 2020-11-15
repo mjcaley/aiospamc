@@ -90,7 +90,9 @@ async def test_symbols(spamd, spam):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_tell(spamd, spam):
-    result = await aiospamc.tell(message=spam, message_class="spam", socket_path=spamd["unix"]["socket"])
+    result = await aiospamc.tell(
+        message=spam, message_class="spam", socket_path=spamd["unix"]["socket"]
+    )
 
     assert 0 == result.status_code
 
