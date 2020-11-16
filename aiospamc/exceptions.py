@@ -21,14 +21,7 @@ class BadResponse(ClientException):
     pass
 
 
-# ConnectionManager and Connection object exceptions
-class AIOSpamcConnectionException(Exception):
-    """Base class for exceptions from the connection."""
-
-    pass
-
-
-class AIOSpamcConnectionFailed(AIOSpamcConnectionException):
+class AIOSpamcConnectionFailed(ClientException):
     """Connection failed."""
 
     pass
@@ -147,11 +140,23 @@ class ConfigException(ResponseException):
         super().__init__(78, message)
 
 
-class TimeoutException(ResponseException):
-    """Read timeout."""
+class TimeoutException(Exception):
+    """General timeout exception."""
+
+    pass
+
+
+class ServerTimeoutException(ResponseException, TimeoutException):
+    """Timeout exception from the server."""
 
     def __init__(self, message: str) -> None:
         super().__init__(79, message)
+
+
+class ClientTimeoutException(ClientException, TimeoutException):
+    """Timeout exception from the client."""
+
+    pass
 
 
 class ParseError(Exception):
