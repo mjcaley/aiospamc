@@ -2,6 +2,8 @@
 
 """Frontend functions for the package."""
 
+import logging
+import time
 from typing import (
     Any,
     Callable,
@@ -44,6 +46,8 @@ class Client(NamedTuple):
 
 DEFAULT_CLIENT = Client(new_ssl_context, new_connection, ResponseParser)
 
+LOGGER = logging.getLogger("aiospamc")
+
 
 async def request(
     req: Request, connection: ConnectionManager, parser: ResponseParser
@@ -59,13 +63,34 @@ async def request(
     :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
     """
 
+    start = time.monotonic()
+    LOGGER.info(
+        "Sending %s request",
+        req.verb,
+        extra={
+            "message_id": id(req.body),
+            "request_id": id(req),
+            "connection_id": id(connection),
+        },
+    )
     response = await connection.request(bytes(req))
     try:
         parsed_response = parser.parse(response)
-    except ParseError as e:
-        raise BadResponse(response) from e
+    except ParseError as error:
+        LOGGER.exception(
+            "Error parsing response",
+            exc_info=error,
+            extra={"request_id": id(req), "connection_id": id(connection)},
+        )
+        raise BadResponse(response) from error
     response_obj = Response(**parsed_response)
     response_obj.raise_for_status()
+    end = time.monotonic()
+    LOGGER.info(
+        "Successfully received response in %0.2f",
+        end - start,
+        extra={"request_id": id(req), "connection_id": id(connection)},
+    )
 
     return response_obj
 
@@ -139,7 +164,7 @@ async def check(
     :raises ProtocolException: Error in the protocol.
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
-    :raises TimeoutException: Timeout during connection.
+    :raises ServerTimeoutException: Timeout during connection.
     """
 
     client = kwargs.get("client", DEFAULT_CLIENT)
@@ -208,7 +233,7 @@ async def headers(
     :raises ProtocolException: Error in the protocol.
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
-    :raises TimeoutException: Timeout during connection.
+    :raises ServerTimeoutException: Timeout during connection.
     """
 
     client = kwargs.get("client", DEFAULT_CLIENT)
@@ -268,7 +293,7 @@ async def ping(
     :raises ProtocolException: Error in the protocol.
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
-    :raises TimeoutException: Timeout during connection.
+    :raises ServerTimeoutException: Timeout during connection.
     """
 
     client = kwargs.get("client", DEFAULT_CLIENT)
@@ -336,7 +361,7 @@ async def process(
     :raises ProtocolException: Error in the protocol.
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
-    :raises TimeoutException: Timeout during connection.
+    :raises ServerTimeoutException: Timeout during connection.
     """
 
     client = kwargs.get("client", DEFAULT_CLIENT)
@@ -404,7 +429,7 @@ async def report(
     :raises ProtocolException: Error in the protocol.
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
-    :raises TimeoutException: Timeout during connection.
+    :raises ServerTimeoutException: Timeout during connection.
     """
 
     client = kwargs.get("client", DEFAULT_CLIENT)
@@ -473,7 +498,7 @@ async def report_if_spam(
     :raises ProtocolException: Error in the protocol.
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
-    :raises TimeoutException: Timeout during connection.
+    :raises ServerTimeoutException: Timeout during connection.
     """
 
     client = kwargs.get("client", DEFAULT_CLIENT)
@@ -542,7 +567,7 @@ async def symbols(
     :raises ProtocolException: Error in the protocol.
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
-    :raises TimeoutException: Timeout during connection.
+    :raises ServerTimeoutException: Timeout during connection.
     """
 
     client = kwargs.get("client", DEFAULT_CLIENT)
@@ -616,7 +641,7 @@ async def tell(
     :raises ProtocolException: Error in the protocol.
     :raises NoPermissionException: Permission denied.
     :raises ConfigException: Error in configuration.
-    :raises TimeoutException: Timeout during connection.
+    :raises ServerTimeoutException: Timeout during connection.
     """
 
     client = kwargs.get("client", DEFAULT_CLIENT)
