@@ -105,7 +105,7 @@ def test_raise_for_status_ok():
         (76, ProtocolException),
         (77, NoPermissionException),
         (78, ConfigException),
-        (79, TimeoutException),
+        (79, ServerTimeoutException),
     ],
 )
 def test_raise_for_status(status_code, exception):
