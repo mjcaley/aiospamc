@@ -32,7 +32,7 @@ from aiospamc.exceptions import (
     ProtocolException,
     NoPermissionException,
     ConfigException,
-    TimeoutException,
+    ServerTimeoutException,
     ResponseException,
 )
 from aiospamc.incremental_parser import ResponseParser
@@ -417,7 +417,7 @@ async def test_request_raises_config(mock_client_response, mocker, ex_config):
 async def test_request_raises_timeout(mock_client_response, mocker, ex_timeout):
     mock_client = mock_client_response(ex_timeout)
 
-    with pytest.raises(TimeoutException):
+    with pytest.raises(ServerTimeoutException):
         await request(
             mocker.MagicMock(),
             connection=mock_client.connection_factory(),
@@ -669,7 +669,7 @@ async def test_raises_config(func, mock_client_response, mocker, ex_config):
 async def test_raises_timeout(func, mock_client_response, mocker, ex_timeout):
     mock_client = mock_client_response(ex_timeout)
 
-    with pytest.raises(TimeoutException):
+    with pytest.raises(ServerTimeoutException):
         await func(
             mocker.MagicMock(),
             client=mock_client,
@@ -814,7 +814,7 @@ async def test_ping_raises_config(mock_client_response, ex_config):
 async def test_ping_raises_timeout(mock_client_response, ex_timeout):
     mock_client = mock_client_response(ex_timeout)
 
-    with pytest.raises(TimeoutException):
+    with pytest.raises(ServerTimeoutException):
         await ping(client=mock_client)
 
 
@@ -1012,7 +1012,7 @@ async def test_tell_raises_config(mock_client_response, mocker, ex_config):
 async def test_tell_raises_timeout(mock_client_response, mocker, ex_timeout):
     mock_client = mock_client_response(ex_timeout)
 
-    with pytest.raises(TimeoutException):
+    with pytest.raises(ServerTimeoutException):
         await tell(
             mocker.MagicMock(),
             MessageClassOption.spam,

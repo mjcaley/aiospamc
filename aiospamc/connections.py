@@ -11,7 +11,7 @@ from typing import Any, Optional, Tuple
 
 import certifi
 
-from .exceptions import AIOSpamcConnectionFailed
+from .exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
 
 
 class Timeout:
@@ -58,7 +58,7 @@ class ConnectionManager:
         """Send bytes data and receive a response.
 
         :raises: AIOSpamcConnectionFailed
-        :raises: asyncio.TimeoutError
+        :raises: ClientTimeoutException
 
         :param data: Data to send.
         """
@@ -66,16 +66,16 @@ class ConnectionManager:
         start = monotonic()
         try:
             response = await asyncio.wait_for(self._send(data), self.timeout.total)
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError as error:
             self.logger.exception(
                 "Timed out (total) to %s after %0.2f seconds",
                 self.connection_string,
                 monotonic() - start,
-                exc_info=e,
+                exc_info=error,
                 stack_info=True,
                 extra={"connection_id": id(self)},
             )
-            raise
+            raise ClientTimeoutException from error
 
         end = monotonic()
         self.logger.info(
@@ -105,16 +105,16 @@ class ConnectionManager:
         start = monotonic()
         try:
             response = await asyncio.wait_for(reader.read(), self.timeout.response)
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError as error:
             self.logger.exception(
                 "Timed out receiving data from %s after %0.2f seconds",
                 self.connection_string,
                 monotonic() - start,
-                exc_info=e,
+                exc_info=error,
                 stack_info=True,
                 extra={"connection_id": id(self)},
             )
-            raise
+            raise ClientTimeoutException from error
 
         end = monotonic()
         self.logger.info(
@@ -132,15 +132,15 @@ class ConnectionManager:
             reader, writer = await asyncio.wait_for(
                 self.open(), self.timeout.connection
             )
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError as error:
             self.logger.exception(
                 "Timed out connecting to %s after %0.2f seconds",
                 self.connection_string,
                 monotonic() - start,
-                exc_info=e,
+                exc_info=error,
                 extra={"connection_id": id(self)},
             )
-            raise
+            raise ClientTimeoutException from error
 
         end = monotonic()
         self.logger.info(
@@ -197,15 +197,14 @@ class TcpConnectionManager(ConnectionManager):
                 self.host, self.port, ssl=self.ssl_context
             )
         except (ConnectionRefusedError, OSError) as error:
-            raised = AIOSpamcConnectionFailed(error)
             self.logger.exception(
                 "Exception occurred when connecting to %s",
                 self.connection_string,
-                exc_info=raised,
+                exc_info=error,
                 stack_info=True,
                 extra={"connection_id": id(self)},
             )
-            raise raised
+            raise AIOSpamcConnectionFailed from error
 
         return reader, writer
 
@@ -237,15 +236,14 @@ class UnixConnectionManager(ConnectionManager):
         try:
             reader, writer = await asyncio.open_unix_connection(self.path)
         except (ConnectionRefusedError, OSError) as error:
-            raised = AIOSpamcConnectionFailed(error)
             self.logger.exception(
                 "Exception occurred when connecting to %s",
                 self.connection_string,
-                exc_info=raised,
+                exc_info=error,
                 stack_info=True,
                 extra={"connection_id": id(self)},
             )
-            raise raised
+            raise AIOSpamcConnectionFailed from error
 
         return reader, writer
 

@@ -128,6 +128,27 @@ class Response:
         self._body = bytes(value)
 
     def raise_for_status(self) -> None:
+        """Raises an exception if the status code isn't zero.
+
+        :raises ResponseException:
+        :raises UsageException:
+        :raises DataErrorException:
+        :raises NoInputException:
+        :raises NoUserException:
+        :raises NoHostException:
+        :raises UnavailableException:
+        :raises InternalSoftwareException:
+        :raises OSErrorException:
+        :raises OSFileException:
+        :raises CantCreateException:
+        :raises IOErrorException:
+        :raises TemporaryFailureException:
+        :raises ProtocolException:
+        :raises NoPermissionException:
+        :raises ConfigException:
+        :raises ServerTimeoutException:
+        """
+
         if self.status_code == 0:
             return
         else:
@@ -147,7 +168,7 @@ class Response:
                 76: ProtocolException,
                 77: NoPermissionException,
                 78: ConfigException,
-                79: TimeoutException,
+                79: ServerTimeoutException,
             }
             if self.status_code in status_exception:
                 raise status_exception[self.status_code](self.message)

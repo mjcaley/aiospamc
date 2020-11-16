@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 
-from aiospamc.exceptions import AIOSpamcConnectionFailed
 from aiospamc.connections import (
     ConnectionManager,
     TcpConnectionManager,
@@ -14,6 +13,7 @@ from aiospamc.connections import (
     new_connection,
     new_ssl_context,
 )
+from aiospamc.exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
 
 import certifi
 
@@ -146,7 +146,7 @@ async def test_connection_manager_timeout_total(mocker, mock_base_connection_str
     c = ConnectionManager(timeout=Timeout(total=0))
     c.open = mocker.AsyncMock(side_effect=sleep)
 
-    with pytest.raises(asyncio.TimeoutError):
+    with pytest.raises(ClientTimeoutException):
         await c.request(b"data")
 
 
@@ -162,7 +162,7 @@ async def test_connection_manager_timeout_connect(mocker, mock_base_connection_s
     c = ConnectionManager(timeout=Timeout(connection=0))
     c.open = mocker.AsyncMock(side_effect=sleep)
 
-    with pytest.raises(asyncio.TimeoutError):
+    with pytest.raises(ClientTimeoutException):
         await c.request(b"data")
 
 
@@ -180,7 +180,7 @@ async def test_connection_manager_timeout_read(mocker, mock_base_connection_stri
         return_value=(reader, mocker.AsyncMock(spec=asyncio.StreamWriter))
     )
 
-    with pytest.raises(asyncio.TimeoutError):
+    with pytest.raises(ClientTimeoutException):
         await c.request(b"data")
 
 

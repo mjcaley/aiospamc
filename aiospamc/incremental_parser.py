@@ -191,10 +191,10 @@ def parse_request_status(stream: bytes) -> Dict[str, str]:
     try:
         verb, protocol_version = stream.decode("ascii").split(" ")
         protocol, version = protocol_version.split("/")
-    except ValueError:
+    except ValueError as error:
         raise ParseError(
             "Could not parse request status line, not in recognizable format"
-        )
+        ) from error
 
     if verb not in [
         "CHECK",
@@ -232,18 +232,18 @@ def parse_response_status(stream: bytes) -> Dict[str, Union[str, int]]:
             filter(None, stream.decode("ascii").split(" "))
         )
         protocol, version = protocol_version.split("/")
-    except ValueError:
+    except ValueError as error:
         raise ParseError(
             "Could not parse response status line, not in recognizable format"
-        )
+        ) from error
 
     if protocol != "SPAMD":
         raise ParseError("Protocol name does not match")
 
     try:
         status_code_int = int(status_code)
-    except ValueError:
-        raise ParseError("Protocol status code is not an integer")
+    except ValueError as error:
+        raise ParseError("Protocol status code is not an integer") from error
 
     return {
         "protocol": protocol,
@@ -271,8 +271,8 @@ def parse_message_class_value(
     else:
         try:
             value = getattr(MessageClassOption, stream.strip())
-        except AttributeError:
-            raise ParseError("Unable to parse Message-class header value")
+        except AttributeError as error:
+            raise ParseError("Unable to parse Message-class header value") from error
 
     return MessageClassValue(value=value)
 
@@ -289,8 +289,10 @@ def parse_content_length_value(stream: Union[str, int]) -> ContentLengthValue:
 
     try:
         value = int(stream)
-    except ValueError:
-        raise ParseError("Unable to parse Content-length value, must be integer")
+    except ValueError as error:
+        raise ParseError(
+            "Unable to parse Content-length value, must be integer"
+        ) from error
 
     return ContentLengthValue(length=value)
 
@@ -348,8 +350,8 @@ def parse_spam_value(stream: str) -> SpamValue:
     stream = stream.replace(" ", "")
     try:
         found, score, threshold = re.split("[;/]", stream)
-    except ValueError:
-        raise ParseError("Spam header in unrecognizable format")
+    except ValueError as error:
+        raise ParseError("Spam header in unrecognizable format") from error
 
     found = found.lower()
     if found in ["true", "yes"]:
@@ -361,13 +363,13 @@ def parse_spam_value(stream: str) -> SpamValue:
 
     try:
         parsed_score = float(score)
-    except ValueError:
-        raise ParseError("Cannot parse Spam header score value")
+    except ValueError as error:
+        raise ParseError("Cannot parse Spam header score value") from error
 
     try:
         parsed_threshold = float(threshold)
-    except ValueError:
-        raise ParseError("Cannot parse Spam header threshold value")
+    except ValueError as error:
+        raise ParseError("Cannot parse Spam header threshold value") from error
 
     return SpamValue(value=value, score=parsed_score, threshold=parsed_threshold)
 
