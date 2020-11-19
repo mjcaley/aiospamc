@@ -12,6 +12,31 @@ class HeaderValue:
         raise NotImplementedError
 
 
+class BytesHeaderValue(HeaderValue):
+    """Header with bytes value.
+
+    :param value: Value of the header.
+    """
+
+    def __init__(self, value: bytes) -> None:
+        self.value = value
+
+    def __str__(self) -> str:
+        return f"value={repr(self.value)}"
+
+    def __bytes__(self) -> bytes:
+        return self.value
+
+    def __eq__(self, other) -> bool:
+        try:
+            return self.value == other.value
+        except AttributeError:
+            return False
+
+    def __repr__(self):
+        return f"{self.__class__.__qualname__}(value={repr(self.value)})"
+
+
 class GenericHeaderValue(HeaderValue):
     """Generic header value."""
 
