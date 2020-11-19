@@ -93,9 +93,9 @@ class Parser:
         while self._state != States.Done:
             if self._state == States.Status:
                 self.status()
-            if self._state == States.Header:
+            elif self._state == States.Header:
                 self.header()
-            if self._state == States.Body:
+            elif self._state == States.Body:  # pragma: no branch
                 self.body()
 
         return self.result
