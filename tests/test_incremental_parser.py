@@ -3,6 +3,7 @@
 import pytest
 
 from aiospamc.header_values import (
+    BytesHeaderValue,
     CompressValue,
     ContentLengthValue,
     GenericHeaderValue,
@@ -14,13 +15,13 @@ from aiospamc.header_values import (
 from aiospamc.incremental_parser import (
     Parser,
     States,
+    parse_header_value,
     parse_request_status,
     parse_response_status,
     parse_content_length_value,
     parse_message_class_value,
     parse_set_remove_value,
     parse_spam_value,
-    parse_generic_header_value,
     parse_header,
     parse_body,
     ResponseParser,
@@ -167,6 +168,21 @@ def test_body_transitions_to_done_on_empty_body(delimiter, mocker):
     p.body()
 
     assert p.state == States.Done
+
+
+def test_body_doesnt_transition_on_not_enough_data(delimiter, mocker):
+    p = Parser(
+        delimiter=delimiter,
+        status_parser=mocker.stub(),
+        header_parser=mocker.stub(),
+        body_parser=mocker.Mock(side_effect=NotEnoughDataError),
+        start=States.Body,
+    )
+    p.result["headers"]["Content-length"] = ContentLengthValue(10)
+
+    with pytest.raises(NotEnoughDataError):
+        p.body()
+    assert p.state == States.Body
 
 
 def test_body_too_much_data_and_transitions_to_done(delimiter, mocker):
@@ -341,11 +357,27 @@ def test_parse_spam_value_raises_parseerror(test_input):
         parse_spam_value(test_input)
 
 
-def test_parse_xheader_success():
-    result = parse_generic_header_value("value")
+def test_parse_header_value_standard_bytes():
+    result = parse_header_value("Content-length", b"42")
+
+    assert isinstance(result, ContentLengthValue)
+
+
+def test_parse_header_value_standard_raises():
+    with pytest.raises(ParseError):
+        parse_header_value("Content-length", "value".encode("utf32"))
+
+
+def test_parse_header_value_generic():
+    result = parse_header_value("XHeader", "value")
 
     assert isinstance(result, GenericHeaderValue)
-    assert result.value == "value"
+
+
+def test_parse_header_value_bytes():
+    result = parse_header_value("XHeader", "value".encode("utf32"))
+
+    assert isinstance(result, BytesHeaderValue)
 
 
 @pytest.mark.parametrize(
@@ -384,7 +416,12 @@ def test_parse_xheader_success():
             SpamValue(value=True, score=40, threshold=20),
         ],
         [b"User: username", "User", UserValue(name="username")],
-        [b"XHeader: x value", "XHeader", GenericHeaderValue("x value")],
+        [b"XHeader:x value", "XHeader", GenericHeaderValue("x value")],
+        [
+            b"XHeader:%b" % "x value".encode("utf32"),
+            "XHeader",
+            BytesHeaderValue("x value".encode("utf32")),
+        ],
     ],
 )
 def test_parse_header_success(test_input, header, value):

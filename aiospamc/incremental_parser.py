@@ -8,6 +8,7 @@ from typing import Any, Callable, Mapping, Tuple, Union, Dict
 
 from .exceptions import ParseError, NotEnoughDataError, TooMuchDataError
 from .header_values import (
+    BytesHeaderValue,
     CompressValue,
     ContentLengthValue,
     GenericHeaderValue,
@@ -378,17 +379,6 @@ def parse_user_value(stream: str) -> UserValue:
     return UserValue(name=stream.strip())
 
 
-def parse_generic_header_value(stream: str) -> GenericHeaderValue:
-    """Parses any user-defined or currently unknown header values.
-
-    :param stream: String to parse.
-
-    :return: A `GenericHeaderValue` instance.
-    """
-
-    return GenericHeaderValue(value=stream.strip())
-
-
 def parse_header_value(header: str, value: Union[str, bytes]) -> HeaderValue:
     """Sends the header value stream to the header value parsing function.
 
@@ -399,13 +389,17 @@ def parse_header_value(header: str, value: Union[str, bytes]) -> HeaderValue:
     """
 
     if header in header_value_parsers:
-        if isinstance(value, bytes):
+        try:
             return header_value_parsers[header](value.decode("ascii"))
-        return header_value_parsers[header](value)
+        except UnicodeDecodeError as error:
+            raise ParseError(message="Unable to decode header value") from error
     else:
-        if isinstance(value, bytes):
-            return parse_generic_header_value(value.decode("utf8"))
-        return parse_generic_header_value(value)
+        try:
+            return GenericHeaderValue(value.decode("utf8"))
+        except AttributeError:
+            return GenericHeaderValue(value)
+        except UnicodeDecodeError:
+            return BytesHeaderValue(value)
 
 
 def parse_header(stream: bytes) -> Tuple[str, HeaderValue]:
