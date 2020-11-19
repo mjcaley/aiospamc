@@ -50,13 +50,13 @@ class GenericHeaderValue(HeaderValue):
         self.value = value
         self.encoding = encoding
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"value={repr(self.value)}, encoding={repr(self.encoding)}"
 
     def __bytes__(self) -> bytes:
         return self.value.encode(self.encoding)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         try:
             return other.value == self.value and other.encoding == self.encoding
         except AttributeError:
@@ -83,10 +83,10 @@ class CompressValue(HeaderValue):
 
         self.algorithm = algorithm
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"algorithm={repr(self.algorithm)}"
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         try:
             return self.algorithm == other.algorithm
         except AttributeError:
@@ -111,9 +111,11 @@ class ContentLengthValue(HeaderValue):
 
     def __int__(self) -> int:
         return self.length
+
+    def __str__(self) -> str:
         return f"length={repr(self.length)}"
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         try:
             return self.length == other.length
         except AttributeError:
@@ -139,10 +141,10 @@ class MessageClassValue(HeaderValue):
 
         self.value = value or MessageClassOption.ham
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value.name
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         try:
             return self.value == other.value
         except AttributeError:
@@ -166,10 +168,10 @@ class SetOrRemoveValue(HeaderValue):
 
         self.action = action or ActionOption(local=False, remote=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"local={self.action.local}, remote={self.action.remote}"
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         try:
             return self.action == other.action
         except AttributeError:
@@ -214,11 +216,12 @@ class SpamValue(HeaderValue):
     def __bool__(self) -> bool:
         return self.value
 
+    def __str__(self) -> str:
         return (
             f"value={str(self.value)}, score={self.score}, threshold={self.threshold}"
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         try:
             return all(
                 [
@@ -258,10 +261,10 @@ class UserValue(HeaderValue):
 
         self.name = name or getpass.getuser()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"name={self.name}"
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         try:
             return self.name == other.name
         except AttributeError:
