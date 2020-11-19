@@ -95,6 +95,12 @@ def test_content_length_bytes():
     assert bytes(c) == b"42"
 
 
+def test_content_length_int():
+    c = ContentLengthValue(length=42)
+
+    assert 42 == int(c)
+
+
 @pytest.mark.parametrize(
     "test_input", [MessageClassOption.ham, MessageClassOption.spam]
 )
@@ -167,6 +173,18 @@ def test_spam_bytes(value, score, threshold, expected):
     s = SpamValue(value=value, score=score, threshold=threshold)
 
     assert bytes(s) == expected
+
+
+def test_spam_bool_true():
+    s = SpamValue(value=True)
+
+    assert True is bool(s)
+
+
+def test_spam_bool_false():
+    s = SpamValue(value=False)
+
+    assert False is bool(s)
 
 
 def test_user_str():

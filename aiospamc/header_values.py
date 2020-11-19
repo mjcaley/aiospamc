@@ -109,7 +109,8 @@ class ContentLengthValue(HeaderValue):
         """
         self.length = length
 
-    def __str__(self):
+    def __int__(self) -> int:
+        return self.length
         return f"length={repr(self.length)}"
 
     def __eq__(self, other):
@@ -210,7 +211,9 @@ class SpamValue(HeaderValue):
         self.score = score
         self.threshold = threshold
 
-    def __str__(self):
+    def __bool__(self) -> bool:
+        return self.value
+
         return (
             f"value={str(self.value)}, score={self.score}, threshold={self.threshold}"
         )
