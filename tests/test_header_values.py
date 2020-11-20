@@ -4,6 +4,7 @@ import pytest
 
 from aiospamc.options import ActionOption, MessageClassOption
 from aiospamc.header_values import (
+    BytesHeaderValue,
     HeaderValue,
     GenericHeaderValue,
     CompressValue,
@@ -18,6 +19,42 @@ from aiospamc.header_values import (
 def test_header_value_bytes_raises():
     with pytest.raises(NotImplementedError):
         bytes(HeaderValue())
+
+
+def test_bytes_value():
+    b = BytesHeaderValue(b"test")
+
+    assert b"test" == b.value
+
+
+def test_bytes_str():
+    b = BytesHeaderValue(b"test")
+
+    assert f"value={repr(b.value)}" == str(b)
+
+
+def test_bytes_bytes():
+    b = BytesHeaderValue(b"test")
+
+    assert b"test" == bytes(b)
+
+
+def test_bytes_eq_true():
+    b = BytesHeaderValue(b"test")
+
+    assert BytesHeaderValue(b"test") == b
+
+
+def test_bytes_eq_false():
+    b = BytesHeaderValue(b"test")
+
+    assert BytesHeaderValue(b"other") != b
+
+
+def test_bytes_eq_fail():
+    b = BytesHeaderValue(b"test")
+
+    assert "other" != b
 
 
 def test_header_bytes():
@@ -56,6 +93,12 @@ def test_content_length_bytes():
     c = ContentLengthValue(length=42)
 
     assert bytes(c) == b"42"
+
+
+def test_content_length_int():
+    c = ContentLengthValue(length=42)
+
+    assert 42 == int(c)
 
 
 @pytest.mark.parametrize(
@@ -130,6 +173,18 @@ def test_spam_bytes(value, score, threshold, expected):
     s = SpamValue(value=value, score=score, threshold=threshold)
 
     assert bytes(s) == expected
+
+
+def test_spam_bool_true():
+    s = SpamValue(value=True)
+
+    assert True is bool(s)
+
+
+def test_spam_bool_false():
+    s = SpamValue(value=False)
+
+    assert False is bool(s)
 
 
 def test_user_str():
