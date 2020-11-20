@@ -389,17 +389,21 @@ def parse_header_value(header: str, value: Union[str, bytes]) -> HeaderValue:
     """
 
     if header in header_value_parsers:
-        try:
-            return header_value_parsers[header](value.decode("ascii"))
-        except UnicodeDecodeError as error:
-            raise ParseError(message="Unable to decode header value") from error
+        if isinstance(value, bytes):
+            try:
+                return header_value_parsers[header](value.decode())
+            except UnicodeDecodeError as error:
+                raise ParseError(message="Unable to decode header value") from error
+        else:
+            return header_value_parsers[header](value)
     else:
-        try:
-            return GenericHeaderValue(value.decode("utf8"))
-        except AttributeError:
+        if isinstance(value, bytes):
+            try:
+                return GenericHeaderValue(value.decode())
+            except UnicodeDecodeError:
+                return BytesHeaderValue(value)
+        else:
             return GenericHeaderValue(value)
-        except UnicodeDecodeError:
-            return BytesHeaderValue(value)
 
 
 def parse_header(stream: bytes) -> Tuple[str, HeaderValue]:

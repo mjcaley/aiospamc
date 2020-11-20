@@ -361,11 +361,19 @@ def test_parse_header_value_standard_bytes():
     result = parse_header_value("Content-length", b"42")
 
     assert isinstance(result, ContentLengthValue)
+    assert 42 == result.length
 
 
 def test_parse_header_value_standard_raises():
     with pytest.raises(ParseError):
         parse_header_value("Content-length", "value".encode("utf32"))
+
+
+def test_parse_header_value_standard_string():
+    result = parse_header_value("Content-length", "42")
+
+    assert isinstance(result, ContentLengthValue)
+    assert 42 == result.length
 
 
 def test_parse_header_value_generic():
