@@ -12,7 +12,8 @@ import aiospamc
 async def test_spam(spamd, spam):
     result = await aiospamc.check(spam, host=spamd['tcp']['host'], port=spamd['tcp']['port'])
 
-    assert result
+    assert 0 == result.status_code
+    assert True is result.headers['Spam'].value
 
 
 @pytest.mark.integration
@@ -31,4 +32,4 @@ async def test_gtk_encoding(spamd):
 
     result = await aiospamc.check(message, host=spamd['tcp']['host'], port=spamd['tcp']['port'])
 
-    assert result
+    assert 0 == result.status_code
