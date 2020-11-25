@@ -17,7 +17,6 @@ from .frontend import (
 )
 from .options import ActionOption, MessageClassOption
 
-__all__ = ("MessageClassOption", "ActionOption", "Timeout")
 
 __author__ = "Michael Caley"
 __copyright__ = "Copyright 2016-2020 Michael Caley"
