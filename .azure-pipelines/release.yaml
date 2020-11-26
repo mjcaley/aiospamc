@@ -49,5 +49,5 @@ steps:
     changeLogLabels: |
       [
         { "label": "bug", "displayName": "Bugs", "state": "closed" },
-        { "label": "enhancment", "displayName": "Enhancments", "state": "closed" }
+        { "label": "enhancement", "displayName": "Enhancements", "state": "closed" }
       ]
