@@ -1,1 +1,0 @@
-Removed `loop` parameter from all calls since it was decprecated in Python 3.8.
