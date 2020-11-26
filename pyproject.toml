@@ -8,7 +8,7 @@ readme = "README.rst"
 
 repository = "https://github.com/mjcaley/aiospamc"
 homepage = "https://github.com/mjcaley/aiospamc"
-documentation = "https://aiospamc.readthedocs.org"
+documentation = "https://aiospamc.readthedocs.io"
 
 classifiers = [
     'Development Status :: 4 - Beta',
