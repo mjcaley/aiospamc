@@ -1,1 +1,0 @@
-Messages that don't end with a newline result in the connection getting hung. Improved connection code to send an EOF when finished with a message.

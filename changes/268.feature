@@ -1,1 +1,0 @@
-Added BytesValue class to support header values that can't be decoded by UTF8.
