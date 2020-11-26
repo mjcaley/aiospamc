@@ -45,4 +45,9 @@ steps:
     tagSource: 'gitTag'
     assets: '$(Build.SourcesDirectory)/dist/*'
     changeLogCompareToRelease: 'lastFullRelease'
-    changeLogType: 'commitBased'
+    changeLogType: 'issueBased'
+    changeLogLabels: |
+      [
+        { "label": "bug", "displayName": "Bugs", "state": "closed" },
+        { "label": "enhancment", "displayName": "Enhancments", "state": "closed" }
+      ]
