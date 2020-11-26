@@ -39,7 +39,7 @@ class AiospamcInit(FileEditor):
 
     def edit(self, line, new_version):
         logging.debug('File: %s; Line: %s', str(self.filename), line)
-        if re.match(r"^__version__[ \t]*=[ \t]*'\d+\.\d+\.\d+'", line):
+        if re.match(r'^__version__[ \t]*=[ \t]*"\d+\.\d+\.\d+"', line):
             logging.info('Match found for %s', str(self.filename))
             new_line = re.sub(r'\d+\.\d+\.\d+', new_version, line)
 
@@ -92,13 +92,17 @@ class PyProject(FileEditor):
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format='{message}', style='{')
-
     parser = argparse.ArgumentParser(description='Increment project version')
     parser.add_argument('VERSION', help='Version string to write.')
     parser.add_argument('-p', '--path', default='.', help='Path to the root of the project.')
-    parser.add_argument('-v', '--verbose', default=False, help='Enable debug logging.')
+    parser.add_argument('-v', '--verbose', action='store_const', const=True, default=False, help='Enable debug logging.')
     args = parser.parse_args()
+
+    if args.verbose is True:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+    logging.basicConfig(level=log_level, format='{message}', style='{')
 
     project_path = Path(args.path).resolve()
     if not project_path.exists():
