@@ -81,6 +81,12 @@ def test_str():
     assert result == f"<0 - EX_OK: aiospamc.responses.Response object at {id(r)}>"
 
 
+def test_eq_other_obj_is_false():
+    r = Response()
+
+    assert False is (r == "")
+
+
 def test_raise_for_status_ok():
     r = Response(version="1.5", status_code=0, message="")
 
