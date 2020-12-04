@@ -100,13 +100,16 @@ class Response:
         )
 
     def __eq__(self, other: Any) -> bool:
-        return (
-            self.version == other.version
-            and self.headers == other.headers
-            and self.status_code == other.status_code
-            and self.message == other.message
-            and self.body == other.body
-        )
+        try:
+            return (
+                self.version == other.version
+                and self.headers == other.headers
+                and self.status_code == other.status_code
+                and self.message == other.message
+                and self.body == other.body
+            )
+        except AttributeError:
+            return False
 
     @property
     def status_code(self) -> Union[Status, int]:
