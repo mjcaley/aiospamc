@@ -1,3 +1,12 @@
+Aiospamc 0.7.1 (2021-01-20)
+===========================
+
+Bugfixes
+--------
+
+- Response objects can now be compared with other objects without throwing an exception. (#288)
+
+
 Aiospamc 0.7.0 (2020-11-26)
 ===========================
 
