@@ -1,1 +1,0 @@
-Response objects can now be compared with other objects without throwing an exception.
