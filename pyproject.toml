@@ -64,7 +64,7 @@ filename = "CHANGELOG.rst"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-certifi = "^2020.6"
+certifi = ">=2020.6,<2022.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1"
