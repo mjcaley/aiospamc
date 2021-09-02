@@ -44,6 +44,10 @@ steps:
   displayName: 'Run black'
 
 - script: |
+    interrogate
+  displayName: 'Run interrogate for docstring coverage'
+
+- script: |
     sudo apt-get -y install spamassassin
   displayName: 'Install SpamAssassin'
 
