@@ -8,6 +8,9 @@ steps:
     versionSpec: ${{ parameters.PythonVersion }}
   displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
+- script: python -m pip install --upgrade pip
+  displayName: 'Upgrade Pip'
+
 - script: |
     curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
   displayName: 'Installing Poetry'
