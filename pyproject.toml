@@ -55,6 +55,7 @@ exclude = """
 [tool.interrogate]
 ignore-magic = true
 fail-under = 95
+exclude = ["changes", "docs", "example", "test", "util"]
 
 [tool.towncrier]
 package = "aiospamc"
