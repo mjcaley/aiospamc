@@ -1,0 +1,37 @@
+name: Continuous integration
+on: [push]
+jobs:a
+  Continuous-Integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: '3.9'
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Run unit tests
+        run: |
+          pytest --junit-xml="output/unit-test-results.xml" --cov --cov-report="xml:output/coverage.xml"
+      - name: Publish unit test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: unit-test-results
+          path: output/unit-test-results.xml
+      - name: Publish code coverage
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: output/coverage.xml
+      - name: Run mypy
+        run: mypy aiospamc
+      - name: Run black
+        run: black --check .
+      - name: Run interrogate
+        run: interrogate
