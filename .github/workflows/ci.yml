@@ -1,6 +1,6 @@
 name: Continuous integration
 on: [push]
-jobs:a
+jobs:
   Continuous-Integration:
     runs-on: ubuntu-latest
     steps:
