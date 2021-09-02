@@ -11,6 +11,8 @@ from .header_values import ContentLengthValue, HeaderValue
 
 
 class Status(IntEnum):
+    """Enumeration for the status values defined by SPAMD."""
+
     EX_OK = 0
     EX_USAGE = 64
     EX_DATAERR = 65
@@ -113,10 +115,20 @@ class Response:
 
     @property
     def status_code(self) -> Union[Status, int]:
+        """Status code property getter.
+
+        :return: Value of status code.
+        """
+
         return self._status_code
 
     @status_code.setter
     def status_code(self, code: Union[Status, int]) -> None:
+        """Status code property setter.
+
+        :param code: Status code value to set.
+        """
+
         try:
             self._status_code = Status(code)
         except ValueError:
@@ -124,10 +136,20 @@ class Response:
 
     @property
     def body(self) -> bytes:
+        """Body property getter.
+
+        :return: Value of body.
+        """
+
         return self._body
 
     @body.setter
     def body(self, value: Union[bytes, SupportsBytes]) -> None:
+        """Body property setter.
+
+        :param value: Value to set the body.
+        """
+
         self._body = bytes(value)
 
     def raise_for_status(self) -> None:
