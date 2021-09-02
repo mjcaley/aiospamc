@@ -141,20 +141,73 @@ class Parser:
 
         header_line, delimiter, leftover = self.buffer.partition(self.delimiter)
 
-        if not header_line and delimiter and leftover == self.delimiter:
+        if self._at_end_of_headers_with_empty_body(header_line, delimiter, leftover):
             self.buffer = b""
             self._state = States.Body
-        elif not header_line and delimiter:
+        elif self._at_end_of_headers(header_line, delimiter):
             self.buffer = leftover
             self._state = States.Body
-        elif header_line and delimiter:
+        elif self._at_next_header(header_line, delimiter):
             self.buffer = leftover
             key, value = self.header_parser(header_line)
             self.result["headers"][key] = value
-        elif not header_line and not delimiter and not leftover:
+        elif self._is_status_line_only(header_line, delimiter, leftover):
             self._state = States.Body
         else:
             raise ParseError("Header section not in recognizable format")
+
+    def _at_end_of_headers_with_empty_body(
+        self, header_line: bytes, delimiter: bytes, leftover: bytes
+    ) -> bool:
+        """Helper method to check if the header sections is done and there is an empty body.
+
+        :param header_line: Contents of the header line.
+        :param delimiter: Separator between the header line and the rest of the response.
+        :param leftover: Remaining response contents.
+
+        :return: If the header section is finished, and there is no remaining content for a body.
+        """
+
+        return all([not header_line, delimiter, leftover == self.delimiter])
+
+    @staticmethod
+    def _at_end_of_headers(header_line: bytes, delimiter: bytes) -> bool:
+        """Helper method to check if the parser is at the end of the header section.
+
+        :param header_line: Contents of the header line.
+        :param delimiter: Separator between the header line and the rest of the response.
+
+        :return: If the header section is finished and there is a delimiter.
+        """
+
+        return all([not header_line, delimiter])
+
+    @staticmethod
+    def _at_next_header(header_line: bytes, delimiter: bytes) -> bool:
+        """Helper method to check if a header can be parsed.
+
+        :param header_line: Contents of the header line.
+        :param delimiter: Separator between the header line and the rest of the response.
+
+        :return: If the header line is finished, and there is another header.
+        """
+
+        return all([header_line, delimiter])
+
+    @staticmethod
+    def _is_status_line_only(
+        header_line: bytes, delimiter: bytes, leftover: bytes
+    ) -> bool:
+        """Helper method to check if the response is a status line only, without a header section.
+
+        :param header_line: Contents of the header line.
+        :param delimiter: Separator between the header line and the rest of the response.
+        :param leftover: Remaining response contents.
+
+        :return: If the response was a status line only without a header section or body.
+        """
+
+        return all([not header_line, not delimiter, not leftover])
 
     def body(self) -> None:
         """Uses the length defined in the `Content-length` header (defaulted to 0) to determine how many bytes the body
