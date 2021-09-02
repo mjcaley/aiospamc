@@ -17,7 +17,7 @@ jobs:
         run: poetry install
       - name: Run unit tests
         run: |
-          pytest --junit-xml="output/unit-test-results.xml" --cov --cov-report="xml:output/coverage.xml"
+          poetry run pytest --junit-xml="output/unit-test-results.xml" --cov --cov-report="xml:output/coverage.xml"
       - name: Publish unit test results
         uses: actions/upload-artifact@v2
         with:
@@ -30,8 +30,8 @@ jobs:
           name: coverage
           path: output/coverage.xml
       - name: Run mypy
-        run: mypy aiospamc
+        run: poetry run mypy aiospamc
       - name: Run black
-        run: black --check .
+        run: poetry run black --check .
       - name: Run interrogate
-        run: interrogate
+        run: poetry run interrogate
