@@ -376,6 +376,13 @@ def parse_spam_value(stream: str) -> SpamValue:
 
 
 def parse_user_value(stream: str) -> UserValue:
+    """Parse the username.
+
+    :param stream: String of username to parse. Whitespace is trimmed.
+
+    :return: The `UserValue` instance.
+    """
+
     return UserValue(name=stream.strip())
 
 
@@ -459,6 +466,8 @@ class RequestParser(Parser):
     """Sub-class of the parser for requests."""
 
     def __init__(self):
+        """RequestParse constructor."""
+
         super().__init__(
             delimiter=b"\r\n",
             status_parser=parse_request_status,
@@ -471,6 +480,8 @@ class ResponseParser(Parser):
     """Sub-class of the parser for responses."""
 
     def __init__(self):
+        """ResponseParser constructor."""
+
         super().__init__(
             delimiter=b"\r\n",
             status_parser=parse_response_status,

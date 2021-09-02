@@ -39,6 +39,8 @@ SSLFactory = Callable[[Any], Optional[SSLContext]]
 
 
 class Client(NamedTuple):
+    """Client tuple containing factories."""
+
     ssl_context_factory: SSLFactory
     connection_factory: ConnectionFactory
     parser_factory: Type[ResponseParser]
@@ -104,6 +106,19 @@ def _new_connection(
     timeout: Timeout = None,
     verify: Any = None,
 ) -> ConnectionManager:
+    """Helper function to create a new connection manager object depending on inputs.
+
+    :param connection_factory: Factory function for connection manager.
+    :param ssl_context_factory: Factory function for SSL context.
+    :param host: SPAMD TCP hostname.
+    :param port: SPAMD TCP port number.
+    :param socket_path: Unix socket path.
+    :param timeout: Timeout configuration.
+    :param verify: SSL context configuration.
+
+    :return: Instance of the `ConnectionManager` based on inputs.
+    """
+
     ssl_context = ssl_context_factory(verify)
     connection = connection_factory(host, port, socket_path, timeout, ssl_context)
 
@@ -111,6 +126,12 @@ def _new_connection(
 
 
 def _add_headers(req: Request, user: Optional[str], compress: Optional[bool]) -> None:
+    """Helper function for adding user or compress headers to a request.
+
+    :param req: Request to modify.
+    :param user: Username to add to the user header.
+    :param compress: Boolean for whether to add the compress header.
+    """
     if user:
         req.headers["User"] = UserValue(user)
     if compress:

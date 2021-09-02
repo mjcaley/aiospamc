@@ -45,6 +45,11 @@ class ConnectionManager:
     """Stores connection parameters and creates connections."""
 
     def __init__(self, timeout: Timeout = None) -> None:
+        """ConnectionManager constructor.
+
+        :param timeout: Timeout configuration
+        """
+
         self.timeout = timeout or Timeout()
         self._logger = logging.getLogger("aiospamc.connections")
 
@@ -88,6 +93,13 @@ class ConnectionManager:
         return response
 
     async def _send(self, data: bytes) -> bytes:
+        """Opens a connection, sends data to the writer, waits for the reader, then returns the response.
+
+        :param data: Data to send.
+
+        :return: Byte data from the response.
+        """
+
         reader, writer = await self._connect()
 
         writer.write(data)
@@ -102,6 +114,13 @@ class ConnectionManager:
         return response
 
     async def _receive(self, reader: asyncio.StreamReader) -> bytes:
+        """Takes a reader and returns the response.
+
+        :param reader: asyncio reader.
+
+        :return: Byte data from the response.
+        """
+
         start = monotonic()
         try:
             response = await asyncio.wait_for(reader.read(), self.timeout.response)
@@ -127,6 +146,11 @@ class ConnectionManager:
         return response
 
     async def _connect(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+        """Opens a connection from the connection manager.
+
+        :return: Tuple or asyncio reader and writer.
+        """
+
         start = monotonic()
         try:
             reader, writer = await asyncio.wait_for(
@@ -165,6 +189,8 @@ class ConnectionManager:
 
 
 class TcpConnectionManager(ConnectionManager):
+    """Connection manager for TCP connections."""
+
     def __init__(
         self,
         host: str,
@@ -177,6 +203,7 @@ class TcpConnectionManager(ConnectionManager):
         :param host: Hostname or IP address.
         :param port: TCP port.
         :param ssl_context: SSL context.
+        :param timeout: Timeout configuration.
         """
 
         super().__init__(timeout)
@@ -216,10 +243,13 @@ class TcpConnectionManager(ConnectionManager):
 
 
 class UnixConnectionManager(ConnectionManager):
+    """Connection manager for Unix pipes."""
+
     def __init__(self, path: str, timeout: Timeout = None):
         """UnixConnectionManager constructor.
 
         :param path: Unix socket path.
+        :param timeout: Timeout configuration
         """
 
         super().__init__(timeout)
@@ -288,6 +318,15 @@ def new_connection(
     timeout: Optional[Timeout] = None,
     context: Optional[ssl.SSLContext] = None,
 ) -> ConnectionManager:
+    """Create a new connection manager.
+
+    :param host: TCP hostname.
+    :param port: TCP port number.
+    :param socket_path: Unix socket path.
+    :param timeout: Timeout configuration.
+    :param context: SSL context configuration.
+    """
+
     if socket_path:
         return UnixConnectionManager(socket_path, timeout=timeout)
     elif host and port:

@@ -68,8 +68,18 @@ class Request:
 
     @property
     def body(self) -> bytes:
+        """Body property getter.
+
+        :return: Value of body.
+        """
+
         return self._body
 
     @body.setter
     def body(self, value: Union[bytes, SupportsBytes]) -> None:
+        """Body property setter.
+
+        :param value: Value to set the body.
+        """
+
         self._body = bytes(value)

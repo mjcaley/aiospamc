@@ -8,6 +8,8 @@ from .options import ActionOption, MessageClassOption
 
 
 class HeaderValue:
+    """Base class for header values."""
+
     def __bytes__(self):
         raise NotImplementedError
 
@@ -19,6 +21,11 @@ class BytesHeaderValue(HeaderValue):
     """
 
     def __init__(self, value: bytes) -> None:
+        """BytesHeaderValue constructor.
+
+        :param value: Value of byte data.
+        """
+
         self.value = value
 
     def __str__(self) -> str:
