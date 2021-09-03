@@ -40,23 +40,18 @@ jobs:
         run: poetry install
       - name: Run unit tests
         run: |
-          poetry run pytest --junit-xml="output/unit-test-results.xml" --cov --cov-report="xml:output/coverage.xml"
-      - name: Publish unit test results
-        uses: actions/upload-artifact@v2
-        with:
-          name: unit-test-results
-          path: output/unit-test-results.xml
-      - name: Publish code coverage
+          poetry run pytest --junit-xml="test-results/unit-tests.xml" --cov --cov-report="xml:output/coverage.xml"
+      - uses: codecov/codecov-action@v2
+        name: Upload to Codecov
         if: ${{ always() }}
-        uses: actions/upload-artifact@v2
         with:
-          name: coverage
-          path: output/coverage.xml
+          files: output/coverage.xml
+          flags: unittests
       - name: Install SpamAssassin
         run: sudo apt-get -y install spamassassin
       - name: Run unit tests
         run: |
-          poetry run pytest -m integration --junit-xml="output/integration-test-results.xml"
+          poetry run pytest -m integration --junit-xml="test-results/integration-tests.xml"
       - name: Publish integration test results
         uses: actions/upload-artifact@v2
         with:
