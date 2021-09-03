@@ -86,7 +86,7 @@ jobs:
           name: integration-test-results
           path: output/integration-test-results.xml
   release:
-    needs: [code-style, build-and-test]
+    needs: [code-style, unit-tests, integration-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
