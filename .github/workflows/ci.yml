@@ -43,7 +43,7 @@ jobs:
         run: poetry build -n
       - name: Publish package
         if: ${{ matrix.python == '3.9' }}
-        uses: actions/upload-artifacts@v2
+        uses: actions/upload-artifact@v2
         with:
           name: package
           path: dist/*
