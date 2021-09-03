@@ -53,7 +53,7 @@ jobs:
           name: coverage
           path: output/coverage.xml
       - name: Install SpamAssassin
-        run: apt-get -y install spamassassin
+        run: sudo apt-get -y install spamassassin
       - name: Run unit tests
         run: |
           poetry run pytest -m integration --junit-xml="output/integration-test-results.xml"
