@@ -1,4 +1,4 @@
-name: Continuous integration
+name: CI
 on: [push]
 jobs:
   build-and-test:
@@ -38,3 +38,12 @@ jobs:
         run: poetry run black --check .
       - name: Run interrogate
         run: poetry run interrogate
+      - name: Package
+        if: ${{ matrix.python == '3.9' }}
+        run: poetry build -n
+      - name: Publish package
+        if: ${{ matrix.python == '3.9' }}
+        uses: actions/upload-artifacts@v2
+        with:
+          name: package
+          path: dist/*
