@@ -40,10 +40,15 @@ jobs:
         run: poetry install
       - name: Run unit tests
         run: |
-          poetry run pytest --junit-xml="test-results/unit-tests.xml" --cov --cov-report="xml:output/coverage.xml"
+          poetry run pytest --junit-xml="output/unit-tests.xml" --cov --cov-report="xml:output/coverage.xml"
+      - uses: EnricoMi/publish-unit-test-result-action@v1
+        name: Publish unit test results
+        if: always()
+        with:
+          files: output/**/*-tests.xml
       - uses: codecov/codecov-action@v2
         name: Upload to Codecov
-        if: ${{ always() }}
+        if: always()
         with:
           files: output/coverage.xml
           flags: unittests
@@ -56,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: integration-test-results
-          path: output/integration-test-results.xml
+          path: output/integration-tests.xml
       - name: Package
         if: ${{ matrix.python == '3.9' }}
         run: poetry build -n
