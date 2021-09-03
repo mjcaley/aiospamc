@@ -62,7 +62,7 @@ jobs:
           name: package
           path: dist/
   release:
-    needs: build-and-test
+    needs: [code-style, build-and-test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
