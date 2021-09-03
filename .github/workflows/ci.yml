@@ -49,7 +49,7 @@ jobs:
           path: dist/*
   release:
     needs: build-and-test
-    runs-ons: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
