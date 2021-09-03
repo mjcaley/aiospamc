@@ -1,14 +1,16 @@
 name: Continuous integration
 on: [push]
 jobs:
-  Continuous-Integration:
+  build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      python: ['3.6', '3.7', '3.8', '3.9']
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
         uses: actions/setup-python@v2.2.2
         with:
-          python-version: '3.9'
+          python-version: ${{ matrix.python }}
       - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
