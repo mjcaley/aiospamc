@@ -59,14 +59,14 @@ jobs:
         with:
           name: Results 3.9
           path: output
-      - uses: EnricoMi/publish-unit-test-result-action@v1
-        name: Publish unit test results
-        if: always()
-        with:
-          files: output/**/*-tests.xml
       - uses: codecov/codecov-action@v2
         name: Upload to Codecov
         if: always()
         with:
           files: output/**/coverage.xml
           flags: unittests
+      - uses: EnricoMi/publish-unit-test-result-action@v1
+        name: Publish unit test results
+        if: always()
+        with:
+          files: output/**/*-tests.xml
