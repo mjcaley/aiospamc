@@ -7,13 +7,13 @@ aiospamc
 .. |pypi| image:: https://img.shields.io/pypi/v/aiospamc
     :target: https://pypi.org/project/aiospamc/
 
-.. |build| image:: https://img.shields.io/github/workflow/status/mjcaley/aiospamc/CI/master
+.. |build| image:: https://github.com/mjcaley/aiospamc/actions/workflows/ci.yml/badge.svg?branch=master
     :target: https://github.com/mjcaley/aiospamc/actions/workflows/ci.yml?query=branch%3Amaster
 
 .. |coverage| image:: https://codecov.io/gh/mjcaley/aiospamc/branch/master/graph/badge.svg?token=tJZuwlWXBs
     :target: https://codecov.io/gh/mjcaley/aiospamc
 
-.. |docs| image:: https://img.shields.io/readthedocs/aiospamc
+.. |docs| image:: https://readthedocs.org/projects/aiospamc/badge/?version=latest
     :target: https://aiospamc.readthedocs.io/en/latest/
 
 .. |license| image:: https://img.shields.io/github/license/mjcaley/aiospamc
