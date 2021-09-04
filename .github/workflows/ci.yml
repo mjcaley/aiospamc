@@ -1,7 +1,7 @@
 name: CI
 on: [push]
 jobs:
-  tests:
+  build-and-test:
     name: "Run Tests"
     runs-on: ubuntu-latest
     strategy:
@@ -50,7 +50,7 @@ jobs:
           path: dist/
   publish-test-results:
     name: "Publish Test Results"
-    needs: [code-style, tests]
+    needs: build-and-test
     if: success() || failure()
     runs-on: ubuntu-latest
     steps:
