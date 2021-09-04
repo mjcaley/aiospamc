@@ -24,7 +24,7 @@ jobs:
           poetry run pytest --junit-xml="output/unit-tests.xml" --cov --cov-report="xml:output/coverage.xml"
       - name: Install SpamAssassin
         run: sudo apt-get -y install spamassassin
-      - name: Run unit tests
+      - name: Run integration tests
         run: |
           poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
       - name: Run mypy
@@ -48,22 +48,6 @@ jobs:
         with:
           name: package
           path: dist/
-  publish-test-results:
-    name: "Publish Test Results"
-    needs: build-and-test
-    if: success() || failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: Results 3.9
-          path: output
-      - uses: EnricoMi/publish-unit-test-result-action@v1
-        name: Publish unit test results
-        if: always()
-        with:
-          files: output/**/*-tests.xml
   publish-code-coverage:
     name: "Publish Code Coverage"
     needs: build-and-test
@@ -81,3 +65,19 @@ jobs:
         with:
           files: output/**/coverage.xml
           flags: unittests
+  publish-test-results:
+    name: "Publish Test Results"
+    needs: build-and-test
+    if: success() || failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: Results 3.9
+          path: output
+      - uses: EnricoMi/publish-unit-test-result-action@v1
+        name: Publish unit test results
+        if: always()
+        with:
+          files: output/**/*-tests.xml
