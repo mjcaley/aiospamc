@@ -34,7 +34,7 @@ jobs:
       - name: Run interrogate
         run: poetry run interrogate
       - name: Publish test results
-        if: success() || failed()
+        if: success() || failure()
         uses: actions/upload-artifact@v2
         with:
           name: Results ${{ matrix.python }}
