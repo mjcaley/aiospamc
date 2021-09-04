@@ -37,7 +37,7 @@ jobs:
         if: success() || failed()
         uses: actions/upload-artifact@v2
         with:
-          name: Test Results ${{ matrix.python }}
+          name: Results ${{ matrix.python }}
           path: output/**
       - name: Package
         if: ${{ matrix.python == '3.9' }}
@@ -56,12 +56,12 @@ jobs:
       - name: Download artifacts
         uses: download-artifact@v2
         with:
-          name:
+          name: Results 3.9
       - uses: EnricoMi/publish-unit-test-result-action@v1
-          name: Publish unit test results
-          if: always()
-          with:
-            files: output/**/*-tests.xml
+        name: Publish unit test results
+        if: always()
+        with:
+          files: output/**/*-tests.xml
       - uses: codecov/codecov-action@v2
         name: Upload to Codecov
         if: always()
