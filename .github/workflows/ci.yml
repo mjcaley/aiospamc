@@ -1,27 +1,8 @@
 name: CI
 on: [push]
 jobs:
-  code-style:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup Python
-        uses: actions/setup-python@v2.2.2
-        with:
-          python-version: '3.9'
-      - name: Install Poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-      - name: Install dependencies
-        run: poetry install
-      - name: Run mypy
-        run: poetry run mypy aiospamc
-      - name: Run black
-        run: poetry run black --check .
-      - name: Run interrogate
-        run: poetry run interrogate
   tests:
+    name: "Run Tests"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,27 +22,23 @@ jobs:
       - name: Run unit tests
         run: |
           poetry run pytest --junit-xml="output/unit-tests.xml" --cov --cov-report="xml:output/coverage.xml"
-      - uses: EnricoMi/publish-unit-test-result-action@v1
-        name: Publish unit test results
-        if: always()
-        with:
-          files: output/**/*-tests.xml
-      - uses: codecov/codecov-action@v2
-        name: Upload to Codecov
-        if: always()
-        with:
-          files: output/coverage.xml
-          flags: unittests
       - name: Install SpamAssassin
         run: sudo apt-get -y install spamassassin
       - name: Run unit tests
         run: |
-          poetry run pytest -m integration --junit-xml="test-results/integration-tests.xml"
-      - name: Publish integration test results
+          poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
+      - name: Run mypy
+        run: poetry run mypy aiospamc --junit-xml output/mypy-tests.xml
+      - name: Run black
+        run: poetry run black --check --diff --color .
+      - name: Run interrogate
+        run: poetry run interrogate
+      - name: Publish test results
+        if: success() || failed()
         uses: actions/upload-artifact@v2
         with:
-          name: integration-test-results
-          path: output/integration-tests.xml
+          name: Test Results ${{ matrix.python }}
+          path: output/**
       - name: Package
         if: ${{ matrix.python == '3.9' }}
         run: poetry build -n
@@ -71,22 +48,23 @@ jobs:
         with:
           name: package
           path: dist/
-  release:
+  publish-test-results:
+    name: "Publish Test Results"
     needs: [code-style, tests]
-    runs-on: ubuntu-latest
+    if: success() || failure()
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - name: Download artifacts
+        uses: download-artifact@v2
         with:
-          name: package
-          path: dist
-      - name: Setup Python
-        uses: actions/setup-python@v2.2.2
+          name:
+      - uses: EnricoMi/publish-unit-test-result-action@v1
+          name: Publish unit test results
+          if: always()
+          with:
+            files: output/**/*-tests.xml
+      - uses: codecov/codecov-action@v2
+        name: Upload to Codecov
+        if: always()
         with:
-          python-version: '3.9'
-      - name: Install Poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-      - name: Publish package
-        run: poetry publish --dry-run -n
+          files: output/coverage.xml
+          flags: unittests

@@ -7,11 +7,11 @@ aiospamc
 .. |pypi| image:: https://img.shields.io/pypi/v/aiospamc
     :target: https://pypi.org/project/aiospamc/
 
-.. |build| image:: https://img.shields.io/azure-devops/build/mjcaley/aiospamc/8/master
-    :target: https://dev.azure.com/mjcaley/aiospamc/_build?definitionId=8&_a=summary&repositoryFilter=2&branchFilter=20
+.. |build| image:: https://img.shields.io/github/workflow/status/mjcaley/aiospamc/CI/master
+    :target: https://github.com/mjcaley/aiospamc/actions/workflows/ci.yml?query=branch%3Amaster
 
-.. |coverage| image:: https://img.shields.io/azure-devops/coverage/mjcaley/aiospamc/8/master
-    :target: https://dev.azure.com/mjcaley/aiospamc/_build?definitionId=8&_a=summary&repositoryFilter=2&branchFilter=20
+.. |coverage| image:: https://codecov.io/gh/mjcaley/aiospamc/branch/master/graph/badge.svg?token=tJZuwlWXBs
+    :target: https://codecov.io/gh/mjcaley/aiospamc
 
 .. |docs| image:: https://img.shields.io/readthedocs/aiospamc
     :target: https://aiospamc.readthedocs.io/en/latest/
