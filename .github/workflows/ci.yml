@@ -52,6 +52,7 @@ jobs:
     name: "Publish Test Results"
     needs: [code-style, tests]
     if: success() || failure()
+    runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
         uses: download-artifact@v2
