@@ -59,6 +59,7 @@ jobs:
         with:
           name: Results 3.9
           path: output
+      - run: ls -R
       - uses: codecov/codecov-action@v2
         name: Upload to Codecov
         if: always()
