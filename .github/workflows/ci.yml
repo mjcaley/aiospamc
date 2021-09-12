@@ -39,6 +39,13 @@ jobs:
         with:
           name: results-${{ matrix.python }}
           path: output/**
+      - uses: codecov/codecov-action@v2
+        name: Upload to Codecov
+        if: success() || failure()
+        with:
+          files: coverage.xml
+          flags: unittests
+          verbose: true
       - name: Package
         if: ${{ matrix.python == '3.9' }}
         run: poetry build -n
@@ -57,13 +64,6 @@ jobs:
         with:
           name: results-3.9
       - run: ls -R
-      - uses: codecov/codecov-action@v2
-        name: Upload to Codecov
-        if: always()
-        with:
-          files: coverage.xml
-          flags: unittests
-          verbose: true
       - uses: EnricoMi/publish-unit-test-result-action@v1
         name: Publish unit test results
         if: always()
