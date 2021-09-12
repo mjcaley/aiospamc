@@ -60,6 +60,7 @@ jobs:
           name: Results 3.9
           path: output
       - run: ls -R
+      - run: cat output/coverage.xml
       - uses: codecov/codecov-action@v2
         name: Upload to Codecov
         if: always()
