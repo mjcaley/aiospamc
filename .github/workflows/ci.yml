@@ -48,19 +48,6 @@ jobs:
         with:
           name: package
           path: dist/
-  publish-code-coverage:
-    name: "Publish Code Coverage"
-    needs: build-and-test
-    if: success() || failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: Results 3.9
-          path: output
-      - run: ls -R
-      - run: cat output/coverage.xml
       - uses: codecov/codecov-action@v2
         name: Upload to Codecov
         if: always()
@@ -68,17 +55,6 @@ jobs:
           files: output/**/coverage.xml
           flags: unittests
           verbose: true
-  publish-test-results:
-    name: "Publish Test Results"
-    needs: build-and-test
-    if: success() || failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: Results 3.9
-          path: output
       - uses: EnricoMi/publish-unit-test-result-action@v1
         name: Publish unit test results
         if: always()
