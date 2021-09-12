@@ -33,7 +33,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python: ['3.6', '3.7', '3.8', '3.9']
     steps:
       - uses: actions/checkout@v2
@@ -50,6 +50,13 @@ jobs:
       - name: Run unit tests
         run: |
           poetry run pytest --junit-xml="output/unit-tests.xml" --cov --cov-report="xml:output/coverage.xml"
+      - uses: codecov/codecov-action@v2
+        name: Upload to Codecov
+        if: success() || failure()
+        with:
+          files: |
+            output/coverage.xml
+          flags: unittests
       - name: Publish test results
         if: success() || failure()
         uses: actions/upload-artifact@v2
@@ -105,7 +112,7 @@ jobs:
           name: package
           path: dist/
   publish:
-    name: "Publish reports"
+    name: "Publish unit test reports"
     runs-on: ubuntu-latest
     needs: [unit-tests, integration-tests]
     if: success() || failure()
@@ -116,12 +123,3 @@ jobs:
         with:
           files: |
             **/*-tests.xml
-      - uses: codecov/codecov-action@v2
-        name: Upload to Codecov
-        with:
-          files: |
-            **/coverage.xml
-          flags: unittests
-          path_to_write_report: codecov_report.txt
-          verbose: true
-      - run: cat codecov_report.txt
