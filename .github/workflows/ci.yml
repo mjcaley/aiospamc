@@ -61,11 +61,11 @@ jobs:
         name: Upload to Codecov
         if: always()
         with:
-          files: output/**/coverage.xml
+          files: coverage.xml
           flags: unittests
           verbose: true
       - uses: EnricoMi/publish-unit-test-result-action@v1
         name: Publish unit test results
         if: always()
         with:
-          files: output/**/*-tests.xml
+          files: "*-tests.xml"
