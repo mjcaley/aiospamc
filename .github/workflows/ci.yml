@@ -54,7 +54,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v2
         with:
-          name: results-${{ matrix.python }}
+          name: results-${{ matrix.os }}-${{ matrix.python }}
           path: output/**
       - name: Package
         if: ${{ matrix.python == '3.9' }}
