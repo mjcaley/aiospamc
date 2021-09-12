@@ -66,6 +66,7 @@ jobs:
         with:
           files: output/**/coverage.xml
           flags: unittests
+          verbose: true
   publish-test-results:
     name: "Publish Test Results"
     needs: build-and-test
