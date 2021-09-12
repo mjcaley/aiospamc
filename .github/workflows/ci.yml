@@ -107,7 +107,7 @@ jobs:
   publish:
     name: "Publish reports"
     runs-on: ubuntu-latest
-    needs: [quality, unit-tests, integration-tests]
+    needs: [unit-tests, integration-tests]
     if: success() || failure()
     steps:
       - uses: actions/download-artifact@v2
@@ -122,3 +122,4 @@ jobs:
           files: |
             **/coverage.xml
           flags: unittests
+          verbose: true
