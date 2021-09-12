@@ -26,7 +26,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v2
         with:
-          name: quality-${{ matrix.python }}
+          name: quality
           path: output/**
   unit-tests:
     name: "Run Unit Tests"
@@ -122,4 +122,6 @@ jobs:
           files: |
             **/coverage.xml
           flags: unittests
+          path_to_write_report: codecov_report.txt
           verbose: true
+      - run: cat codecov_report.txt
