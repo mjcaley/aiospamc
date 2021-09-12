@@ -43,7 +43,7 @@ jobs:
         name: Upload to Codecov
         if: success() || failure()
         with:
-          files: coverage.xml
+          files: output/coverage.xml
           flags: unittests
           verbose: true
       - name: Package
@@ -61,11 +61,9 @@ jobs:
     needs: build-and-test
     steps:
       - uses: actions/download-artifact@v2
-        with:
-          name: results-3.9
       - run: ls -R
       - uses: EnricoMi/publish-unit-test-result-action@v1
         name: Publish unit test results
         if: always()
         with:
-          files: "*-tests.xml"
+          files: "**/*-tests.xml"
