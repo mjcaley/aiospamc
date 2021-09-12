@@ -50,11 +50,6 @@ jobs:
       - name: Run unit tests
         run: |
           poetry run pytest --junit-xml="output/unit-tests.xml" --cov --cov-report="xml:output/coverage.xml"
-      - name: Install SpamAssassin
-        run: sudo apt-get -y install spamassassin
-      - name: Run integration tests
-        run: |
-          poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
       - name: Publish test results
         if: success() || failure()
         uses: actions/upload-artifact@v2
