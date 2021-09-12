@@ -57,10 +57,10 @@ jobs:
           name: results-${{ matrix.os }}-${{ matrix.python }}
           path: output/**
       - name: Package
-        if: ${{ matrix.python == '3.9' }}
+        if: ${{ matrix.python == '3.9' && matrix.os = 'ubuntu-latest' }}
         run: poetry build -n
       - name: Publish package
-        if: ${{ matrix.python == '3.9' }}
+        if: ${{ matrix.python == '3.9' && matrix.os = 'ubuntu-latest'  }}
         uses: actions/upload-artifact@v2
         with:
           name: package
