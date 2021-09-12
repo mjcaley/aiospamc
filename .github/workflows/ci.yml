@@ -56,28 +56,6 @@ jobs:
         with:
           name: results-${{ matrix.os }}-${{ matrix.python }}
           path: output/**
-  build:
-    name: "Run Unit Tests"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup Python
-        uses: actions/setup-python@v2.2.2
-        with:
-          python-version: 3.9
-      - name: Install Poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-      - name: Install dependencies
-        run: poetry install
-      - name: Package
-        run: poetry build -n
-      - name: Publish package
-        uses: actions/upload-artifact@v2
-        with:
-          name: package
-          path: dist/
   integration-tests:
     name: "Run Integration Tests"
     runs-on: ubuntu-latest
@@ -104,6 +82,28 @@ jobs:
         with:
           name: integration
           path: output/**
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.9
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Package
+        run: poetry build -n
+      - name: Publish package
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: dist/
   publish:
     name: "Publish reports"
     runs-on: ubuntu-latest
