@@ -6,7 +6,7 @@ User Guide
 Requirements
 ************
 
-* Python 3.6 or later
+* Python 3.7 or later
 * SpamAssassin running as a service
 
 *******
