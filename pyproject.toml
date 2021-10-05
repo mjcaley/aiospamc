@@ -79,6 +79,7 @@ mypy = "^0.910"
 black = "21.9b0"
 towncrier = "^21.3"
 interrogate = "^1.5"
+types-certifi = "^2020.4.0"
 
 [build-system]
 requires = ["poetry>=1.1"]
