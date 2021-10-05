@@ -2,8 +2,8 @@
 
 """Data structures used for function parameters."""
 
+from dataclasses import dataclass
 from enum import Enum
-from typing import NamedTuple
 
 
 class MessageClassOption(Enum):
@@ -13,7 +13,8 @@ class MessageClassOption(Enum):
     ham = "ham"
 
 
-class ActionOption(NamedTuple):
+@dataclass
+class ActionOption:
     """Option to be used in the DidRemove, DidSet, Set, and Remove headers.
 
     :param local: An action will be performed on the SPAMD service's local database.
