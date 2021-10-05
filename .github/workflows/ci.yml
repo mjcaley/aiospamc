@@ -53,7 +53,7 @@ jobs:
           --junit-xml="output/unit-tests.xml"
           --cov
           --cov-report="xml:output/coverage.xml"
-          --cov-report="html:output/coverage"
+          --cov-report="html:output/htmlcov"
       - uses: codecov/codecov-action@v2
         name: Upload to Codecov
         if: |
