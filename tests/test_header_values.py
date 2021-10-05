@@ -129,7 +129,7 @@ def test_spam_bool_false():
 def test_user_str():
     u = UserValue(name="username")
 
-    assert str(u) == "name=username"
+    assert str(u) == "username"
 
 
 def test_user_bytes():

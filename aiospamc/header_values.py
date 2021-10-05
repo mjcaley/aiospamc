@@ -3,6 +3,7 @@
 """Collection of request and response header value objects."""
 
 import getpass
+from dataclasses import dataclass
 
 from .options import ActionOption, MessageClassOption
 
@@ -10,179 +11,76 @@ from .options import ActionOption, MessageClassOption
 class HeaderValue:
     """Base class for header values."""
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         raise NotImplementedError
 
 
+@dataclass
 class BytesHeaderValue(HeaderValue):
     """Header with bytes value.
 
     :param value: Value of the header.
     """
 
-    def __init__(self, value: bytes) -> None:
-        """BytesHeaderValue constructor.
-
-        :param value: Value of byte data.
-        """
-
-        self.value = value
-
-    def __str__(self) -> str:
-        return f"value={repr(self.value)}"
+    value: bytes
 
     def __bytes__(self) -> bytes:
         return self.value
 
-    def __eq__(self, other) -> bool:
-        try:
-            return self.value == other.value
-        except AttributeError:
-            return False
 
-    def __repr__(self):
-        return f"{self.__class__.__qualname__}(value={repr(self.value)})"
-
-
+@dataclass
 class GenericHeaderValue(HeaderValue):
     """Generic header value."""
 
-    def __init__(self, value: str, encoding="utf8") -> None:
-        """Generic header constructor.
-
-        :param value: Value of the header.
-        :param encoding: String encoding to use, defaults to "utf8".
-        """
-
-        self.value = value
-        self.encoding = encoding
-
-    def __str__(self) -> str:
-        return f"value={repr(self.value)}, encoding={repr(self.encoding)}"
+    value: str
+    encoding: str = "utf8"
 
     def __bytes__(self) -> bytes:
         return self.value.encode(self.encoding)
 
-    def __eq__(self, other) -> bool:
-        try:
-            return other.value == self.value and other.encoding == self.encoding
-        except AttributeError:
-            return False
 
-    def __repr__(self):
-        return (
-            f"{self.__class__.__qualname__}("
-            f"value={repr(self.value)}, "
-            f"encoding={repr(self.encoding)})"
-        )
-
-
+@dataclass
 class CompressValue(HeaderValue):
     """Compress header.  Specifies what encryption scheme to use.  So far only
     'zlib' is supported.
     """
 
-    def __init__(self, algorithm="zlib") -> None:
-        """Constructor
-
-        :param algorithm: Compression algorithm to use.  Currently only zlib is supported.
-        """
-
-        self.algorithm = algorithm
-
-    def __str__(self) -> str:
-        return f"algorithm={repr(self.algorithm)}"
-
-    def __eq__(self, other) -> bool:
-        try:
-            return self.algorithm == other.algorithm
-        except AttributeError:
-            return False
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__qualname__}()"
+    algorithm: str = "zlib"
 
     def __bytes__(self) -> bytes:
         return self.algorithm.encode("ascii")
 
 
+@dataclass
 class ContentLengthValue(HeaderValue):
     """ContentLength header.  Indicates the length of the body in bytes."""
 
-    def __init__(self, length: int = 0) -> None:
-        """ContentLength constructor.
-
-        :param length: Length of the body.
-        """
-        self.length = length
+    length: int = 0
 
     def __int__(self) -> int:
         return self.length
 
-    def __str__(self) -> str:
-        return f"length={repr(self.length)}"
-
-    def __eq__(self, other) -> bool:
-        try:
-            return self.length == other.length
-        except AttributeError:
-            return False
-
     def __bytes__(self) -> bytes:
         return str(self.length).encode("ascii")
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__qualname__}(length={repr(self.length)})"
 
-
+@dataclass
 class MessageClassValue(HeaderValue):
     """MessageClass header.  Used to specify whether a message is 'spam' or
     'ham.'
     """
 
-    def __init__(self, value: MessageClassOption = None) -> None:
-        """MessageClass constructor.
-
-        :param value: Specifies the classification of the message.
-        """
-
-        self.value = value or MessageClassOption.ham
-
-    def __str__(self) -> str:
-        return self.value.name
-
-    def __eq__(self, other) -> bool:
-        try:
-            return self.value == other.value
-        except AttributeError:
-            return False
+    value: MessageClassOption = MessageClassOption.ham
 
     def __bytes__(self) -> bytes:
         return self.value.name.encode("ascii")
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__qualname__}(value={repr(self.value)})"
 
-
+@dataclass
 class SetOrRemoveValue(HeaderValue):
     """Base class for headers that implement "local" and "remote" rules."""
 
-    def __init__(self, action: ActionOption = None) -> None:
-        """_SetRemoveBase constructor.
-
-        :param action: Actions to be done on local or remote.
-        """
-
-        self.action = action or ActionOption(local=False, remote=False)
-
-    def __str__(self) -> str:
-        return f"local={self.action.local}, remote={self.action.remote}"
-
-    def __eq__(self, other) -> bool:
-        try:
-            return self.action == other.action
-        except AttributeError:
-            return False
+    action: ActionOption = ActionOption(local=False, remote=False)
 
     def __bytes__(self) -> bytes:
         if not self.action.local and not self.action.remote:
@@ -198,47 +96,18 @@ class SetOrRemoveValue(HeaderValue):
 
         return b", ".join(values)
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__qualname__}(action={repr(self.action)})"
 
-
+@dataclass
 class SpamValue(HeaderValue):
     """Spam header.  Used by the SPAMD service to report on if the submitted
     message was spam and the score/threshold that it used."""
 
-    def __init__(
-        self, value: bool = False, score: float = 0.0, threshold: float = 0.0
-    ) -> None:
-        """Spam header constructor.
-
-        :param value: True if the message is spam, False if not.
-        :param score: Score of the message after being scanned.
-        :param threshold: Threshold of which the message would have been marked as spam.
-        """
-
-        self.value = value
-        self.score = score
-        self.threshold = threshold
+    value: bool = False
+    score: float = 0.0
+    threshold: float = 0.0
 
     def __bool__(self) -> bool:
         return self.value
-
-    def __str__(self) -> str:
-        return (
-            f"value={str(self.value)}, score={self.score}, threshold={self.threshold}"
-        )
-
-    def __eq__(self, other) -> bool:
-        try:
-            return all(
-                [
-                    self.value == other.value,
-                    self.score == other.score,
-                    self.threshold == other.threshold,
-                ]
-            )
-        except AttributeError:
-            return False
 
     def __bytes__(self) -> bytes:
         return b"%b ; %.1f / %.1f" % (
@@ -247,38 +116,16 @@ class SpamValue(HeaderValue):
             self.threshold,
         )
 
-    def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__qualname__}("
-            f"value={repr(self.value)}, "
-            f"score={repr(self.score)}, "
-            f"threshold={repr(self.threshold)})"
-        )
 
-
+@dataclass
 class UserValue(HeaderValue):
     """User header.  Used to specify which user the SPAMD service should use
     when loading configuration files."""
 
-    def __init__(self, name: str = None) -> None:
-        """User constructor.
-
-        :param name: Name of the user account.
-        """
-
-        self.name = name or getpass.getuser()
-
-    def __str__(self) -> str:
-        return f"name={self.name}"
-
-    def __eq__(self, other) -> bool:
-        try:
-            return self.name == other.name
-        except AttributeError:
-            return False
+    name: str = getpass.getuser()
 
     def __bytes__(self) -> bytes:
         return self.name.encode("ascii")
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__qualname__}(name={repr(self.name)})"
+    def __str__(self) -> str:
+        return self.name
