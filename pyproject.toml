@@ -12,10 +12,10 @@ documentation = "https://aiospamc.readthedocs.io"
 
 classifiers = [
     'Development Status :: 4 - Beta',
-    'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
     'Intended Audience :: Developers',
     'Intended Audience :: System Administrators',
     'License :: OSI Approved :: MIT License',
@@ -45,7 +45,7 @@ exclude_lines = [
 fail_under = 95.0
 
 [tool.black]
-target-version = ["py36"]
+target-version = ["py37"]
 exclude = """
     utils |
     docs |
@@ -63,23 +63,25 @@ directory = "changes/"
 filename = "CHANGELOG.rst"
 
 [tool.poetry.dependencies]
-python = "^3.6"
-certifi = "^2020.6"
+python = "^3.7"
+certifi = "*"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.1"
-pytest-cov = "^2.10"
-pytest-asyncio = "^0.14.0"
-sphinx = "^3.3"
-pytest-mock = "^3.3"
-cryptography = "^3.2"
+pytest = "^6.2"
+pytest-cov = "^3.0"
+pytest-asyncio = "^0.15.0"
+sphinx = "^4.2"
+pytest-mock = "^3.6"
+cryptography = "^35.0"
 mock = "^4.0"
-coverage = {extras = ["toml"], version = "^5.3"}
-mypy = "^0.790"
-black = {version = "20.8b1", allow-prereleases = true}
-towncrier = "^19.2.0"
-interrogate = "^1.4.0"
+coverage = {extras = ["toml"], version = "^6.0"}
+mypy = "^0.910"
+black = "21.9b0"
+towncrier = "^21.3"
+interrogate = "^1.5"
+types-certifi = "^2020.4.0"
+cffi = "^1.14.6"
 
 [build-system]
-requires = ["poetry>=1.0"]
+requires = ["poetry>=1.1"]
 build-backend = "poetry.masonry.api"
