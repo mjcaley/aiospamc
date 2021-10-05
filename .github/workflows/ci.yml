@@ -67,8 +67,8 @@ jobs:
           matrix.python == '3.10' &&
           (success() || failure())
         with:
-          files: |
-            output/coverage.xml
+          directory: output
+          files: coverage.xml
           flags: unittests
       - uses: EnricoMi/publish-unit-test-result-action@v1
         name: Publish unit test results
