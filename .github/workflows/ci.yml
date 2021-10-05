@@ -54,6 +54,12 @@ jobs:
           --cov
           --cov-report="xml:output/coverage.xml"
           --cov-report="html:output/htmlcov"
+      - name: Publish test results
+        if: success() || failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: results-${{ matrix.os }}-${{ matrix.python }}
+          path: output/**
       - uses: codecov/codecov-action@v2
         name: Upload to Codecov
         if: |
@@ -64,12 +70,6 @@ jobs:
           files: |
             output/coverage.xml
           flags: unittests
-      - name: Publish test results
-        if: success() || failure()
-        uses: actions/upload-artifact@v2
-        with:
-          name: results-${{ matrix.os }}-${{ matrix.python }}
-          path: output/**
       - uses: EnricoMi/publish-unit-test-result-action@v1
         name: Publish unit test results
         if: |
