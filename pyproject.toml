@@ -80,6 +80,7 @@ black = "21.9b0"
 towncrier = "^21.3"
 interrogate = "^1.5"
 types-certifi = "^2020.4.0"
+cffi = "^1.14.6"
 
 [build-system]
 requires = ["poetry>=1.1"]

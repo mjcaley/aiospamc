@@ -7,7 +7,6 @@ from shutil import which
 from subprocess import DEVNULL, TimeoutExpired, Popen
 import sys
 
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography import x509
@@ -232,9 +231,7 @@ def ex_undefined():
 @pytest.fixture(scope="session")
 def certificate(tmp_path_factory):
     certs_path = tmp_path_factory.mktemp("localhost_certs")
-    key = rsa.generate_private_key(
-        public_exponent=65537, key_size=4096, backend=default_backend()
-    )
+    key = rsa.generate_private_key(public_exponent=65537, key_size=4096)
     subject = issuer = x509.Name(
         [
             x509.NameAttribute(x509.NameOID.COUNTRY_NAME, "CA"),
@@ -255,7 +252,7 @@ def certificate(tmp_path_factory):
         .add_extension(
             x509.SubjectAlternativeName([x509.DNSName("localhost")]), critical=False
         )
-        .sign(key, hashes.SHA256(), default_backend())
+        .sign(key, hashes.SHA256())
     )
 
     key_path = certs_path / "localhost.key"
