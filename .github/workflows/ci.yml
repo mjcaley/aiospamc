@@ -56,7 +56,10 @@ jobs:
           --cov-report="html:output/coverage"
       - uses: codecov/codecov-action@v2
         name: Upload to Codecov
-        if: success() || failure()
+        if: |
+          matrix.os == 'ubuntu-latest' &&
+          matrix.python == '3.10' &&
+          (success() || failure())
         with:
           files: |
             output/coverage.xml
