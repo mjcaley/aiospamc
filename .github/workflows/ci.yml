@@ -70,6 +70,7 @@ jobs:
           directory: output
           files: coverage.xml
           flags: unittests
+          verbose: true
       - uses: EnricoMi/publish-unit-test-result-action@v1
         name: Publish unit test results
         if: |
