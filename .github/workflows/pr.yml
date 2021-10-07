@@ -1,8 +1,5 @@
-name: CI
-on:
-  push:
-  schedule:
-    - cron: '0 0 * * 5'
+name: Pull Request
+on: [pull_request]
 jobs:
   quality:
     name: "Code Quality"
@@ -63,22 +60,6 @@ jobs:
         with:
           name: results-${{ matrix.os }}-${{ matrix.python }}
           path: output/**
-      - uses: codecov/codecov-action@v2
-        name: Upload to Codecov
-        if: (success() || failure())
-        with:
-          directory: output
-          files: coverage.xml
-          flags: unittests
-      - uses: EnricoMi/publish-unit-test-result-action@v1
-        name: Publish unit test results
-        if: |
-          matrix.os == 'ubuntu-latest' &&
-          matrix.python == '3.10' &&
-          (success() || failure())
-        with:
-          files: |
-            **/*-tests.xml
   integration-tests:
     name: "Run Integration Tests"
     runs-on: ubuntu-latest
