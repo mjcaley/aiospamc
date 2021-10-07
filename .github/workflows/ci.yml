@@ -1,5 +1,9 @@
 name: CI
-on: [push]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 5'
 jobs:
   quality:
     name: "Code Quality"
@@ -54,23 +58,19 @@ jobs:
           --cov
           --cov-report="xml:output/coverage.xml"
           --cov-report="html:output/htmlcov"
-      - uses: codecov/codecov-action@v2
-        name: Upload to Codecov
-        if: |
-          matrix.os == 'ubuntu-latest' &&
-          matrix.python == '3.10' &&
-          (success() || failure())
-        with:
-          directory: output
-          files: coverage.xml
-          flags: unittests
-          verbose: true
       - name: Publish test results
         if: success() || failure()
         uses: actions/upload-artifact@v2
         with:
           name: results-${{ matrix.os }}-${{ matrix.python }}
           path: output/**
+      - uses: codecov/codecov-action@v2
+        name: Upload to Codecov
+        if: (success() || failure())
+        with:
+          directory: output
+          files: coverage.xml
+          flags: unittests
       - uses: EnricoMi/publish-unit-test-result-action@v1
         name: Publish unit test results
         if: |
