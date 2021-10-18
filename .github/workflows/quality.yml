@@ -20,9 +20,12 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Run mypy
-        run: |
-          poetry run mypy --install-types --non-interactive
-          poetry run mypy aiospamc --junit-xml output/mypy-tests.xml
+        run: >
+          poetry run
+          mypy aiospamc
+          --install-types
+          --junit-xml output/mypy-tests.xml
+          --non-interactive
       - name: Run black
         run: poetry run black --check --diff --color .
       - name: Run interrogate
