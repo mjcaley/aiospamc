@@ -1,8 +1,7 @@
 name: Code quality
 on:
   push:
-  schedule:
-    - cron: '0 0 * * 5'
+  pull_request:
 jobs:
   quality:
     name: "Code Quality"
