@@ -29,7 +29,7 @@ jobs:
       - name: Install SpamAssassin
         run: sudo apt-get -y install spamassassin
       - name: Run integration tests
-        run: poetry run -m integration --junit-xml="output/integration-tests.xml"
+        run: poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
       - name: Publish test results
         if: success() || failure()
         uses: actions/upload-artifact@v2
