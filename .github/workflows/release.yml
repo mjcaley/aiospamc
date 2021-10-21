@@ -1,4 +1,4 @@
-name: Release Artifacts
+name: Release
 on:
   push:
     tags:
@@ -26,6 +26,8 @@ jobs:
         run: poetry install
       - name: Run unit tests
         run: poetry run pytest --junit-xml="output/unit-tests.xml"
+      - name: Install SpamAssassin
+        run: sudo apt-get -y install spamassassin
       - name: Run integration tests
         run: poetry run -m integration --junit-xml="output/integration-tests.xml"
       - name: Publish test results
