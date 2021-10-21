@@ -1,11 +1,19 @@
 name: Release Artifacts
-on: [release]
+on:
+  push:
+    tags:
+    - 'v[0-9]+.[0-9]+.[0-9]+'
 jobs:
-  upload:
+  release:
     name: "Upload release artifacts"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: |
+          tag="$(git describe --tags --abbrev=0)"
+          echo 'TAG='$tag >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -15,7 +23,17 @@ jobs:
           python -m pip install --upgrade pip --disable-pip-version-check
           pip install poetry --disable-pip-version-check
       - name: Install dependencies
-        run: poetry install --no-dev
+        run: poetry install
+      - name: Run unit tests
+        run: poetry run pytest --junit-xml="output/unit-tests.xml"
+      - name: Run integration tests
+        run: poetry run -m integration --junit-xml="output/integration-tests.xml"
+      - name: Publish test results
+        if: success() || failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: results
+          path: output/**
       - name: Publish package
         uses: actions/upload-artifact@v2
         with:
@@ -23,4 +41,7 @@ jobs:
           path: dist/
       - name: Publish to PyPI
         run: poetry publish --dry-run -n
-      - run: gh release upload ${{ github.event.release.tag_name }} dist/*
+      - name: GitHub release
+        run: gh release create "$TAG" --notes "Release $TAG" dist/*
+        env:
+          GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
