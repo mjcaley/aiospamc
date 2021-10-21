@@ -41,8 +41,8 @@ jobs:
         with:
           name: package
           path: dist/
-      - name: Publish to PyPI
-        run: poetry publish --dry-run -n
+      # - name: Publish to PyPI
+      #   run: poetry publish --dry-run -n
       - name: GitHub release
         run: gh release create "$TAG" --notes "Release $TAG" dist/*
         env:
