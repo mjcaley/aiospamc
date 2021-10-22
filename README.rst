@@ -2,16 +2,16 @@
 aiospamc
 ========
 
-|pypi| |docs| |license| |build| |coverage| |python|
+|pypi| |docs| |license| |unit| |integration| |python|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/aiospamc
     :target: https://pypi.org/project/aiospamc/
 
-.. |build| image:: https://github.com/mjcaley/aiospamc/actions/workflows/ci.yml/badge.svg?branch=master
-    :target: https://github.com/mjcaley/aiospamc/actions/workflows/ci.yml?query=branch%3Amaster
+.. |unit| image:: https://github.com/mjcaley/aiospamc/actions/workflows/unit-tests.yml/badge.svg
+    :target: https://github.com/mjcaley/aiospamc/actions/workflows/unit-tests.yml
 
-.. |coverage| image:: https://codecov.io/gh/mjcaley/aiospamc/branch/master/graph/badge.svg?token=tJZuwlWXBs
-    :target: https://codecov.io/gh/mjcaley/aiospamc
+.. |integration| image:: https://github.com/mjcaley/aiospamc/actions/workflows/integration-tests.yml/badge.svg
+    :target: https://github.com/mjcaley/aiospamc/actions/workflows/integration-tests.yml
 
 .. |docs| image:: https://readthedocs.org/projects/aiospamc/badge/?version=latest
     :target: https://aiospamc.readthedocs.io/en/latest/
