@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: |
+      - name: Save tag
+        run: |
           tag="$(git describe --tags --abbrev=0)"
           echo 'TAG='$tag >> $GITHUB_ENV
         env:
@@ -36,16 +37,18 @@ jobs:
         with:
           name: results
           path: output/**
+      - name: Build package
+        run: poetry build
       - name: Publish package
         uses: actions/upload-artifact@v2
         with:
           name: package
           path: dist/
-      - name: Build package
-        run: poetry build
-      # - name: Publish to PyPI
-      #   run: poetry publish --dry-run -n
+      - name: Publish to PyPI
+        run: |
+          poetry config repositories.testpypi https://test.pypi.org/legacy/
+          poetry publish -r testpypi -n
       - name: GitHub release
-        run: gh release create "$TAG" --notes "Release $TAG" dist/*
+        run: gh release create "$TAG" --notes "Release $TAG" dist/* # --generated-notes
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
