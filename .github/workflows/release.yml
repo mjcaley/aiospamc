@@ -45,11 +45,9 @@ jobs:
           name: package
           path: dist/
       - name: Publish to PyPI
-        run: |
-          poetry config repositories.testpypi https://test.pypi.org/legacy/
-          poetry publish -r testpypi -n
+        run: poetry publish -n
         env:
-          POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.PYPI_TOKEN }}
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
       - name: GitHub release
         run: gh release create "$TAG" --notes "Release $TAG" dist/*
         env:
