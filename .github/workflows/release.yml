@@ -46,7 +46,7 @@ jobs:
           path: dist/
       - name: Publish to PyPI
         run: |
-          poetry config repositories.testpypi https://test.pypi.org/legacy/
+          poetry config repositories.testpypi https://test.pypi.org
           poetry publish -r testpypi -n
         env:
           POETRY_PYPI_TOKEN_TESETPYPI: ${{ secrets.PYPI_TOKEN }}
