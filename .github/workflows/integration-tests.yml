@@ -29,5 +29,5 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v2
         with:
-          name: integration
+          name: test-results
           path: output/**
