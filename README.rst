@@ -2,18 +2,18 @@
 aiospamc
 ========
 
-|pypi| |docs| |license| |build| |coverage| |python|
+|pypi| |docs| |license| |unit| |integration| |python|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/aiospamc
     :target: https://pypi.org/project/aiospamc/
 
-.. |build| image:: https://img.shields.io/azure-devops/build/mjcaley/aiospamc/8/master
-    :target: https://dev.azure.com/mjcaley/aiospamc/_build?definitionId=8&_a=summary&repositoryFilter=2&branchFilter=20
+.. |unit| image:: https://github.com/mjcaley/aiospamc/actions/workflows/unit-tests.yml/badge.svg
+    :target: https://github.com/mjcaley/aiospamc/actions/workflows/unit-tests.yml
 
-.. |coverage| image:: https://img.shields.io/azure-devops/coverage/mjcaley/aiospamc/8/master
-    :target: https://dev.azure.com/mjcaley/aiospamc/_build?definitionId=8&_a=summary&repositoryFilter=2&branchFilter=20
+.. |integration| image:: https://github.com/mjcaley/aiospamc/actions/workflows/integration-tests.yml/badge.svg
+    :target: https://github.com/mjcaley/aiospamc/actions/workflows/integration-tests.yml
 
-.. |docs| image:: https://img.shields.io/readthedocs/aiospamc
+.. |docs| image:: https://readthedocs.org/projects/aiospamc/badge/?version=latest
     :target: https://aiospamc.readthedocs.io/en/latest/
 
 .. |license| image:: https://img.shields.io/github/license/mjcaley/aiospamc
