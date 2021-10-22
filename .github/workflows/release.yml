@@ -35,7 +35,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v2
         with:
-          name: results
+          name: test-results
           path: output/**
       - name: Build package
         run: poetry build
