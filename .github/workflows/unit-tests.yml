@@ -37,3 +37,12 @@ jobs:
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.python }}
           path: output/**
+  status:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: "Unit Test Status"
+    needs: unit-tests
+    steps:
+      - name: Check test matrix status
+        if: ${{ needs.unit-tests.result != 'success' }}
+        run: exit 1
