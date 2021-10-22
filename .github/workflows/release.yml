@@ -47,7 +47,6 @@ jobs:
       - name: Publish to PyPI
         run: |
           poetry config repositories.testpypi https://test.pypi.org
-          poetry config http-basic.testpypi "__token__" $POETRY_PYPI_TOKEN_TESETPYPI
           poetry publish -r testpypi -n
         env:
           POETRY_PYPI_TOKEN_TESETPYPI: ${{ secrets.PYPI_TOKEN }}
