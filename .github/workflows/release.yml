@@ -48,6 +48,8 @@ jobs:
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
           poetry publish -r testpypi -n
+        env:
+          POETRY_PYPI_TOKEN_TESETPYPI: ${{ secrets.PYPI_TOKEN }}
       - name: GitHub release
         run: gh release create "$TAG" --notes "Release $TAG" dist/* # --generated-notes
         env:
