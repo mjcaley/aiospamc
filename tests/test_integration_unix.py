@@ -12,8 +12,8 @@ import aiospamc
 )
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_check(spamd, spam):
-    result = await aiospamc.check(spam, socket_path=spamd["unix"]["socket"])
+async def test_check(spamd, unix_socket, spam):
+    result = await aiospamc.check(spam, socket_path=unix_socket)
 
     assert 0 == result.status_code
 
@@ -23,8 +23,8 @@ async def test_check(spamd, spam):
 )
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_headers(spamd, spam):
-    result = await aiospamc.headers(spam, socket_path=spamd["unix"]["socket"])
+async def test_headers(spamd, unix_socket, spam):
+    result = await aiospamc.headers(spam, socket_path=unix_socket)
 
     assert 0 == result.status_code
 
@@ -34,8 +34,8 @@ async def test_headers(spamd, spam):
 )
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_ping(spamd):
-    result = await aiospamc.ping(socket_path=spamd["unix"]["socket"])
+async def test_ping(spamd, unix_socket):
+    result = await aiospamc.ping(socket_path=unix_socket)
 
     assert 0 == result.status_code
 
@@ -45,8 +45,8 @@ async def test_ping(spamd):
 )
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_process(spamd, spam):
-    result = await aiospamc.process(spam, socket_path=spamd["unix"]["socket"])
+async def test_process(spamd, unix_socket, spam):
+    result = await aiospamc.process(spam, socket_path=unix_socket)
 
     assert 0 == result.status_code
 
@@ -56,8 +56,8 @@ async def test_process(spamd, spam):
 )
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_report(spamd, spam):
-    result = await aiospamc.report(spam, socket_path=spamd["unix"]["socket"])
+async def test_report(spamd, unix_socket, spam):
+    result = await aiospamc.report(spam, socket_path=unix_socket)
 
     assert 0 == result.status_code
 
@@ -67,8 +67,8 @@ async def test_report(spamd, spam):
 )
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_report_if_spam(spamd, spam):
-    result = await aiospamc.report_if_spam(spam, socket_path=spamd["unix"]["socket"])
+async def test_report_if_spam(spamd, unix_socket, spam):
+    result = await aiospamc.report_if_spam(spam, socket_path=unix_socket)
 
     assert 0 == result.status_code
 
@@ -78,8 +78,8 @@ async def test_report_if_spam(spamd, spam):
 )
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_symbols(spamd, spam):
-    result = await aiospamc.symbols(spam, socket_path=spamd["unix"]["socket"])
+async def test_symbols(spamd, unix_socket, spam):
+    result = await aiospamc.symbols(spam, socket_path=unix_socket)
 
     assert 0 == result.status_code
 
@@ -89,9 +89,9 @@ async def test_symbols(spamd, spam):
 )
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_tell(spamd, spam):
+async def test_tell(spamd, unix_socket, spam):
     result = await aiospamc.tell(
-        message=spam, message_class="spam", socket_path=spamd["unix"]["socket"]
+        message=spam, message_class="spam", socket_path=unix_socket
     )
 
     assert 0 == result.status_code
@@ -102,7 +102,7 @@ async def test_tell(spamd, spam):
 )
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_message_without_newline(spamd):
-    result = await aiospamc.check(message=b"acb", socket_path=spamd["unix"]["socket"])
+async def test_message_without_newline(spamd, unix_socket):
+    result = await aiospamc.check(message=b"acb", socket_path=unix_socket)
 
     assert 0 == result.status_code

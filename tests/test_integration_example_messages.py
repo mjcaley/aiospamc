@@ -9,8 +9,8 @@ import aiospamc
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_spam(spamd, spam):
-    result = await aiospamc.check(spam, host=spamd['tcp']['host'], port=spamd['tcp']['port'])
+async def test_spam(spamd, hostname, tcp_port, spam):
+    result = await aiospamc.check(spam, host=hostname, port=tcp_port)
 
     assert 0 == result.status_code
     assert True is result.headers['Spam'].value
@@ -18,7 +18,7 @@ async def test_spam(spamd, spam):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_gtk_encoding(spamd):
+async def test_gtk_encoding(spamd, hostname, tcp_port):
     message = EmailMessage()
     message.add_header('From', 'wevsty <example@example.com>')
     message.add_header('Subject', '=?UTF-8?B?5Lit5paH5rWL6K+V?=')
@@ -30,6 +30,6 @@ async def test_gtk_encoding(spamd):
     message.set_content('这是Unicode文字.'
                         'This is Unicode characters.')
 
-    result = await aiospamc.check(message, host=spamd['tcp']['host'], port=spamd['tcp']['port'])
+    result = await aiospamc.check(message, host=hostname, port=tcp_port)
 
     assert 0 == result.status_code

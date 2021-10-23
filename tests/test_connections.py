@@ -19,16 +19,6 @@ import certifi
 
 
 @pytest.fixture
-def tcp_address():
-    return "localhost", 783
-
-
-@pytest.fixture
-def unix_socket():
-    return "/var/run/spamassassin/spamd.sock"
-
-
-@pytest.fixture
 def mock_open_connection(mocker):
     reader, writer = mocker.AsyncMock(), mocker.AsyncMock()
     mocker.patch(
@@ -199,18 +189,18 @@ def test_connection_manager_connection_string_raises_not_implemented():
         c.connection_string
 
 
-def test_tcp_connection_manager_init(mocker, tcp_address):
+def test_tcp_connection_manager_init(mocker, hostname, tcp_port):
     mock_ssl_context = mocker.Mock()
-    t = TcpConnectionManager(tcp_address[0], tcp_address[1], mock_ssl_context)
+    t = TcpConnectionManager(hostname, tcp_port, mock_ssl_context)
 
-    assert tcp_address[0] == t.host
-    assert tcp_address[1] == t.port
+    assert hostname == t.host
+    assert tcp_port == t.port
     assert mock_ssl_context is t.ssl_context
 
 
 @pytest.mark.asyncio
-async def test_tcp_connection_manager_open(mock_open_connection):
-    t = TcpConnectionManager("localhost", 783)
+async def test_tcp_connection_manager_open(mock_open_connection, hostname, tcp_port):
+    t = TcpConnectionManager(hostname, tcp_port)
     reader, writer = await t.open()
 
     assert mock_open_connection[0] is reader
@@ -218,39 +208,39 @@ async def test_tcp_connection_manager_open(mock_open_connection):
 
 
 @pytest.mark.asyncio
-async def test_tcp_connection_manager_open_refused(mock_open_connection_refused):
-    t = TcpConnectionManager("localhost", 783)
+async def test_tcp_connection_manager_open_refused(mock_open_connection_refused, hostname, tcp_port):
+    t = TcpConnectionManager(hostname, tcp_port)
 
     with pytest.raises(AIOSpamcConnectionFailed):
         await t.open()
 
 
 @pytest.mark.asyncio
-async def test_tcp_connection_manager_open_refused(mock_open_connection_error):
-    t = TcpConnectionManager("localhost", 783)
+async def test_tcp_connection_manager_open_refused(mock_open_connection_error, hostname, tcp_port):
+    t = TcpConnectionManager(hostname, tcp_port)
 
     with pytest.raises(AIOSpamcConnectionFailed):
         await t.open()
 
 
-def test_tcp_connection_manager_connection_string(tcp_address):
-    t = TcpConnectionManager(tcp_address[0], tcp_address[1])
+def test_tcp_connection_manager_connection_string(hostname, tcp_port):
+    t = TcpConnectionManager(hostname, tcp_port)
 
-    assert f"{tcp_address[0]}:{tcp_address[1]}" == t.connection_string
+    assert f"{hostname}:{tcp_port}" == t.connection_string
 
 
-def test_unix_connection_manager_init():
-    u = UnixConnectionManager("spamd.sock")
+def test_unix_connection_manager_init(unix_socket):
+    u = UnixConnectionManager(unix_socket)
 
-    assert "spamd.sock" == u.path
+    assert unix_socket == u.path
 
 
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Unix sockets not supported on Windows"
 )
 @pytest.mark.asyncio
-async def test_unix_connection_manager_open(mock_open_unix_connection):
-    u = UnixConnectionManager("spamd.sock")
+async def test_unix_connection_manager_open(mock_open_unix_connection, unix_socket):
+    u = UnixConnectionManager(unix_socket)
     reader, writer = await u.open()
 
     assert mock_open_unix_connection[0] is reader
@@ -261,8 +251,8 @@ async def test_unix_connection_manager_open(mock_open_unix_connection):
     sys.platform == "win32", reason="Unix sockets not supported on Windows"
 )
 @pytest.mark.asyncio
-async def test_unix_connection_manager_open_refused(mock_open_unix_connection_refused):
-    u = UnixConnectionManager("spamd.sock")
+async def test_unix_connection_manager_open_refused(mock_open_unix_connection_refused, unix_socket):
+    u = UnixConnectionManager(unix_socket)
 
     with pytest.raises(AIOSpamcConnectionFailed):
         await u.open()
@@ -272,8 +262,8 @@ async def test_unix_connection_manager_open_refused(mock_open_unix_connection_re
     sys.platform == "win32", reason="Unix sockets not supported on Windows"
 )
 @pytest.mark.asyncio
-async def test_unix_connection_manager_open_refused(mock_open_unix_connection_error):
-    u = UnixConnectionManager("spamd.sock")
+async def test_unix_connection_manager_open_refused(mock_open_unix_connection_error, unix_socket):
+    u = UnixConnectionManager(unix_socket)
 
     with pytest.raises(AIOSpamcConnectionFailed):
         await u.open()
@@ -315,15 +305,15 @@ def test_ssl_context_from_dir(mocker, tmp_path):
     assert ssl.create_default_context.call_args.kwargs["capath"] == str(temp)
 
 
-def test_ssl_context_from_file(mocker, tmp_path):
+def test_ssl_context_from_file(mocker, certificate_authority):
     mocker.spy(ssl, "create_default_context")
-    file = tmp_path / "certs.pem"
-    with open(str(file), "wb") as dest:
-        with open(certifi.where(), "rb") as source:
-            dest.writelines(source.readlines())
-    s = new_ssl_context(str(file))
+    # file = tmp_path / "certs.pem"
+    # with open(str(file), "wb") as dest:
+    #     with open(certifi.where(), "rb") as source:
+    #         dest.writelines(source.readlines())
+    s = new_ssl_context(certificate_authority)
 
-    assert ssl.create_default_context.call_args.kwargs["cafile"] == str(file)
+    assert ssl.create_default_context.call_args.kwargs["cafile"] == str(certificate_authority)
 
 
 def test_ssl_context_file_not_found(tmp_path):
@@ -333,20 +323,20 @@ def test_ssl_context_file_not_found(tmp_path):
         new_ssl_context(str(file))
 
 
-def test_new_connection_returns_unix_manager():
-    result = new_connection(socket_path="test.sock")
+def test_new_connection_returns_unix_manager(unix_socket):
+    result = new_connection(socket_path=unix_socket)
 
     assert isinstance(result, UnixConnectionManager)
 
 
-def test_new_connection_returns_tcp_manager():
-    result = new_connection(host="localhost", port=783)
+def test_new_connection_returns_tcp_manager(hostname, tcp_port):
+    result = new_connection(host=hostname, port=tcp_port)
 
     assert isinstance(result, TcpConnectionManager)
 
 
-def test_new_connection_returns_tcp_manager_with_ssl(mocker):
-    result = new_connection(host="localhost", port=783, context=mocker.Mock())
+def test_new_connection_returns_tcp_manager_with_ssl(mocker, hostname, tcp_port):
+    result = new_connection(host=hostname, port=tcp_port, context=mocker.Mock())
 
     assert isinstance(result, TcpConnectionManager)
 
