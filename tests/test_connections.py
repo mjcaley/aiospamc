@@ -208,7 +208,9 @@ async def test_tcp_connection_manager_open(mock_open_connection, hostname, tcp_p
 
 
 @pytest.mark.asyncio
-async def test_tcp_connection_manager_open_refused(mock_open_connection_refused, hostname, tcp_port):
+async def test_tcp_connection_manager_open_refused(
+    mock_open_connection_refused, hostname, tcp_port
+):
     t = TcpConnectionManager(hostname, tcp_port)
 
     with pytest.raises(AIOSpamcConnectionFailed):
@@ -216,7 +218,9 @@ async def test_tcp_connection_manager_open_refused(mock_open_connection_refused,
 
 
 @pytest.mark.asyncio
-async def test_tcp_connection_manager_open_refused(mock_open_connection_error, hostname, tcp_port):
+async def test_tcp_connection_manager_open_refused(
+    mock_open_connection_error, hostname, tcp_port
+):
     t = TcpConnectionManager(hostname, tcp_port)
 
     with pytest.raises(AIOSpamcConnectionFailed):
@@ -251,7 +255,9 @@ async def test_unix_connection_manager_open(mock_open_unix_connection, unix_sock
     sys.platform == "win32", reason="Unix sockets not supported on Windows"
 )
 @pytest.mark.asyncio
-async def test_unix_connection_manager_open_refused(mock_open_unix_connection_refused, unix_socket):
+async def test_unix_connection_manager_open_refused(
+    mock_open_unix_connection_refused, unix_socket
+):
     u = UnixConnectionManager(unix_socket)
 
     with pytest.raises(AIOSpamcConnectionFailed):
@@ -262,7 +268,9 @@ async def test_unix_connection_manager_open_refused(mock_open_unix_connection_re
     sys.platform == "win32", reason="Unix sockets not supported on Windows"
 )
 @pytest.mark.asyncio
-async def test_unix_connection_manager_open_refused(mock_open_unix_connection_error, unix_socket):
+async def test_unix_connection_manager_open_refused(
+    mock_open_unix_connection_error, unix_socket
+):
     u = UnixConnectionManager(unix_socket)
 
     with pytest.raises(AIOSpamcConnectionFailed):
@@ -313,7 +321,9 @@ def test_ssl_context_from_file(mocker, certificate_authority):
     #         dest.writelines(source.readlines())
     s = new_ssl_context(certificate_authority)
 
-    assert ssl.create_default_context.call_args.kwargs["cafile"] == str(certificate_authority)
+    assert ssl.create_default_context.call_args.kwargs["cafile"] == str(
+        certificate_authority
+    )
 
 
 def test_ssl_context_file_not_found(tmp_path):

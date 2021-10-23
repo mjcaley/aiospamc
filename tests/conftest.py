@@ -250,6 +250,7 @@ def unix_socket(tmp_path_factory):
 
 # Integration fixtures
 
+
 @pytest.fixture(scope="session")
 def create_certificate(tmp_path_factory, hostname, ip_address):
     certs_tmp_path = tmp_path_factory.mktemp("localhost_certs")
@@ -288,15 +289,15 @@ def spamd(
         f"--syslog={str(log_file)}",
         "--local",
         "--allow-tell",
-        f'--listen={ip_address}:{tcp_port}',
-        f'--listen=ssl:{ip_address}:{ssl_port}',
+        f"--listen={ip_address}:{tcp_port}",
+        f"--listen=ssl:{ip_address}:{ssl_port}",
         "--server-key",
-        f'{certificate}',
+        f"{certificate}",
         "--server-cert",
-        f'{certificate}',
+        f"{certificate}",
     ]
     if sys.platform != "win32":
-        options += [f'--socketpath={unix_socket}']
+        options += [f"--socketpath={unix_socket}"]
 
     # Spawn spamd
     process = Popen(
