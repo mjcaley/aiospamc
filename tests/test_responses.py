@@ -74,13 +74,6 @@ def test_bytes_body_compressed():
     assert result == zlib.compress(test_input)
 
 
-def test_str():
-    r = Response(status_code=0, message="EX_OK")
-    result = str(r)
-
-    assert result == f"<0 - EX_OK: aiospamc.responses.Response object at {id(r)}>"
-
-
 def test_eq_other_obj_is_false():
     r = Response()
 
