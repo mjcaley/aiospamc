@@ -637,6 +637,18 @@ toml = "*"
 dev = ["packaging"]
 
 [[package]]
+name = "trustme"
+version = "0.9.0"
+description = "#1 quality TLS certs while you wait, for the discerning tester"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+cryptography = "*"
+idna = "*"
+
+[[package]]
 name = "typed-ast"
 version = "1.4.3"
 description = "a fork of Python 2 and 3 ast modules with type comment support"
@@ -680,7 +692,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "fb71348fd531025c1f2b846e4d9adddfe62be70ec3fb077a8f82bcaeb359088b"
+content-hash = "2858099536f9070b0566e4e5ae5943c571da8d02788e5da85b756c93a6aa5075"
 
 [metadata.files]
 alabaster = [
@@ -1104,6 +1116,10 @@ tomli = [
 towncrier = [
     {file = "towncrier-21.3.0-py2.py3-none-any.whl", hash = "sha256:e6ccec65418bbcb8de5c908003e130e37fe0e9d6396cb77c1338241071edc082"},
     {file = "towncrier-21.3.0.tar.gz", hash = "sha256:6eed0bc924d72c98c000cb8a64de3bd566e5cb0d11032b73fcccf8a8f956ddfe"},
+]
+trustme = [
+    {file = "trustme-0.9.0-py2.py3-none-any.whl", hash = "sha256:a6e53039cc43e70548ebd9a42ec1af5cba803a16d14321cd96352d2b4e010e04"},
+    {file = "trustme-0.9.0.tar.gz", hash = "sha256:5e07b23d70ceed64f3bb36ae4b9abc52354c16c98d45ab037bee2b5fbffe586c"},
 ]
 typed-ast = [
     {file = "typed_ast-1.4.3-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:2068531575a125b87a41802130fa7e29f26c09a2833fea68d9a40cf33902eba6"},

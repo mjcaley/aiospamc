@@ -110,6 +110,7 @@ class ConnectionManager:
         response = await self._receive(reader)
 
         writer.close()
+        await writer.wait_closed()
 
         return response
 
