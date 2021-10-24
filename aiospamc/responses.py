@@ -93,12 +93,14 @@ class Response:
             }
         )
 
-    def __str__(self):
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __str__(self) -> str:
         return (
-            f"<{self.status_code} - "
-            f"{self.message}: "
-            f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} '
-            f"object at {id(self)}>"
+            f"<{self.__class__.__module__}.{self.__class__.__qualname__} "
+            f"[{self.message}] "
+            f"object at {hex(id(self))}>"
         )
 
     def __eq__(self, other: Any) -> bool:
