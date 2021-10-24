@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
 import datetime
-from functools import partial
 from pathlib import Path
 from shutil import which
-from socket import gethostname, gethostbyname
+from socket import gethostbyname
 from subprocess import DEVNULL, TimeoutExpired, Popen
 import sys
 
@@ -225,7 +224,7 @@ def ex_undefined():
 
 @pytest.fixture(scope="session")
 def hostname():
-    return gethostname()
+    return "localhost"
 
 
 @pytest.fixture(scope="session")
