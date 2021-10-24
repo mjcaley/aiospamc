@@ -1,4 +1,4 @@
-#!/usr/bin/end python
+#!/usr/bin/env python
 
 """Frontend functions for the package."""
 
