@@ -283,7 +283,7 @@ def parse_response_status(stream: bytes) -> Dict[str, Union[str, int]]:
 
     try:
         protocol_version, status_code, message = list(
-            filter(None, stream.decode("ascii").split(" "))
+            filter(None, stream.decode("ascii").split(" ", 2))
         )
         protocol, version = protocol_version.split("/")
     except ValueError as error:
