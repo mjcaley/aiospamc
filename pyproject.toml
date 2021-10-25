@@ -40,7 +40,8 @@ branch = true
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
-    "def __repr__"
+    "def __repr__",
+    "def __str__"
 ]
 fail_under = 95.0
 

@@ -59,11 +59,14 @@ class Request:
             b"body": body,
         }
 
-    def __str__(self):
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __str__(self) -> str:
         return (
-            f"<{self.verb}: "
-            f'{".".join([self.__class__.__module__, self.__class__.__qualname__])} '
-            f"object at {id(self)}>"
+            f"<{self.__class__.__module__}.{self.__class__.__qualname__} "
+            f"[{self.verb}] "
+            f"object at {hex(id(self))}>"
         )
 
     @property
