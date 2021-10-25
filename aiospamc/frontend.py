@@ -23,6 +23,7 @@ from .options import ActionOption, MessageClassOption
 from .incremental_parser import ResponseParser, parse_set_remove_value
 from .responses import Response
 from .requests import Request
+from .user_warnings import raise_warnings
 
 
 ConnectionFactory = Callable[
@@ -64,6 +65,8 @@ async def request(
 
     :raises BadResponse: If the response from SPAMD is ill-formed this exception will be raised.
     """
+
+    raise_warnings(req, connection)
 
     start = time.monotonic()
     LOGGER.info(
