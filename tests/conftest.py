@@ -114,6 +114,12 @@ def response_empty_body():
 
 
 @pytest.fixture
+def response_timeout():
+    """Server timeout response."""
+    return b"SPAMD/1.0 79 Timeout: (30 second timeout while trying to CHECK)\r\n"
+
+
+@pytest.fixture
 def response_invalid():
     """Invalid response in bytes."""
     return b"Invalid response"

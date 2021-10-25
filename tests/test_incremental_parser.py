@@ -506,3 +506,8 @@ def test_request_from_bytes(request_with_body):
     result = r.parse(bytes(request_with_body))
 
     assert result is not None
+
+
+def test_timeout_response(response_timeout):
+    r = ResponseParser()
+    result = r.parse(response_timeout)
