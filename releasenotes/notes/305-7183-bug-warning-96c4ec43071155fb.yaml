@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Added warning for using SSL and compression hangs the connection.

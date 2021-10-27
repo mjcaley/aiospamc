@@ -80,6 +80,7 @@ black = "21.9b0"
 towncrier = "^21.3"
 interrogate = "^1.5"
 trustme = "^0.9.0"
+reno = "^3.5.0"
 
 [build-system]
 requires = ["poetry>=1.1"]
