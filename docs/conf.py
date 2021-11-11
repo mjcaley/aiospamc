@@ -33,7 +33,8 @@ needs_sphinx = '2.1'
 # ones.
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
-              'sphinx.ext.intersphinx']
+              'sphinx.ext.intersphinx',
+              'reno.sphinxext']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

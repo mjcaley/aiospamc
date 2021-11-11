@@ -14,6 +14,7 @@ Contents
    user_guide
    modules
    protocol
+   release_notes
 
 ******************
 Indices and tables
