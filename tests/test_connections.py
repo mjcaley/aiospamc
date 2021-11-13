@@ -10,7 +10,7 @@ from aiospamc.connections import (
     TcpConnectionManager,
     UnixConnectionManager,
     Timeout,
-    new_connection,
+    new_connection_manager,
     new_ssl_context,
 )
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
@@ -334,23 +334,23 @@ def test_ssl_context_file_not_found(tmp_path):
 
 
 def test_new_connection_returns_unix_manager(unix_socket):
-    result = new_connection(socket_path=unix_socket)
+    result = new_connection_manager(socket_path=unix_socket)
 
     assert isinstance(result, UnixConnectionManager)
 
 
 def test_new_connection_returns_tcp_manager(hostname, tcp_port):
-    result = new_connection(host=hostname, port=tcp_port)
+    result = new_connection_manager(host=hostname, port=tcp_port)
 
     assert isinstance(result, TcpConnectionManager)
 
 
 def test_new_connection_returns_tcp_manager_with_ssl(mocker, hostname, tcp_port):
-    result = new_connection(host=hostname, port=tcp_port, context=mocker.Mock())
+    result = new_connection_manager(host=hostname, port=tcp_port, context=mocker.Mock())
 
     assert isinstance(result, TcpConnectionManager)
 
 
 def test_new_connection_raises_on_missing_parameters():
     with pytest.raises(ValueError):
-        new_connection()
+        new_connection_manager()

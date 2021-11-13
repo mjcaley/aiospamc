@@ -312,7 +312,7 @@ def new_ssl_context(verify: Optional[Any]) -> Optional[ssl.SSLContext]:
             raise FileNotFoundError(f"Certificate path does not exist at {verify}")
 
 
-def new_connection(
+def new_connection_manager(
     host: Optional[str] = None,
     port: Optional[int] = None,
     socket_path: Optional[str] = None,

@@ -10,7 +10,9 @@ import sys
 import pytest
 import trustme
 
+from aiospamc.client import Client
 from aiospamc.header_values import ContentLengthValue
+from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request
 
 
@@ -251,6 +253,28 @@ def ssl_port():
 @pytest.fixture(scope="session")
 def unix_socket(tmp_path_factory):
     return str(tmp_path_factory.mktemp("sockets") / "spamd.sock")
+
+
+@pytest.fixture
+def mock_client_dependency(mocker, response_ok):
+    ssl_factory = mocker.Mock()
+    connection_factory = mocker.Mock()
+    connection_factory.return_value.request = mocker.AsyncMock(return_value=response_ok)
+    parser_factory = mocker.Mock(return_value=ResponseParser())
+
+    return Client(ssl_factory, connection_factory, parser_factory)
+
+
+@pytest.fixture
+def mock_client_response(mock_client_dependency):
+    def inner(response):
+        mock_client_dependency.connection_factory.return_value.request.return_value = (
+            response
+        )
+
+        return mock_client_dependency
+
+    return inner
 
 
 # Integration fixtures
