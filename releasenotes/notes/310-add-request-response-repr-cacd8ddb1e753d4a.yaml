@@ -1,0 +1,3 @@
+---
+features:
+  - Made repr methods of Request and Response objects more descriptive.

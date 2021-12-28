@@ -161,7 +161,7 @@ async def check(
     :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
     :param verify:
-        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
     :param user: Username to pass to the SPAMD service.
@@ -230,7 +230,7 @@ async def headers(
     :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
     :param verify:
-        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
     :param user: Username to pass to the SPAMD service.
@@ -296,7 +296,7 @@ async def ping(
     :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
     :param verify:
-        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
 
@@ -360,7 +360,7 @@ async def process(
     :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
     :param verify:
-        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
     :param user: Username to pass to the SPAMD service.
@@ -430,7 +430,7 @@ async def report(
     :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
     :param verify:
-        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
     :param user: Username to pass to the SPAMD service.
@@ -499,7 +499,7 @@ async def report_if_spam(
     :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
     :param verify:
-        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
     :param user: Username to pass to the SPAMD service.
@@ -569,7 +569,7 @@ async def symbols(
     :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
     :param verify:
-        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
     :param user: Username to pass to the SPAMD service.
@@ -645,7 +645,7 @@ async def tell(
     :param socket_path: Path to Unix socket.
     :param timeout: Timeout settings.
     :param verify:
-        Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
+        Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
     :param user: Username to pass to the SPAMD service.

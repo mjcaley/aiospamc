@@ -1,1 +1,0 @@
-Add warnings for known SpamAssassin bugs.
