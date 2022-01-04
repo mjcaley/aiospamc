@@ -61,12 +61,6 @@ class Parser:
         self._state = start
         self.buffer = b""
 
-        self._state_table = {
-            States.Status: self.status,
-            States.Header: self.header,
-            States.Body: self.body,
-        }
-
     @property
     def state(self) -> States:
         """The current state of the parser.
