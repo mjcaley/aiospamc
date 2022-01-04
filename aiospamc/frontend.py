@@ -78,7 +78,7 @@ async def check(
     context_logger = logger.bind(
         host=host,
         port=port,
-        socker_path=socket_path,
+        socket_path=socket_path,
         user=user,
         request=req,
     )
@@ -162,7 +162,7 @@ async def headers(
     context_logger = logger.bind(
         host=host,
         port=port,
-        socker_path=socket_path,
+        socket_path=socket_path,
         user=user,
         request=req,
     )
@@ -237,7 +237,7 @@ async def ping(
     context_logger = logger.bind(
             host=host,
             port=port,
-            socker_path=socket_path,
+            socket_path=socket_path,
             request=req,
         )
     context_logger.info("Sending PING request")
@@ -318,7 +318,7 @@ async def process(
     context_logger = logger.bind(
         host=host,
         port=port,
-        socker_path=socket_path,
+        socket_path=socket_path,
         user=user,
         request=req,
     )
@@ -401,7 +401,7 @@ async def report(
     context_logger = logger.bind(
         host=host,
         port=port,
-        socker_path=socket_path,
+        socket_path=socket_path,
         user=user,
         request=req,
     )
@@ -485,7 +485,7 @@ async def report_if_spam(
     context_logger = logger.bind(
         host=host,
         port=port,
-        socker_path=socket_path,
+        socket_path=socket_path,
         user=user,
         request=req,
     )
@@ -569,7 +569,7 @@ async def symbols(
     context_logger = logger.bind(
         host=host,
         port=port,
-        socker_path=socket_path,
+        socket_path=socket_path,
         user=user,
         request=req,
     )
@@ -665,7 +665,7 @@ async def tell(
     context_logger = logger.bind(
         host=host,
         port=port,
-        socker_path=socket_path,
+        socket_path=socket_path,
         user=user,
         request=req,
     )

@@ -99,7 +99,7 @@ class Client:
         context_logger = logger.bind(
             host=host,
             port=port,
-            socker_path=socket_path,
+            socket_path=socket_path,
             user=user,
             request=req,
         )
