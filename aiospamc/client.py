@@ -3,7 +3,6 @@
 """Module implementing client objects that all requests go through."""
 
 from dataclasses import dataclass
-import logging
 from typing import (
     Any,
     Callable,
@@ -11,7 +10,8 @@ from typing import (
     Type,
 )
 from ssl import SSLContext
-import time
+
+from loguru import logger
 
 from .connections import (
     ConnectionManager,
@@ -25,9 +25,6 @@ from .incremental_parser import ParseError, ResponseParser
 from .requests import Request
 from .responses import Response
 from .user_warnings import raise_warnings
-
-
-LOGGER = logging.getLogger(__package__)
 
 
 ConnectionFactory = Callable[
@@ -99,6 +96,13 @@ class Client:
         :raises ClientTimeoutException: Client timed out during connection.
         """
 
+        context_logger = logger.bind(
+            host=host,
+            port=port,
+            socker_path=socket_path,
+            user=user,
+            request=req,
+        )
         ssl_context = self.ssl_context_factory(verify)
         connection = self.connection_factory(
             host, port, socket_path, timeout, ssl_context
@@ -112,33 +116,16 @@ class Client:
 
         raise_warnings(req, connection)
 
-        start = time.monotonic()
-        LOGGER.info(
-            "Sending %s request",
-            req.verb,
-            extra={
-                "message_id": id(req.body),
-                "request_id": id(req),
-                "connection_id": id(connection),
-            },
-        )
+        context_logger.info("Sending {} request", req.verb)
         response = await connection.request(bytes(req))
+        context_logger = context_logger.bind(response_bytes=response)
         try:
             parsed_response = parser.parse(response)
         except ParseError as error:
-            LOGGER.exception(
-                "Error parsing response",
-                exc_info=error,
-                extra={"request_id": id(req), "connection_id": id(connection)},
-            )
+            context_logger.exception("Error parsing response")
             raise BadResponse(response) from error
         response_obj = Response(**parsed_response)
         response_obj.raise_for_status()
-        end = time.monotonic()
-        LOGGER.info(
-            "Successfully received response in %0.2f",
-            end - start,
-            extra={"request_id": id(req), "connection_id": id(connection)},
-        )
+        context_logger.bind(response=response_obj).info("Successfully received response")
 
         return response_obj
