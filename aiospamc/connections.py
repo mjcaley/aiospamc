@@ -2,13 +2,14 @@
 
 """ConnectionManager classes for TCP and Unix sockets."""
 
+from __future__ import annotations
 import asyncio
 from pathlib import Path
 import ssl
-from time import monotonic
 from typing import Any, Optional, Tuple
 
 import certifi
+import loguru
 from loguru import logger
 
 from .exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
@@ -58,7 +59,7 @@ class ConnectionManager:
         )
 
     @property
-    def logger(self) -> "logger.Logger":
+    def logger(self) -> loguru.Logger:
         """Return the logger object."""
 
         return self._logger
@@ -134,7 +135,6 @@ class ConnectionManager:
             self.logger.exception("Timeout when connecting")
             raise ClientTimeoutException from error
 
-        end = monotonic()
         self.logger.success("Successfully connected")
 
         return reader, writer
