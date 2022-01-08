@@ -126,6 +126,8 @@ class Client:
             raise BadResponse(response) from error
         response_obj = Response(**parsed_response)
         response_obj.raise_for_status()
-        context_logger.bind(response=response_obj).info("Successfully received response")
+        context_logger.bind(response=response_obj).info(
+            "Successfully received response"
+        )
 
         return response_obj

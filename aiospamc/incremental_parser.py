@@ -69,7 +69,7 @@ class Parser:
 
     def _bind(self, **kwargs) -> loguru.Logger:
         """Helper method to bind a new logger.
-        
+
         :return: A new logger instance.
         """
 

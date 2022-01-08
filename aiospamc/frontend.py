@@ -99,7 +99,9 @@ async def check(
         context_logger.exception("Exception when calling check function")
         raise
 
-    context_logger.bind(response=response).success("Successfully completed check function")
+    context_logger.bind(response=response).success(
+        "Successfully completed check function"
+    )
 
     return response
 
@@ -183,7 +185,9 @@ async def headers(
         context_logger.exception("Exception when calling headers function")
         raise
 
-    context_logger.bind(response=response).success("Successfully completed headers function")
+    context_logger.bind(response=response).success(
+        "Successfully completed headers function"
+    )
 
     return response
 
@@ -235,11 +239,11 @@ async def ping(
 
     req = Request("PING")
     context_logger = logger.bind(
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            request=req,
-        )
+        host=host,
+        port=port,
+        socket_path=socket_path,
+        request=req,
+    )
     context_logger.info("Sending PING request")
 
     try:
@@ -255,7 +259,9 @@ async def ping(
         context_logger.exception("Exception when calling ping function")
         raise
 
-    context_logger.bind(response=response).success("Successfully completed ping function")
+    context_logger.bind(response=response).success(
+        "Successfully completed ping function"
+    )
 
     return response
 
@@ -339,7 +345,9 @@ async def process(
         context_logger.exception("Exception when calling process function")
         raise
 
-    context_logger.bind(response=response).success("Successfully completed process function")
+    context_logger.bind(response=response).success(
+        "Successfully completed process function"
+    )
 
     return response
 
@@ -422,7 +430,9 @@ async def report(
         context_logger.exception("Exception when calling report function")
         raise
 
-    context_logger.bind(response=response).success("Successfully completed report function")
+    context_logger.bind(response=response).success(
+        "Successfully completed report function"
+    )
 
     return response
 
@@ -506,7 +516,9 @@ async def report_if_spam(
         context_logger.exception("Exception when calling report_if_spam function")
         raise
 
-    context_logger.bind(response=response).success("Successfully completed report_if_spam function")
+    context_logger.bind(response=response).success(
+        "Successfully completed report_if_spam function"
+    )
 
     return response
 
@@ -590,7 +602,9 @@ async def symbols(
         context_logger.exception("Exception when calling symbols function")
         raise
 
-    context_logger.bind(response=response).success("Successfully completed symbols function")
+    context_logger.bind(response=response).success(
+        "Successfully completed symbols function"
+    )
 
     return response
 
@@ -686,6 +700,8 @@ async def tell(
         context_logger.exception("Exception when calling tell function")
         raise
 
-    context_logger.bind(response=response).success("Successfully completed tell function")
+    context_logger.bind(response=response).success(
+        "Successfully completed tell function"
+    )
 
     return response
