@@ -10,6 +10,8 @@ from typing import (
     Union,
 )
 
+from loguru import logger
+
 from .client import Client
 from .connections import Timeout
 from .header_values import MessageClassValue
@@ -73,17 +75,35 @@ async def check(
     client = kwargs.get("client", Client())
 
     req = Request("CHECK", body=bytes(message))
-
-    return await client.request(
-        req,
+    context_logger = logger.bind(
         host=host,
         port=port,
         socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
         user=user,
-        compress=compress,
+        request=req,
     )
+    context_logger.info("Sending CHECK request")
+
+    try:
+        response = await client.request(
+            req,
+            host=host,
+            port=port,
+            socket_path=socket_path,
+            timeout=timeout,
+            verify=verify,
+            user=user,
+            compress=compress,
+        )
+    except Exception:
+        context_logger.exception("Exception when calling check function")
+        raise
+
+    context_logger.bind(response=response).success(
+        "Successfully completed check function"
+    )
+
+    return response
 
 
 async def headers(
@@ -141,17 +161,35 @@ async def headers(
     client = kwargs.get("client", Client())
 
     req = Request("HEADERS", body=bytes(message))
-
-    return await client.request(
-        req,
+    context_logger = logger.bind(
         host=host,
         port=port,
         socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
         user=user,
-        compress=compress,
+        request=req,
     )
+    context_logger.info("Sending HEADERS request")
+
+    try:
+        response = await client.request(
+            req,
+            host=host,
+            port=port,
+            socket_path=socket_path,
+            timeout=timeout,
+            verify=verify,
+            user=user,
+            compress=compress,
+        )
+    except Exception:
+        context_logger.exception("Exception when calling headers function")
+        raise
+
+    context_logger.bind(response=response).success(
+        "Successfully completed headers function"
+    )
+
+    return response
 
 
 async def ping(
@@ -200,15 +238,32 @@ async def ping(
     client = kwargs.get("client", Client())
 
     req = Request("PING")
-
-    return await client.request(
-        req,
+    context_logger = logger.bind(
         host=host,
         port=port,
         socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
+        request=req,
     )
+    context_logger.info("Sending PING request")
+
+    try:
+        response = await client.request(
+            req,
+            host=host,
+            port=port,
+            socket_path=socket_path,
+            timeout=timeout,
+            verify=verify,
+        )
+    except Exception:
+        context_logger.exception("Exception when calling ping function")
+        raise
+
+    context_logger.bind(response=response).success(
+        "Successfully completed ping function"
+    )
+
+    return response
 
 
 async def process(
@@ -266,17 +321,35 @@ async def process(
     client = kwargs.get("client", Client())
 
     req = Request("PROCESS", body=bytes(message))
-
-    return await client.request(
-        req,
+    context_logger = logger.bind(
         host=host,
         port=port,
         socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
         user=user,
-        compress=compress,
+        request=req,
     )
+    context_logger.info("Sending PROCESS request")
+
+    try:
+        response = await client.request(
+            req,
+            host=host,
+            port=port,
+            socket_path=socket_path,
+            timeout=timeout,
+            verify=verify,
+            user=user,
+            compress=compress,
+        )
+    except Exception:
+        context_logger.exception("Exception when calling process function")
+        raise
+
+    context_logger.bind(response=response).success(
+        "Successfully completed process function"
+    )
+
+    return response
 
 
 async def report(
@@ -333,17 +406,35 @@ async def report(
     client = kwargs.get("client", Client())
 
     req = Request("REPORT", body=bytes(message))
-
-    return await client.request(
-        req,
+    context_logger = logger.bind(
         host=host,
         port=port,
         socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
         user=user,
-        compress=compress,
+        request=req,
     )
+    context_logger.info("Sending REPORT request")
+
+    try:
+        response = await client.request(
+            req,
+            host=host,
+            port=port,
+            socket_path=socket_path,
+            timeout=timeout,
+            verify=verify,
+            user=user,
+            compress=compress,
+        )
+    except Exception:
+        context_logger.exception("Exception when calling report function")
+        raise
+
+    context_logger.bind(response=response).success(
+        "Successfully completed report function"
+    )
+
+    return response
 
 
 async def report_if_spam(
@@ -401,17 +492,35 @@ async def report_if_spam(
     client = kwargs.get("client", Client())
 
     req = Request("REPORT_IFSPAM", body=bytes(message))
-
-    return await client.request(
-        req,
+    context_logger = logger.bind(
         host=host,
         port=port,
         socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
         user=user,
-        compress=compress,
+        request=req,
     )
+    context_logger.info("Sending REPORT_IFSPAM request")
+
+    try:
+        response = await client.request(
+            req,
+            host=host,
+            port=port,
+            socket_path=socket_path,
+            timeout=timeout,
+            verify=verify,
+            user=user,
+            compress=compress,
+        )
+    except Exception:
+        context_logger.exception("Exception when calling report_if_spam function")
+        raise
+
+    context_logger.bind(response=response).success(
+        "Successfully completed report_if_spam function"
+    )
+
+    return response
 
 
 async def symbols(
@@ -469,17 +578,35 @@ async def symbols(
     client = kwargs.get("client", Client())
 
     req = Request("SYMBOLS", body=bytes(message))
-
-    return await client.request(
-        req,
+    context_logger = logger.bind(
         host=host,
         port=port,
         socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
         user=user,
-        compress=compress,
+        request=req,
     )
+    context_logger.info("Sending SYMBOLS request")
+
+    try:
+        response = await client.request(
+            req,
+            host=host,
+            port=port,
+            socket_path=socket_path,
+            timeout=timeout,
+            verify=verify,
+            user=user,
+            compress=compress,
+        )
+    except Exception:
+        context_logger.exception("Exception when calling symbols function")
+        raise
+
+    context_logger.bind(response=response).success(
+        "Successfully completed symbols function"
+    )
+
+    return response
 
 
 async def tell(
@@ -549,14 +676,32 @@ async def tell(
     if set_action:
         headers["Set"] = parse_set_remove_value(set_action)
     req = Request("TELL", headers=headers, body=bytes(message))
-
-    return await client.request(
-        req,
+    context_logger = logger.bind(
         host=host,
         port=port,
         socket_path=socket_path,
-        timeout=timeout,
-        verify=verify,
         user=user,
-        compress=compress,
+        request=req,
     )
+    context_logger.info("Sending TELL request")
+
+    try:
+        response = await client.request(
+            req,
+            host=host,
+            port=port,
+            socket_path=socket_path,
+            timeout=timeout,
+            verify=verify,
+            user=user,
+            compress=compress,
+        )
+    except Exception:
+        context_logger.exception("Exception when calling tell function")
+        raise
+
+    context_logger.bind(response=response).success(
+        "Successfully completed tell function"
+    )
+
+    return response

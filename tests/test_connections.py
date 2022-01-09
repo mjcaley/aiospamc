@@ -66,29 +66,18 @@ def mock_open_unix_connection_error(mocker):
     yield
 
 
-@pytest.fixture
-def mock_base_connection_string(mocker):
-    mocker.patch(
-        "aiospamc.connections.ConnectionManager.connection_string",
-        return_value="<connection>",
-    )
-    yield
-
-
 def test_connection_manager_returns_logger():
-    c = ConnectionManager()
+    c = ConnectionManager("connection")
 
     assert c.logger is not None
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_request_sends_and_receives(
-    mocker, mock_base_connection_string
-):
+async def test_connection_manager_request_sends_and_receives(mocker):
     test_input = b"request"
     expected = b"response"
 
-    c = ConnectionManager()
+    c = ConnectionManager("connection")
     reader = mocker.AsyncMock(spec=asyncio.StreamReader)
     reader.read.return_value = expected
     writer = mocker.AsyncMock(spec=asyncio.StreamWriter)
@@ -103,13 +92,11 @@ async def test_connection_manager_request_sends_and_receives(
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_request_sends_without_eof(
-    mocker, mock_base_connection_string
-):
+async def test_connection_manager_request_sends_without_eof(mocker):
     test_input = b"request"
     expected = b"response"
 
-    c = ConnectionManager()
+    c = ConnectionManager("connection")
     reader = mocker.AsyncMock(spec=asyncio.StreamReader)
     reader.read.return_value = expected
     writer = mocker.AsyncMock(spec=asyncio.StreamWriter)
@@ -125,7 +112,7 @@ async def test_connection_manager_request_sends_without_eof(
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_timeout_total(mocker, mock_base_connection_string):
+async def test_connection_manager_timeout_total(mocker):
     async def sleep():
         await asyncio.sleep(5)
 
@@ -133,7 +120,7 @@ async def test_connection_manager_timeout_total(mocker, mock_base_connection_str
             spec=asyncio.StreamWriter
         )
 
-    c = ConnectionManager(timeout=Timeout(total=0))
+    c = ConnectionManager("connection", timeout=Timeout(total=0))
     c.open = mocker.AsyncMock(side_effect=sleep)
 
     with pytest.raises(ClientTimeoutException):
@@ -141,7 +128,7 @@ async def test_connection_manager_timeout_total(mocker, mock_base_connection_str
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_timeout_connect(mocker, mock_base_connection_string):
+async def test_connection_manager_timeout_connect(mocker):
     async def sleep():
         await asyncio.sleep(5)
 
@@ -149,7 +136,7 @@ async def test_connection_manager_timeout_connect(mocker, mock_base_connection_s
             spec=asyncio.StreamWriter
         )
 
-    c = ConnectionManager(timeout=Timeout(connection=0))
+    c = ConnectionManager("connection", timeout=Timeout(connection=0))
     c.open = mocker.AsyncMock(side_effect=sleep)
 
     with pytest.raises(ClientTimeoutException):
@@ -157,7 +144,7 @@ async def test_connection_manager_timeout_connect(mocker, mock_base_connection_s
 
 
 @pytest.mark.asyncio
-async def test_connection_manager_timeout_read(mocker, mock_base_connection_string):
+async def test_connection_manager_timeout_read(mocker):
     async def sleep():
         await asyncio.sleep(5)
         return b"response"
@@ -165,7 +152,7 @@ async def test_connection_manager_timeout_read(mocker, mock_base_connection_stri
     reader = mocker.AsyncMock(spec=asyncio.StreamReader)
     reader.read = mocker.AsyncMock(side_effect=sleep)
 
-    c = ConnectionManager(timeout=Timeout(response=0))
+    c = ConnectionManager("connection", timeout=Timeout(response=0))
     c.open = mocker.AsyncMock(
         return_value=(reader, mocker.AsyncMock(spec=asyncio.StreamWriter))
     )
@@ -176,17 +163,10 @@ async def test_connection_manager_timeout_read(mocker, mock_base_connection_stri
 
 @pytest.mark.asyncio
 async def test_connection_manager_open_raises_not_implemented():
-    c = ConnectionManager()
+    c = ConnectionManager("connection")
 
     with pytest.raises(NotImplementedError):
         await c.open()
-
-
-def test_connection_manager_connection_string_raises_not_implemented():
-    c = ConnectionManager()
-
-    with pytest.raises(NotImplementedError):
-        c.connection_string
 
 
 def test_tcp_connection_manager_init(mocker, hostname, tcp_port):

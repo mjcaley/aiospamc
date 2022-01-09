@@ -2,9 +2,13 @@
 
 """Module for the parsing functions and objects."""
 
+from __future__ import annotations
 from enum import Enum, auto
 import re
 from typing import Any, Callable, Mapping, Tuple, Union, Dict
+
+import loguru
+from loguru import logger
 
 from .exceptions import ParseError, NotEnoughDataError, TooMuchDataError
 from .header_values import (
@@ -61,11 +65,16 @@ class Parser:
         self._state = start
         self.buffer = b""
 
-        self._state_table = {
-            States.Status: self.status,
-            States.Header: self.header,
-            States.Body: self.body,
-        }
+        self._logger = logger
+
+    def _bind(self, **kwargs) -> loguru.Logger:
+        """Helper method to bind a new logger.
+
+        :return: A new logger instance.
+        """
+
+        self._logger = self._logger.bind(**kwargs)
+        return self._logger
 
     @property
     def state(self) -> States:
@@ -113,8 +122,11 @@ class Parser:
 
         if status_line and delimiter:
             self.buffer = leftover
-            self.result = {**self.result, **self.status_parser(status_line)}
+            parsed_status = self.status_parser(status_line)
+            self.result = {**self.result, **parsed_status}
             self._state = States.Header
+            self._bind(**parsed_status)
+            self._logger.debug("Finished parsing status line")
         else:
             raise NotEnoughDataError
 
@@ -144,15 +156,21 @@ class Parser:
         if self._at_end_of_headers_with_empty_body(header_line, delimiter, leftover):
             self.buffer = b""
             self._state = States.Body
+            self._bind(headers=self.result["headers"])
+            self._logger.debug("Finished parsing headers")
         elif self._at_end_of_headers(header_line, delimiter):
             self.buffer = leftover
             self._state = States.Body
+            self._bind(headers=self.result["headers"])
+            self._logger.debug("Finished parsing headers")
         elif self._at_next_header(header_line, delimiter):
             self.buffer = leftover
             key, value = self.header_parser(header_line)
             self.result["headers"][key] = value
+            self._logger.debug("Parsed header {}", key)
         elif self._is_status_line_only(header_line, delimiter, leftover):
             self._state = States.Body
+            self._logger.debug("No headers to parse")
         else:
             raise ParseError("Header section not in recognizable format")
 
@@ -226,8 +244,10 @@ class Parser:
         try:
             self.result["body"] += self.body_parser(self.buffer, content_length)
             self._state = States.Done
+            self._logger.debug("Finished parsing body")
         except TooMuchDataError:
             self._state = States.Done
+            self._logger.error("Body parsed was larger than the content length")
             raise
 
 
