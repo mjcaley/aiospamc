@@ -72,12 +72,3 @@ async def test_tell(spamd, hostname, tcp_port, spam):
     )
 
     assert 0 == result.status_code
-
-
-@pytest.mark.skip(reason="spamc implementation doesn't support newline either")
-@pytest.mark.integration
-@pytest.mark.asyncio
-async def test_message_without_newline(spamd, hostname, tcp_port):
-    result = await aiospamc.check(message=b"acb", host=hostname, port=tcp_port)
-
-    assert 0 == result.status_code

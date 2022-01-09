@@ -23,5 +23,5 @@ def test_spamd_bug_7183_warns(mocker, ssl_connection_mock):
         warn_spamd_bug_7183(compressed_request, ssl_connection_mock)
 
 
-def test_spamd_bug_7183_doesnt_warn(mocker, request_with_body, ssl_connection_mock):
+def test_spamd_bug_7183_doesnt_warn(request_with_body, ssl_connection_mock):
     warn_spamd_bug_7183(request_with_body, ssl_connection_mock)

@@ -212,5 +212,5 @@ class Response:
             "headers": {key: value.to_dict() for key, value in self.headers.items()},
             "body": self.body,
         }
-        
+
         return response_dict

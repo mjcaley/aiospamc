@@ -81,7 +81,7 @@ def test_request_to_dict():
     result = Request(
         "CHECK",
         headers={"Content-length": ContentLengthValue(len(test_body))},
-        body=test_body
+        body=test_body,
     ).to_dict()
 
     assert "CHECK" == result["verb"]

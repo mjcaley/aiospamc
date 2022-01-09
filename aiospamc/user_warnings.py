@@ -9,11 +9,20 @@ from .requests import Request
 
 
 def raise_warnings(request: Request, connection: ConnectionManager):
+    """Calls all warning functions.
+
+    :param request: Instance of a request.
+    :param connection: Connection manager instance.
+    """
+
     warn_spamd_bug_7183(request, connection)
 
 
 def warn_spamd_bug_7183(request: Request, connection: ConnectionManager):
     """Warn on spamd bug if using compression with an SSL connection.
+
+    :param request: Instance of a request.
+    :param connection: Connection manager instance.
 
     Bug: https://bz.apache.org/SpamAssassin/show_bug.cgi?id=7183
     """

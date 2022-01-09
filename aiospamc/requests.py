@@ -96,5 +96,5 @@ class Request:
             "headers": {key: value.to_dict() for key, value in self.headers.items()},
             "body": self.body,
         }
-        
+
         return request_dict
