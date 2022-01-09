@@ -49,6 +49,6 @@ jobs:
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
       - name: GitHub release
-        run: gh release create "$TAG" --notes "Release $TAG" dist/*
+        run: gh release create "$TAG" --generate-notes dist/*
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
