@@ -2,7 +2,7 @@
 
 import zlib
 
-from aiospamc.header_values import CompressValue
+from aiospamc.header_values import CompressValue, ContentLengthValue
 from aiospamc.incremental_parser import RequestParser
 from aiospamc.requests import Request
 
@@ -74,3 +74,18 @@ def test_request_from_parser_result(request_with_body):
     r = Request(**p)
 
     assert r is not None
+
+
+def test_request_to_dict():
+    test_body = b"Test body\n"
+    result = Request(
+        "CHECK",
+        headers={"Content-length": ContentLengthValue(len(test_body))},
+        body=test_body
+    ).to_dict()
+
+    assert "CHECK" == result["verb"]
+    assert "1.5" == result["version"]
+    assert b"Test body\n" == result["body"]
+    assert "Content-length" in result["headers"]
+    assert {"length": len(result["body"])} == result["headers"]["Content-length"]

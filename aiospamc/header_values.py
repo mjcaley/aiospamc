@@ -3,7 +3,8 @@
 """Collection of request and response header value objects."""
 
 import getpass
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
+from typing import Any, Dict
 
 from .options import ActionOption, MessageClassOption
 
@@ -13,6 +14,11 @@ class HeaderValue:
 
     def __bytes__(self) -> bytes:
         raise NotImplementedError
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Converts the value to a dictionary."""
+
+        return asdict(self)
 
 
 @dataclass
@@ -74,6 +80,11 @@ class MessageClassValue(HeaderValue):
 
     def __bytes__(self) -> bytes:
         return self.value.name.encode("ascii")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Converts the value to a dictionary."""
+
+        return {"value": self.value.value}
 
 
 @dataclass
