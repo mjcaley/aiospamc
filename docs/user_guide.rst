@@ -13,14 +13,14 @@ Requirements
 Install
 *******
 
-With PIP
+With pip
 ========
 
 .. code-block:: bash
 
     pip install aiospamc
 
-With GIT
+With git
 ========
 
 .. code-block:: bash
@@ -101,8 +101,7 @@ You can configure any of the three optional parameters:
 * connection - time in seconds to wait for a connection to be established
 * response - time in seconds to wait for a response after sending the request
 
-Example
-.. code-block::
+Example::
 
     my_timeout = aiospamc.Timeout(total=60, connection=10, response=10)
 
@@ -114,23 +113,18 @@ Example
 Logging
 =======
 
-`aiospamc` provides two loggers for monitoring.
+Logging is provided using through the `loguru <https://github.com/Delgan/loguru>`_ package.
 
-`aiospamc` is the name of the logger for logs from the client.
+The `aiospamc` package disables logging by default. It can be enabled by calling the
+function:
 
-`aiospamc.connections` is the name of the logger for logs that monitor TCP and
-Unix connections.  This can be used to monitor for issues with connecting, sending,
-and receiving data.
+.. code-block::
 
-Extra data that can be logged with messages include object IDs so you can trace
-log messages through the library.  These are named:
+    loguru.logger.enable("aiospamc")
 
-* client_id
-* connection_id
-* request_id
-* response_id
-
-Refer to Python's logging documentation on how to consume these loggers.
+Modules log under their own logger names (for example, frontend functions will log under
+`aiospamc.frontend`). Extra data like request and response objects are attached to log
+records which can be used to trace through flow.
 
 Interpreting results
 ====================
