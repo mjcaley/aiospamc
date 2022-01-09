@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Using the loguru library <https://github.com/Delgan/loguru> instead
+    of logging from the standard library.
