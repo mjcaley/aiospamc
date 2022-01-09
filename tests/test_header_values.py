@@ -173,3 +173,27 @@ def test_eq_attribute_exception_false(test_input):
     e = Empty()
 
     assert test_input != e
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        (GenericHeaderValue("value"), {"encoding": "utf8", "value": "value"}),
+        (CompressValue(), {"algorithm": "zlib"}),
+        (ContentLengthValue(42), {"length": 42}),
+        (
+            SetOrRemoveValue(ActionOption(local=True, remote=False)),
+            {"action": {"local": True, "remote": False}},
+        ),
+        (MessageClassValue(value=MessageClassOption.ham), {"value": "ham"}),
+        (
+            SpamValue(value=True, score=1.0, threshold=10.0),
+            {"value": True, "score": 1.0, "threshold": 10.0},
+        ),
+        (UserValue("username"), {"name": "username"}),
+    ],
+)
+def test_to_dict(test_input, expected):
+    result = test_input.to_dict()
+
+    assert expected == result

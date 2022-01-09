@@ -5,9 +5,9 @@ import pytest
 import zlib
 
 from aiospamc.exceptions import *
-from aiospamc.header_values import CompressValue
+from aiospamc.header_values import CompressValue, ContentLengthValue
 from aiospamc.incremental_parser import ResponseParser
-from aiospamc.responses import Response
+from aiospamc.responses import Response, Status
 
 
 def test_init_version():
@@ -126,3 +126,18 @@ def test_response_from_parser_result(response_with_body):
     r = Response(**p)
 
     assert r is not None
+
+
+def test_response_to_dict():
+    test_body = b"Test body\n"
+    result = Response(
+        status_code=Status.EX_OK,
+        headers={"Content-length": ContentLengthValue(len(test_body))},
+        body=test_body,
+    ).to_dict()
+
+    assert "1.5" == result["version"]
+    assert int(Status.EX_OK) == result["status_code"]
+    assert test_body == result["body"]
+    assert "Content-length" in result["headers"]
+    assert {"length": len(result["body"])} == result["headers"]["Content-length"]

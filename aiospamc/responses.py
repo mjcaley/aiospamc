@@ -201,3 +201,16 @@ class Response:
                 raise status_exception[self.status_code](self.message)
             else:
                 raise ResponseException(self.status_code, self.message)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Converts the response to a dictionary."""
+
+        response_dict = {
+            "version": self.version,
+            "status_code": int(self.status_code),
+            "message": self.message,
+            "headers": {key: value.to_dict() for key, value in self.headers.items()},
+            "body": self.body,
+        }
+
+        return response_dict
