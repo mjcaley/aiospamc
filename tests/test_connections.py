@@ -72,7 +72,6 @@ def test_connection_manager_returns_logger():
     assert c.logger is not None
 
 
-@pytest.mark.asyncio
 async def test_connection_manager_request_sends_and_receives(mocker):
     test_input = b"request"
     expected = b"response"
@@ -91,7 +90,6 @@ async def test_connection_manager_request_sends_and_receives(mocker):
     writer.drain.assert_awaited()
 
 
-@pytest.mark.asyncio
 async def test_connection_manager_request_sends_without_eof(mocker):
     test_input = b"request"
     expected = b"response"
@@ -111,7 +109,6 @@ async def test_connection_manager_request_sends_without_eof(mocker):
     writer.drain.assert_awaited()
 
 
-@pytest.mark.asyncio
 async def test_connection_manager_timeout_total(mocker):
     async def sleep():
         await asyncio.sleep(5)
@@ -127,7 +124,6 @@ async def test_connection_manager_timeout_total(mocker):
         await c.request(b"data")
 
 
-@pytest.mark.asyncio
 async def test_connection_manager_timeout_connect(mocker):
     async def sleep():
         await asyncio.sleep(5)
@@ -143,7 +139,6 @@ async def test_connection_manager_timeout_connect(mocker):
         await c.request(b"data")
 
 
-@pytest.mark.asyncio
 async def test_connection_manager_timeout_read(mocker):
     async def sleep():
         await asyncio.sleep(5)
@@ -161,7 +156,6 @@ async def test_connection_manager_timeout_read(mocker):
         await c.request(b"data")
 
 
-@pytest.mark.asyncio
 async def test_connection_manager_open_raises_not_implemented():
     c = ConnectionManager("connection")
 
@@ -178,7 +172,6 @@ def test_tcp_connection_manager_init(mocker, hostname, tcp_port):
     assert mock_ssl_context is t.ssl_context
 
 
-@pytest.mark.asyncio
 async def test_tcp_connection_manager_open(mock_open_connection, hostname, tcp_port):
     t = TcpConnectionManager(hostname, tcp_port)
     reader, writer = await t.open()
@@ -187,7 +180,6 @@ async def test_tcp_connection_manager_open(mock_open_connection, hostname, tcp_p
     assert mock_open_connection[1] is writer
 
 
-@pytest.mark.asyncio
 async def test_tcp_connection_manager_open_refused(
     mock_open_connection_refused, hostname, tcp_port
 ):
@@ -197,7 +189,6 @@ async def test_tcp_connection_manager_open_refused(
         await t.open()
 
 
-@pytest.mark.asyncio
 async def test_tcp_connection_manager_open_refused(
     mock_open_connection_error, hostname, tcp_port
 ):
@@ -222,7 +213,6 @@ def test_unix_connection_manager_init(unix_socket):
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Unix sockets not supported on Windows"
 )
-@pytest.mark.asyncio
 async def test_unix_connection_manager_open(mock_open_unix_connection, unix_socket):
     u = UnixConnectionManager(unix_socket)
     reader, writer = await u.open()
@@ -234,7 +224,6 @@ async def test_unix_connection_manager_open(mock_open_unix_connection, unix_sock
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Unix sockets not supported on Windows"
 )
-@pytest.mark.asyncio
 async def test_unix_connection_manager_open_refused(
     mock_open_unix_connection_refused, unix_socket
 ):
@@ -247,7 +236,6 @@ async def test_unix_connection_manager_open_refused(
 @pytest.mark.skipif(
     sys.platform == "win32", reason="Unix sockets not supported on Windows"
 )
-@pytest.mark.asyncio
 async def test_unix_connection_manager_open_refused(
     mock_open_unix_connection_error, unix_socket
 ):
