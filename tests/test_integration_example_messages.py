@@ -8,7 +8,6 @@ import aiospamc
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_spam(spamd, hostname, tcp_port, spam):
     result = await aiospamc.check(spam, host=hostname, port=tcp_port)
 
@@ -17,7 +16,6 @@ async def test_spam(spamd, hostname, tcp_port, spam):
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
 async def test_gtk_encoding(spamd, hostname, tcp_port):
     message = EmailMessage()
     message.add_header('From', 'wevsty <example@example.com>')

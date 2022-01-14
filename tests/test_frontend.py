@@ -50,7 +50,6 @@ from aiospamc.responses import Response
         (symbols, "SYMBOLS"),
     ],
 )
-@pytest.mark.asyncio
 async def test_functions_with_default_parameters(
     func, expected_verb, mock_client_dependency, spam, mocker
 ):
@@ -75,7 +74,6 @@ async def test_functions_with_default_parameters(
         (symbols, "SYMBOLS"),
     ],
 )
-@pytest.mark.asyncio
 async def test_functions_with_optional_parameters(
     func, expected_verb, mock_client_dependency, spam, mocker
 ):
@@ -100,7 +98,6 @@ async def test_functions_with_optional_parameters(
         symbols,
     ],
 )
-@pytest.mark.asyncio
 async def test_functions_returns_response(func, mock_client_dependency, spam, mocker):
     req_spy = mocker.spy(mock_client_dependency, "request")
     result = await func(spam, client=mock_client_dependency)
@@ -108,7 +105,6 @@ async def test_functions_returns_response(func, mock_client_dependency, spam, mo
     assert req_spy.spy_return is result
 
 
-@pytest.mark.asyncio
 async def test_ping_request_with_parameters(mock_client_dependency, mocker):
     req_spy = mocker.spy(mock_client_dependency, "request")
     await ping(client=mock_client_dependency)
@@ -118,7 +114,6 @@ async def test_ping_request_with_parameters(mock_client_dependency, mocker):
     assert "User" not in req.headers
 
 
-@pytest.mark.asyncio
 async def test_ping_returns_response(mock_client_dependency, mocker):
     req_spy = mocker.spy(mock_client_dependency, "request")
     result = await ping(client=mock_client_dependency)
@@ -126,7 +121,6 @@ async def test_ping_returns_response(mock_client_dependency, mocker):
     assert req_spy.spy_return is result
 
 
-@pytest.mark.asyncio
 async def test_tell_request_with_default_parameters(
     mock_client_dependency, spam, mocker
 ):
@@ -141,7 +135,6 @@ async def test_tell_request_with_default_parameters(
     assert spam == req.body
 
 
-@pytest.mark.asyncio
 async def test_tell_request_with_optional_parameters(
     mock_client_dependency, spam, mocker
 ):
@@ -166,7 +159,6 @@ async def test_tell_request_with_optional_parameters(
     assert spam == req.body
 
 
-@pytest.mark.asyncio
 async def test_tell_returns_response(mock_client_dependency, spam, mocker):
     req_spy = mocker.spy(mock_client_dependency, "request")
     result = await tell(spam, MessageClassOption.spam, client=mock_client_dependency)
@@ -177,7 +169,6 @@ async def test_tell_returns_response(mock_client_dependency, spam, mocker):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_bad_response(
     func, mock_client_response, response_invalid, mocker
 ):
@@ -190,7 +181,6 @@ async def test_raises_bad_response(
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_usage(func, mock_client_response, mocker, ex_usage):
     mock_client = mock_client_response(ex_usage)
 
@@ -204,7 +194,6 @@ async def test_raises_usage(func, mock_client_response, mocker, ex_usage):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_data_err(func, mock_client_response, mocker, ex_data_err):
     mock_client = mock_client_response(ex_data_err)
 
@@ -218,7 +207,6 @@ async def test_raises_data_err(func, mock_client_response, mocker, ex_data_err):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_no_input(func, mock_client_response, mocker, ex_no_input):
     mock_client = mock_client_response(ex_no_input)
 
@@ -232,7 +220,6 @@ async def test_raises_no_input(func, mock_client_response, mocker, ex_no_input):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_no_user(func, mock_client_response, mocker, ex_no_user):
     mock_client = mock_client_response(ex_no_user)
 
@@ -246,7 +233,6 @@ async def test_raises_no_user(func, mock_client_response, mocker, ex_no_user):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_no_host(func, mock_client_response, mocker, ex_no_host):
     mock_client = mock_client_response(ex_no_host)
 
@@ -260,7 +246,6 @@ async def test_raises_no_host(func, mock_client_response, mocker, ex_no_host):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_unavailable(func, mock_client_response, mocker, ex_unavailable):
     mock_client = mock_client_response(ex_unavailable)
 
@@ -274,7 +259,6 @@ async def test_raises_unavailable(func, mock_client_response, mocker, ex_unavail
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_software(func, mock_client_response, mocker, ex_software):
     mock_client = mock_client_response(ex_software)
 
@@ -288,7 +272,6 @@ async def test_raises_software(func, mock_client_response, mocker, ex_software):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_os_error(func, mock_client_response, mocker, ex_os_err):
     mock_client = mock_client_response(ex_os_err)
 
@@ -302,7 +285,6 @@ async def test_raises_os_error(func, mock_client_response, mocker, ex_os_err):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_os_file(func, mock_client_response, mocker, ex_os_file):
     mock_client = mock_client_response(ex_os_file)
 
@@ -316,7 +298,6 @@ async def test_raises_os_file(func, mock_client_response, mocker, ex_os_file):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_cant_create(func, mock_client_response, mocker, ex_cant_create):
     mock_client = mock_client_response(ex_cant_create)
 
@@ -330,7 +311,6 @@ async def test_raises_cant_create(func, mock_client_response, mocker, ex_cant_cr
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_io_error(func, mock_client_response, mocker, ex_io_err):
     mock_client = mock_client_response(ex_io_err)
 
@@ -344,7 +324,6 @@ async def test_raises_io_error(func, mock_client_response, mocker, ex_io_err):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_temporary_failure(
     func, mock_client_response, mocker, ex_temp_fail
 ):
@@ -360,7 +339,6 @@ async def test_raises_temporary_failure(
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_protocol(func, mock_client_response, mocker, ex_protocol):
     mock_client = mock_client_response(ex_protocol)
 
@@ -374,7 +352,6 @@ async def test_raises_protocol(func, mock_client_response, mocker, ex_protocol):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_no_permission(func, mock_client_response, mocker, ex_no_perm):
     mock_client = mock_client_response(ex_no_perm)
 
@@ -388,7 +365,6 @@ async def test_raises_no_permission(func, mock_client_response, mocker, ex_no_pe
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_config(func, mock_client_response, mocker, ex_config):
     mock_client = mock_client_response(ex_config)
 
@@ -402,7 +378,6 @@ async def test_raises_config(func, mock_client_response, mocker, ex_config):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_timeout(func, mock_client_response, mocker, ex_timeout):
     mock_client = mock_client_response(ex_timeout)
 
@@ -416,7 +391,6 @@ async def test_raises_timeout(func, mock_client_response, mocker, ex_timeout):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-@pytest.mark.asyncio
 async def test_raises_undefined(func, mock_client_response, mocker, ex_undefined):
     mock_client = mock_client_response(ex_undefined)
 
@@ -427,7 +401,6 @@ async def test_raises_undefined(func, mock_client_response, mocker, ex_undefined
         )
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_usage(mock_client_response, ex_usage):
     mock_client = mock_client_response(ex_usage)
 
@@ -435,7 +408,6 @@ async def test_ping_raises_usage(mock_client_response, ex_usage):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_data_err(mock_client_response, ex_data_err):
     mock_client = mock_client_response(ex_data_err)
 
@@ -443,7 +415,6 @@ async def test_ping_raises_data_err(mock_client_response, ex_data_err):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_no_input(mock_client_response, ex_no_input):
     mock_client = mock_client_response(ex_no_input)
 
@@ -451,7 +422,6 @@ async def test_ping_raises_no_input(mock_client_response, ex_no_input):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_no_user(mock_client_response, ex_no_user):
     mock_client = mock_client_response(ex_no_user)
 
@@ -459,7 +429,6 @@ async def test_ping_raises_no_user(mock_client_response, ex_no_user):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_no_host(mock_client_response, ex_no_host):
     mock_client = mock_client_response(ex_no_host)
 
@@ -467,7 +436,6 @@ async def test_ping_raises_no_host(mock_client_response, ex_no_host):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_unavailable(mock_client_response, ex_unavailable):
     mock_client = mock_client_response(ex_unavailable)
 
@@ -475,7 +443,6 @@ async def test_ping_raises_unavailable(mock_client_response, ex_unavailable):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_software(mock_client_response, ex_software):
     mock_client = mock_client_response(ex_software)
 
@@ -483,7 +450,6 @@ async def test_ping_raises_software(mock_client_response, ex_software):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_os_error(mock_client_response, ex_os_err):
     mock_client = mock_client_response(ex_os_err)
 
@@ -491,7 +457,6 @@ async def test_ping_raises_os_error(mock_client_response, ex_os_err):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_os_file(mock_client_response, ex_os_file):
     mock_client = mock_client_response(ex_os_file)
 
@@ -499,7 +464,6 @@ async def test_ping_raises_os_file(mock_client_response, ex_os_file):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_cant_create(mock_client_response, ex_cant_create):
     mock_client = mock_client_response(ex_cant_create)
 
@@ -507,7 +471,6 @@ async def test_ping_raises_cant_create(mock_client_response, ex_cant_create):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_io_error(mock_client_response, ex_io_err):
     mock_client = mock_client_response(ex_io_err)
 
@@ -515,7 +478,6 @@ async def test_ping_raises_io_error(mock_client_response, ex_io_err):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_temporary_failure(mock_client_response, ex_temp_fail):
     mock_client = mock_client_response(ex_temp_fail)
 
@@ -523,7 +485,6 @@ async def test_ping_raises_temporary_failure(mock_client_response, ex_temp_fail)
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_protocol(mock_client_response, ex_protocol):
     mock_client = mock_client_response(ex_protocol)
 
@@ -531,7 +492,6 @@ async def test_ping_raises_protocol(mock_client_response, ex_protocol):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_no_permission(mock_client_response, ex_no_perm):
     mock_client = mock_client_response(ex_no_perm)
 
@@ -539,7 +499,6 @@ async def test_ping_raises_no_permission(mock_client_response, ex_no_perm):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_config(mock_client_response, ex_config):
     mock_client = mock_client_response(ex_config)
 
@@ -547,7 +506,6 @@ async def test_ping_raises_config(mock_client_response, ex_config):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_timeout(mock_client_response, ex_timeout):
     mock_client = mock_client_response(ex_timeout)
 
@@ -555,7 +513,6 @@ async def test_ping_raises_timeout(mock_client_response, ex_timeout):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_ping_raises_undefined(mock_client_response, ex_undefined):
     mock_client = mock_client_response(ex_undefined)
 
@@ -563,7 +520,6 @@ async def test_ping_raises_undefined(mock_client_response, ex_undefined):
         await ping(client=mock_client)
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_usage(mock_client_response, mocker, ex_usage):
     mock_client = mock_client_response(ex_usage)
 
@@ -575,7 +531,6 @@ async def test_tell_raises_usage(mock_client_response, mocker, ex_usage):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_data_err(mock_client_response, mocker, ex_data_err):
     mock_client = mock_client_response(ex_data_err)
 
@@ -587,7 +542,6 @@ async def test_tell_raises_data_err(mock_client_response, mocker, ex_data_err):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_no_input(mock_client_response, mocker, ex_no_input):
     mock_client = mock_client_response(ex_no_input)
 
@@ -599,7 +553,6 @@ async def test_tell_raises_no_input(mock_client_response, mocker, ex_no_input):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_no_user(mock_client_response, mocker, ex_no_user):
     mock_client = mock_client_response(ex_no_user)
 
@@ -611,7 +564,6 @@ async def test_tell_raises_no_user(mock_client_response, mocker, ex_no_user):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_no_host(mock_client_response, mocker, ex_no_host):
     mock_client = mock_client_response(ex_no_host)
 
@@ -623,7 +575,6 @@ async def test_tell_raises_no_host(mock_client_response, mocker, ex_no_host):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_unavailable(mock_client_response, mocker, ex_unavailable):
     mock_client = mock_client_response(ex_unavailable)
 
@@ -635,7 +586,6 @@ async def test_tell_raises_unavailable(mock_client_response, mocker, ex_unavaila
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_software(mock_client_response, mocker, ex_software):
     mock_client = mock_client_response(ex_software)
 
@@ -647,7 +597,6 @@ async def test_tell_raises_software(mock_client_response, mocker, ex_software):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_os_error(mock_client_response, mocker, ex_os_err):
     mock_client = mock_client_response(ex_os_err)
 
@@ -659,7 +608,6 @@ async def test_tell_raises_os_error(mock_client_response, mocker, ex_os_err):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_os_file(mock_client_response, mocker, ex_os_file):
     mock_client = mock_client_response(ex_os_file)
 
@@ -671,7 +619,6 @@ async def test_tell_raises_os_file(mock_client_response, mocker, ex_os_file):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_cant_create(mock_client_response, mocker, ex_cant_create):
     mock_client = mock_client_response(ex_cant_create)
 
@@ -683,7 +630,6 @@ async def test_tell_raises_cant_create(mock_client_response, mocker, ex_cant_cre
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_io_error(mock_client_response, mocker, ex_io_err):
     mock_client = mock_client_response(ex_io_err)
 
@@ -695,7 +641,6 @@ async def test_tell_raises_io_error(mock_client_response, mocker, ex_io_err):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_temporary_failure(
     mock_client_response, mocker, ex_temp_fail
 ):
@@ -709,7 +654,6 @@ async def test_tell_raises_temporary_failure(
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_protocol(mock_client_response, mocker, ex_protocol):
     mock_client = mock_client_response(ex_protocol)
 
@@ -721,7 +665,6 @@ async def test_tell_raises_protocol(mock_client_response, mocker, ex_protocol):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_no_permission(mock_client_response, mocker, ex_no_perm):
     mock_client = mock_client_response(ex_no_perm)
 
@@ -733,7 +676,6 @@ async def test_tell_raises_no_permission(mock_client_response, mocker, ex_no_per
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_config(mock_client_response, mocker, ex_config):
     mock_client = mock_client_response(ex_config)
 
@@ -745,7 +687,6 @@ async def test_tell_raises_config(mock_client_response, mocker, ex_config):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_timeout(mock_client_response, mocker, ex_timeout):
     mock_client = mock_client_response(ex_timeout)
 
@@ -757,7 +698,6 @@ async def test_tell_raises_timeout(mock_client_response, mocker, ex_timeout):
         )
 
 
-@pytest.mark.asyncio
 async def test_tell_raises_undefined(mock_client_response, mocker, ex_undefined):
     mock_client = mock_client_response(ex_undefined)
 

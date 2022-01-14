@@ -24,7 +24,6 @@ from aiospamc.exceptions import (
 from aiospamc.responses import Response
 
 
-@pytest.mark.asyncio
 async def test_request_sent_to_connection(mock_client_dependency, mocker, hostname):
     mock_req = mocker.MagicMock()
     await mock_client_dependency.request(mock_req, host=hostname)
@@ -35,7 +34,6 @@ async def test_request_sent_to_connection(mock_client_dependency, mocker, hostna
     )
 
 
-@pytest.mark.asyncio
 async def test_request_response_sent_to_parser(
     mock_client_dependency, mocker, hostname
 ):
@@ -49,7 +47,6 @@ async def test_request_response_sent_to_parser(
     assert response == parser.parse.call_args[0][0]
 
 
-@pytest.mark.asyncio
 async def test_request_returns_response(mock_client_dependency, mocker, hostname):
     mock_req = mocker.MagicMock()
     connection = mock_client_dependency.connection_factory()
@@ -61,7 +58,6 @@ async def test_request_returns_response(mock_client_dependency, mocker, hostname
     assert expected == result
 
 
-@pytest.mark.asyncio
 async def test_request_raises_usage(mock_client_response, mocker, ex_usage, hostname):
     mock_client = mock_client_response(ex_usage)
 
@@ -69,7 +65,6 @@ async def test_request_raises_usage(mock_client_response, mocker, ex_usage, host
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_data_err(
     mock_client_response, mocker, ex_data_err, hostname
 ):
@@ -79,7 +74,6 @@ async def test_request_raises_data_err(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_no_input(
     mock_client_response, mocker, ex_no_input, hostname
 ):
@@ -89,7 +83,6 @@ async def test_request_raises_no_input(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_no_user(
     mock_client_response, mocker, ex_no_user, hostname
 ):
@@ -99,7 +92,6 @@ async def test_request_raises_no_user(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_no_host(
     mock_client_response, mocker, ex_no_host, hostname
 ):
@@ -109,7 +101,6 @@ async def test_request_raises_no_host(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_unavailable(
     mock_client_response, mocker, ex_unavailable, hostname
 ):
@@ -119,7 +110,6 @@ async def test_request_raises_unavailable(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_software(
     mock_client_response, mocker, ex_software, hostname
 ):
@@ -129,7 +119,6 @@ async def test_request_raises_software(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_os_error(
     mock_client_response, mocker, ex_os_err, hostname
 ):
@@ -139,7 +128,6 @@ async def test_request_raises_os_error(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_os_file(
     mock_client_response, mocker, ex_os_file, hostname
 ):
@@ -149,7 +137,6 @@ async def test_request_raises_os_file(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_cant_create(
     mock_client_response, mocker, ex_cant_create, hostname
 ):
@@ -159,7 +146,6 @@ async def test_request_raises_cant_create(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_io_error(
     mock_client_response, mocker, ex_io_err, hostname
 ):
@@ -169,7 +155,6 @@ async def test_request_raises_io_error(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_temporary_failure(
     mock_client_response, mocker, ex_temp_fail, hostname
 ):
@@ -179,7 +164,6 @@ async def test_request_raises_temporary_failure(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_protocol(
     mock_client_response, mocker, ex_protocol, hostname
 ):
@@ -189,7 +173,6 @@ async def test_request_raises_protocol(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_no_permission(
     mock_client_response, mocker, ex_no_perm, hostname
 ):
@@ -199,7 +182,6 @@ async def test_request_raises_no_permission(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_config(mock_client_response, mocker, ex_config, hostname):
     mock_client = mock_client_response(ex_config)
 
@@ -207,7 +189,6 @@ async def test_request_raises_config(mock_client_response, mocker, ex_config, ho
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_timeout(
     mock_client_response, mocker, ex_timeout, hostname
 ):
@@ -217,7 +198,6 @@ async def test_request_raises_timeout(
         await mock_client.request(mocker.MagicMock(), host=hostname)
 
 
-@pytest.mark.asyncio
 async def test_request_raises_undefined(
     mock_client_response, mocker, ex_undefined, hostname
 ):
