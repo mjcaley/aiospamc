@@ -45,7 +45,9 @@ jobs:
           name: package
           path: dist/
       - name: Publish to PyPI
-        run: poetry publish -n
+        run: |
+          poetry config pypi-token.pypi $POETRY_PYPI_TOKEN_PYPI
+          poetry publish -n
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
       - name: GitHub release
