@@ -4,13 +4,17 @@
 
 from __future__ import annotations
 import asyncio
+from contextlib import asynccontextmanager
+from functools import wraps
 from pathlib import Path
 import ssl
+from ssl import SSLContext
 from typing import Any, Optional, Tuple
 
 import certifi
 import loguru
 from loguru import logger
+import sniffio
 
 from .exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
 
@@ -272,3 +276,134 @@ def new_connection_manager(
         return TcpConnectionManager(host, port, context, timeout)
     else:
         raise ValueError('Either "host" and "port" or "socket_path" must be specified.')
+
+
+async def _asyncio_send(connect_future: asyncio.Coroutine, data: bytes, context_logger: Any) -> bytes:
+    context_logger(f"Connecting to host")
+    reader, writer = await connect_future
+    context_logger.success(f"Successfully connected to host")
+
+    writer.write(data)
+    if writer.can_write_eof():
+        writer.write_eof()
+    await writer.drain()
+
+    received = await reader.read()
+
+    writer.close()
+    await writer.wait_closed()
+
+    return received
+
+
+async def asyncio_send_tcp(host: str, port: int, data: bytes, ssl_context: SSLContext = None, timeout: float = None) -> bytes:
+    import asyncio
+
+    context_logger = logger.bind(host=host, port=port, data=data)
+    connect_future = asyncio.open_connection(host, port, ssl=ssl_context)
+    received = await asyncio.wait_for(_asyncio_send(connect_future, data, context_logger))
+
+    return received
+
+
+async def asyncio_send_socket(socket_path: str, data: bytes, timeout: float = None) -> bytes:
+    import asyncio
+
+    context_logger = logger.bind(socket_path=socket_path, data=data)
+    connect_future = asyncio.open_unix_connection(socket_path)
+    received = await asyncio.wait_for(_asyncio_send(connect_future, data, context_logger), timeout)
+
+    return received
+
+
+async def _trio_send(stream, data: bytes):
+    await stream.send_all(data)
+
+
+async def _trio_receive(stream) -> bytes:
+    received = b""
+    async for data in stream:
+        received += data
+
+    return received
+
+
+async def trio_send_tcp(host: str, port: int, data: bytes, ssl_context: SSLContext = None, timeout: float = None) -> bytes:
+    import trio
+
+    if ssl_context:
+        connection = await trio.open_tcp_stream(host, port) # raises OSError
+    else:
+        connection = await trio.open_ssl_over_tcp_stream(host, port, ssl_context=ssl_context)
+    await connection.send_all(data)
+    received = await _trio_receive(connection)
+
+
+
+async def trio_send_socket(socket_path: str, data: bytes, timeout: float) -> bytes:
+    import trio
+
+    await trio.open_unix_socket(socket_path)
+
+
+async def _curio_send(connect_future, data: bytes, context_logger) -> bytes:
+    context_logger.info("Connecting to host")
+    socket = await connect_future
+    context_logger.success("Successfully connected to host")
+    # TODO: More logging
+    async with socket:
+        await socket.sendall(data)
+        chunks = []
+        while True:
+            chunk = await socket.recv() # TODO: does it take a parameter?
+            if not chunk:
+                break
+            chunks.append(chunk)
+
+    return b"".join(chunks)
+
+
+async def curio_send_tcp(host: str, port: int, data: bytes, ssl_context: SSLContext = None, timeout: float = None) -> bytes:
+    import curio
+
+    context_logger = logger.bind(host=host, port=port, data=data)
+    connect_future = curio.open_connection(host, port, ssl=ssl_context)
+    async with curio.timeout_after(timeout):
+        received = await _curio_send(connect_future, data, context_logger)
+
+    return received
+
+
+async def curio_send_socket(socket_path: str, data: bytes, timeout: float) -> bytes:
+    import curio
+
+    context_logger = logger.bind(socket_path=socket_path, data=data)
+    connect_future = curio.open_unix_connection(socket_path)
+    async with curio.timeout_after(timeout):
+        received = await _curio_send(connect_future, data, context_logger)
+
+    return received
+
+
+async def send_tcp(host: str, port: int, data: bytes, ssl_context: SSLContext = None, timeout: float = None) -> bytes:
+    library = sniffio.current_async_library()
+    if library == "asyncio":
+        return await asyncio_send_tcp(host, port, data, ssl_context, timeout)
+    elif library == "trio":
+        return await trio_send_tcp(host, port, data, ssl_context, timeout)
+    elif library == "curio":
+        return await curio_send_tcp(host, port, data, ssl_context, timeout)
+    else:
+        raise ValueError("Asynchronous library not supported")
+
+
+async def send_socket(socket_path: str, data: bytes, timeout: float = None) -> bytes:
+    library = sniffio.current_async_library()
+    if library == "asyncio":
+        return await asyncio_send_socket(socket_path, data, timeout)
+    elif library == "trio":
+        return await trio_send_socket(socket_path, data, timeout)
+    elif library == "curio":
+        return await curio_send_socket(socket_path, data, timeout)
+    else:
+        raise ValueError("Asynchronous library not supported")
