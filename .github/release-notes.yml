@@ -5,6 +5,9 @@ changelog:
     authors:
       - dependabot
   categories:
+    - title: Security
+      labels:
+        - security
     - title: New Features
       labels:
         - enhancement
