@@ -62,7 +62,7 @@ exclude = ["changes", "docs", "example", "test", "util"]
 [tool.poetry.dependencies]
 python = "^3.7"
 certifi = "*"
-loguru = "^0.5.3"
+loguru = ">=0.5.3,<0.7.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
