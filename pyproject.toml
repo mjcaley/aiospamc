@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aiospamc"
-version = "0.8.0"
+version = "0.8.1"
 description = "An asyncio-based library to communicate with SpamAssassin's SPAMD service."
 authors = ["Michael Caley <mjcaley@darkarctic.com>"]
 license = "MIT"
@@ -62,7 +62,7 @@ exclude = ["changes", "docs", "example", "test", "util"]
 [tool.poetry.dependencies]
 python = "^3.7"
 certifi = "*"
-loguru = ">=0.5.3,<0.7.0"
+loguru = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
