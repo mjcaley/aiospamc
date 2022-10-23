@@ -339,8 +339,8 @@ def test_parse_spam_value_success(test_input, value, score, threshold):
     result = parse_spam_value(test_input)
 
     assert result.value == value
-    assert pytest.approx(result.score, score)
-    assert pytest.approx(result.threshold, threshold)
+    assert result.score == pytest.approx(score)
+    assert result.threshold == pytest.approx(threshold)
 
 
 @pytest.mark.parametrize(
