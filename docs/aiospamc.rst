@@ -21,7 +21,7 @@ aiospamc.exceptions module
    :show-inheritance:
 
 aiospamc.frontend module
-----------------------
+------------------------
 
 .. automodule:: aiospamc.frontend
    :members:
@@ -40,14 +40,6 @@ aiospamc.incremental\_parser module
 -----------------------------------
 
 .. automodule:: aiospamc.incremental_parser
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-aiospamc.options module
------------------------
-
-.. automodule:: aiospamc.options
    :members:
    :undoc-members:
    :show-inheritance:

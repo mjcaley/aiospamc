@@ -2,13 +2,14 @@
 
 import pytest
 
-from aiospamc.options import ActionOption, MessageClassOption
 from aiospamc.header_values import (
+    ActionOption,
     BytesHeaderValue,
     HeaderValue,
     GenericHeaderValue,
     CompressValue,
     ContentLengthValue,
+    MessageClassOption,
     MessageClassValue,
     SetOrRemoveValue,
     SpamValue,

@@ -14,8 +14,7 @@ from loguru import logger
 
 from .client import Client
 from .connections import Timeout
-from .header_values import MessageClassValue
-from .options import ActionOption, MessageClassOption
+from .header_values import ActionOption, MessageClassOption, MessageClassValue
 from .incremental_parser import parse_set_remove_value
 from .responses import Response
 from .requests import Request
