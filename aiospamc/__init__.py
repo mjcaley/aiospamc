@@ -23,7 +23,7 @@ from .header_values import ActionOption, MessageClassOption
 __author__ = "Michael Caley"
 __copyright__ = "Copyright 2016-2022 Michael Caley"
 __license__ = "MIT"
-__version__ = "0.8.1"
+__version__ = "0.9.0"
 __email__ = "mjcaley@darkarctic.com"
 
 logger.disable(__package__)
