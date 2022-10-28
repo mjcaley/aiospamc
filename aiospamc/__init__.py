@@ -17,7 +17,7 @@ from .frontend import (
     symbols,
     tell,
 )
-from .options import ActionOption, MessageClassOption
+from .header_values import ActionOption, MessageClassOption
 
 
 __author__ = "Michael Caley"

@@ -12,17 +12,18 @@ from loguru import logger
 
 from .exceptions import ParseError, NotEnoughDataError, TooMuchDataError
 from .header_values import (
+    ActionOption,
     BytesHeaderValue,
     CompressValue,
     ContentLengthValue,
     GenericHeaderValue,
     HeaderValue,
+    MessageClassOption,
     MessageClassValue,
     SetOrRemoveValue,
     SpamValue,
     UserValue,
 )
-from .options import ActionOption, MessageClassOption
 
 
 class States(Enum):

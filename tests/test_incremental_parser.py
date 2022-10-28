@@ -3,10 +3,12 @@
 import pytest
 
 from aiospamc.header_values import (
+    ActionOption,
     BytesHeaderValue,
     CompressValue,
     ContentLengthValue,
     GenericHeaderValue,
+    MessageClassOption,
     MessageClassValue,
     SetOrRemoveValue,
     SpamValue,
@@ -28,7 +30,6 @@ from aiospamc.incremental_parser import (
     RequestParser,
 )
 from aiospamc.exceptions import ParseError, NotEnoughDataError, TooMuchDataError
-from aiospamc.options import MessageClassOption, ActionOption
 
 
 @pytest.fixture

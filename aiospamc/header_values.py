@@ -2,11 +2,10 @@
 
 """Collection of request and response header value objects."""
 
+from enum import Enum
 import getpass
 from dataclasses import dataclass, asdict
-from typing import Any, Dict
-
-from .options import ActionOption, MessageClassOption
+from typing import Any, Dict, Optional
 
 
 class HeaderValue:
@@ -70,6 +69,13 @@ class ContentLengthValue(HeaderValue):
         return str(self.length).encode("ascii")
 
 
+class MessageClassOption(Enum):
+    """Option to be used for the MessageClass header."""
+
+    spam = "spam"
+    ham = "ham"
+
+
 @dataclass
 class MessageClassValue(HeaderValue):
     """MessageClass header.  Used to specify whether a message is 'spam' or
@@ -88,10 +94,22 @@ class MessageClassValue(HeaderValue):
 
 
 @dataclass
+class ActionOption:
+    """Option to be used in the DidRemove, DidSet, Set, and Remove headers.
+
+    :param local: An action will be performed on the SPAMD service's local database.
+    :param remote: An action will be performed on the SPAMD service's remote database.
+    """
+
+    local: Optional[bool]
+    remote: Optional[bool]
+
+
+@dataclass
 class SetOrRemoveValue(HeaderValue):
     """Base class for headers that implement "local" and "remote" rules."""
 
-    action: ActionOption = ActionOption(local=False, remote=False)
+    action: ActionOption
 
     def __bytes__(self) -> bytes:
         if not self.action.local and not self.action.remote:

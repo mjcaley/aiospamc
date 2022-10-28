@@ -35,7 +35,7 @@ from aiospamc.exceptions import (
 )
 from aiospamc.client import Client
 from aiospamc.incremental_parser import ResponseParser
-from aiospamc.options import ActionOption, MessageClassOption
+from aiospamc.header_values import ActionOption, MessageClassOption
 from aiospamc.responses import Response
 
 
