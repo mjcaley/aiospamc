@@ -1,4 +1,4 @@
 ---
 features:
   - |
-    Added warning for using SSL and compression hangs the connection.
+    Added warning for using SSL and compression hangs the connection. :github:issue:`305`

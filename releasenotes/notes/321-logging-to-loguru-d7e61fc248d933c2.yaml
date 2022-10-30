@@ -2,4 +2,4 @@
 features:
   - |
     Using the loguru library <https://github.com/Delgan/loguru> instead
-    of logging from the standard library.
+    of logging from the standard library. :github:issue:`321`
