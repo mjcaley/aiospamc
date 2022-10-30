@@ -24,9 +24,20 @@ classifiers = [
 ]
 
 keywords = ["spam", "spamc", "spamassassin"]
-[tool.poetry.group.dev.dependencies]
-sphinx-toolbox = "^3.2.0"
 
+[tool.poetry.dependencies]
+python = "^3.7"
+certifi = "*"
+loguru = "^0.6.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.1"
+pytest-cov = "^4.0"
+pytest-asyncio = "^0.20"
+pytest-mock = "^3.10"
+mock = "^4.0"
+coverage = {extras = ["toml"], version = "^6.5"}
+trustme = "^0.9.0"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -50,6 +61,16 @@ exclude_lines = [
 ]
 fail_under = 95.0
 
+[tool.poetry.group.docs.dependencies]
+sphinx = "^5.3"
+sphinx-toolbox = "^3.2.0"
+reno = "^3.5.0"
+
+[tool.poetry.group.quality.dependencies]
+mypy = "^0.982"
+black = "^22"
+interrogate = "^1.5"
+
 [tool.black]
 target-version = ["py37"]
 exclude = """
@@ -62,26 +83,6 @@ exclude = """
 ignore-magic = true
 fail-under = 95
 exclude = ["changes", "docs", "example", "test", "util"]
-
-[tool.poetry.dependencies]
-python = "^3.7"
-certifi = "*"
-loguru = "^0.6.0"
-
-[tool.poetry.dev-dependencies]
-pytest = "^7.1"
-pytest-cov = "^4.0"
-pytest-asyncio = "^0.20"
-sphinx = "^5.3"
-pytest-mock = "^3.10"
-mock = "^4.0"
-coverage = {extras = ["toml"], version = "^6.5"}
-mypy = "^0.982"
-black = "^22"
-interrogate = "^1.5"
-trustme = "^0.9.0"
-reno = "^3.5.0"
-types-certifi = "^2021.10.8"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
