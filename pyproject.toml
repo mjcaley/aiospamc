@@ -24,6 +24,9 @@ classifiers = [
 ]
 
 keywords = ["spam", "spamc", "spamassassin"]
+[tool.poetry.group.dev.dependencies]
+sphinx-toolbox = "^3.2.0"
+
 
 [tool.pytest.ini_options]
 minversion = "6.0"

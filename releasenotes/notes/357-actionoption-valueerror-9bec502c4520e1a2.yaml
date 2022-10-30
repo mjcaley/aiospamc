@@ -1,4 +1,4 @@
 ---
 fixes:
   - |
-    Resolved `ValueError` exception when importing ActionOption. #357
+    Resolved `ValueError` exception when importing ActionOption. :github:issue:`357`

@@ -1,4 +1,4 @@
 ---
 features:
   - |
-    Add support for Python 3.11. #355
+    Add support for Python 3.11. :github:issue:`355`

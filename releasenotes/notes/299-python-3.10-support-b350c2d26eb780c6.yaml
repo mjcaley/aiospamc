@@ -1,3 +1,3 @@
 ---
 features:
-  - Added support and tests for Python 3.10.
+  - Added support and tests for Python 3.10. :github:issue:`299`
