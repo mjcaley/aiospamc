@@ -1,7 +1,7 @@
 name: Code quality
 on:
   push:
-    branches: [ development, master ]
+    branches: [ development, main ]
   pull_request:
     branches: [ development ]
 jobs:
