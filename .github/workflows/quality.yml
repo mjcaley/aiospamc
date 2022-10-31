@@ -27,8 +27,6 @@ jobs:
           --install-types
           --junit-xml output/mypy-tests.xml
           --non-interactive
-      - name: Run black
-        run: poetry run black --check --diff --color .
       - name: Run interrogate
         run: poetry run interrogate
       - name: Publish test results

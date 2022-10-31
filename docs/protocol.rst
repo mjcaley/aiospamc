@@ -120,7 +120,7 @@ Will return the modified headers of the message in the body.  The
     SPAMD/1.1 0 EX_OK
     Spam: True ; 1000.0 / 5.0
     Content-length: 654
-    
+
     Received: from localhost by debian
         with SpamAssassin (version 3.4.0);
         Tue, 10 Jan 2017 11:09:26 -0500
@@ -135,7 +135,7 @@ Will return the modified headers of the message in the body.  The
     X-Spam-Status: Yes, score=1000.0 required=5.0 tests=GTUBE,NO_RECEIVED,
         NO_RELAYS autolearn=no autolearn_force=no version=3.4.0
     MIME-Version: 1.0Content-Type: multipart/mixed; boundary="----------=_58750736.8D9F70BC"
-    
+
 
 .. _ping_request:
 
@@ -200,7 +200,7 @@ Example::
     SPAMD/1.1 0 EX_OK
     Spam: True ; 1000.0 / 5.0
     Content-length: 2948
-    
+
     Received: from localhost by debian
         with SpamAssassin (version 3.4.0);
         Tue, 10 Jan 2017 10:57:02 -0500
@@ -216,42 +216,42 @@ Example::
         NO_RELAYS autolearn=no autolearn_force=no version=3.4.0
     MIME-Version: 1.0
     Content-Type: multipart/mixed; boundary="----------=_5875044E.D4EFFFD7"
-    
+
     This is a multi-part message in MIME format.
-    
+
     ------------=_5875044E.D4EFFFD7
     Content-Type: text/plain; charset=iso-8859-1
     Content-Disposition: inline
     Content-Transfer-Encoding: 8bit
-    
+
     Spam detection software, running on the system "debian",
     has identified this incoming email as possible spam.  The original
     message has been attached to this so you can view it or label
     similar future email.  If you have any questions, see
     @@CONTACT_ADDRESS@@ for details.
-    
+
     Content preview:  This is the GTUBE, the Generic Test for Unsolicited Bulk Email
     If your spam filter supports it, the GTUBE provides a test by which you can
     verify that the filter is installed correctly and is detecting incoming spam.
     You can send yourself a test mail containing the following string of characters
-    (in upper case and with no white spaces and line breaks): [...] 
-    
+    (in upper case and with no white spaces and line breaks): [...]
+
     Content analysis details:   (1000.0 points, 5.0 required)
-    
+
     pts rule name              description
     ---- ---------------------- --------------------------------------------------
     1000 GTUBE                  BODY: Generic Test for Unsolicited Bulk Email
     -0.0 NO_RELAYS              Informational: message was not relayed via SMTP
     -0.0 NO_RECEIVED            Informational: message has no Received headers
-    
-    
-    
+
+
+
     ------------=_5875044E.D4EFFFD7
     Content-Type: message/rfc822; x-spam-type=original
     Content-Description: original message before SpamAssassin
     Content-Disposition: inline
     Content-Transfer-Encoding: 8bit
-    
+
     Subject: Test spam mail (GTUBE)
     Message-ID: <GTUBE1.1010101@example.net>
     Date: Wed, 23 Jul 2003 23:30:00 +0200
@@ -261,27 +261,27 @@ Example::
     MIME-Version: 1.0
     Content-Type: text/plain; charset=us-ascii
     Content-Transfer-Encoding: 7bit
-    
+
     This is the GTUBE, the
         Generic
         Test for
         Unsolicited
         Bulk
         Email
-    
+
     If your spam filter supports it, the GTUBE provides a test by which you
     can verify that the filter is installed correctly and is detecting incoming
     spam. You can send yourself a test mail containing the following string of
     characters (in upper case and with no white spaces and line breaks):
-    
+
     XJS*C4JDBQADN1.NSBN3*2IDNEN*GTUBE-STANDARD-ANTI-UBE-TEST-EMAIL*C.34X
-    
+
     You should send this test mail from an account outside of your network.
-    
-    
+
+
     ------------=_5875044E.D4EFFFD7--
-    
-    
+
+
 
 .. _report_request:
 
@@ -320,7 +320,7 @@ Example::
     SPAMD/1.1 0 EX_OK
     Content-length: 1071
     Spam: True ; 1000.0 / 5.0
-    
+
     Spam detection software, running on the system "debian",
     has identified this incoming email as possible spam.  The original
     message has been attached to this so you can view it or label
@@ -331,7 +331,7 @@ Example::
        If your spam filter supports it, the GTUBE provides a test by which you can
        verify that the filter is installed correctly and is detecting incoming spam.
        You can send yourself a test mail containing the following string of characters
-       (in upper case and with no white spaces and line breaks): [...] 
+       (in upper case and with no white spaces and line breaks): [...]
 
     Content analysis details:   (1000.0 points, 5.0 required)
 
@@ -407,7 +407,7 @@ Example::
     SPAMD/1.1 0 EX_OK
     Content-length: 27
     Spam: True ; 1000.0 / 5.0
-    
+
     GTUBE,NO_RECEIVED,NO_RELAYS
 
 .. _tell_request:
@@ -459,14 +459,14 @@ Response from a request that sent a :ref:`remove_header`::
     SPAMD/1.1 0 EX_OK
     DidRemove: local
     Content-length: 2
-    
+
 
 Response from a request that sent a :ref:`set_header`::
 
     SPAMD/1.1 0 EX_OK
     DidSet: local
     Content-length: 2
-    
+
 
 .. _headers:
 

@@ -3,13 +3,8 @@
 """Module implementing client objects that all requests go through."""
 
 from dataclasses import dataclass
-from typing import (
-    Any,
-    Callable,
-    Optional,
-    Type,
-)
 from ssl import SSLContext
+from typing import Any, Callable, Optional, Type
 
 from loguru import logger
 
@@ -25,7 +20,6 @@ from .incremental_parser import ParseError, ResponseParser
 from .requests import Request
 from .responses import Response
 from .user_warnings import raise_warnings
-
 
 ConnectionFactory = Callable[
     [

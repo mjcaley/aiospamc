@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import datetime
+import sys
 from pathlib import Path
 from shutil import which
 from socket import gethostbyname
-from subprocess import DEVNULL, TimeoutExpired, Popen
-import sys
+from subprocess import DEVNULL, Popen, TimeoutExpired
 
 import pytest
 import trustme

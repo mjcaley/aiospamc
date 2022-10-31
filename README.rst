@@ -45,7 +45,7 @@ Example
 -------
 
 .. code:: python
-    
+
     import asyncio
     import aiospamc
 

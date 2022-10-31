@@ -1,8 +1,8 @@
 import asyncio
+
 import aiospamc
 
-
-GTUBE = '''Subject: Test spam mail (GTUBE)
+GTUBE = """Subject: Test spam mail (GTUBE)
 Message-ID: <GTUBE1.1010101@example.net>
 Date: Wed, 23 Jul 2003 23:30:00 +0200
 From: Sender <sender@example.net>
@@ -27,14 +27,16 @@ characters (in upper case and with no white spaces and line breaks):
 XJS*C4JDBQADN1.NSBN3*2IDNEN*GTUBE-STANDARD-ANTI-UBE-TEST-EMAIL*C.34X
 
 You should send this test mail from an account outside of your network.
-'''.encode('ascii')
+""".encode(
+    "ascii"
+)
 
 loop = asyncio.get_event_loop()
-responses = loop.run_until_complete(asyncio.gather(
-
-    aiospamc.ping(host='localhost'),
-    aiospamc.check(GTUBE, host='localhost'),
-    aiospamc.headers(GTUBE, host='localhost')
-
-))
+responses = loop.run_until_complete(
+    asyncio.gather(
+        aiospamc.ping(host="localhost"),
+        aiospamc.check(GTUBE, host="localhost"),
+        aiospamc.headers(GTUBE, host="localhost"),
+    )
+)
 print(responses)

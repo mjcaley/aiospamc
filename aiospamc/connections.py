@@ -3,9 +3,10 @@
 """ConnectionManager classes for TCP and Unix sockets."""
 
 from __future__ import annotations
+
 import asyncio
-from pathlib import Path
 import ssl
+from pathlib import Path
 from typing import Any, Optional, Tuple
 
 import certifi

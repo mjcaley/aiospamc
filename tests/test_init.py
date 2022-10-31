@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import aiospamc
-
 import pytest
+
+import aiospamc
 
 
 @pytest.mark.parametrize(

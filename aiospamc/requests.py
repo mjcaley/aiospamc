@@ -2,8 +2,8 @@
 
 """Contains all requests that can be made to the SPAMD service."""
 
-from typing import Any, Dict, SupportsBytes, Union
 import zlib
+from typing import Any, Dict, SupportsBytes, Union
 
 from .header_values import ContentLengthValue, HeaderValue
 

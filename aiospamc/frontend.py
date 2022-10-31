@@ -2,13 +2,7 @@
 
 """Frontend functions for the package."""
 
-from typing import (
-    Any,
-    Dict,
-    Optional,
-    SupportsBytes,
-    Union,
-)
+from typing import Any, Dict, Optional, SupportsBytes, Union
 
 from loguru import logger
 
@@ -16,8 +10,8 @@ from .client import Client
 from .connections import Timeout
 from .header_values import ActionOption, MessageClassOption, MessageClassValue
 from .incremental_parser import parse_set_remove_value
-from .responses import Response
 from .requests import Request
+from .responses import Response
 
 
 async def check(

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import pytest
-
 import zlib
+
+import pytest
 
 from aiospamc.exceptions import *
 from aiospamc.header_values import CompressValue, ContentLengthValue
