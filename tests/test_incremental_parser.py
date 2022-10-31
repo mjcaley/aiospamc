@@ -2,6 +2,7 @@
 
 import pytest
 
+from aiospamc.exceptions import NotEnoughDataError, ParseError, TooMuchDataError
 from aiospamc.header_values import (
     ActionOption,
     BytesHeaderValue,
@@ -16,20 +17,19 @@ from aiospamc.header_values import (
 )
 from aiospamc.incremental_parser import (
     Parser,
+    RequestParser,
+    ResponseParser,
     States,
+    parse_body,
+    parse_content_length_value,
+    parse_header,
     parse_header_value,
+    parse_message_class_value,
     parse_request_status,
     parse_response_status,
-    parse_content_length_value,
-    parse_message_class_value,
     parse_set_remove_value,
     parse_spam_value,
-    parse_header,
-    parse_body,
-    ResponseParser,
-    RequestParser,
 )
-from aiospamc.exceptions import ParseError, NotEnoughDataError, TooMuchDataError
 
 
 @pytest.fixture

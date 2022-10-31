@@ -3,39 +3,39 @@
 import pytest
 
 import aiospamc
+from aiospamc.client import Client
+from aiospamc.exceptions import (
+    BadResponse,
+    CantCreateException,
+    ConfigException,
+    DataErrorException,
+    InternalSoftwareException,
+    IOErrorException,
+    NoHostException,
+    NoInputException,
+    NoPermissionException,
+    NoUserException,
+    OSErrorException,
+    OSFileException,
+    ProtocolException,
+    ResponseException,
+    ServerTimeoutException,
+    TemporaryFailureException,
+    UnavailableException,
+    UsageException,
+)
 from aiospamc.frontend import (
     check,
     headers,
-    process,
     ping,
+    process,
     report,
     report_if_spam,
     symbols,
     tell,
 )
-from aiospamc.exceptions import (
-    BadResponse,
-    UsageException,
-    DataErrorException,
-    NoInputException,
-    NoUserException,
-    NoHostException,
-    UnavailableException,
-    InternalSoftwareException,
-    OSErrorException,
-    OSFileException,
-    CantCreateException,
-    IOErrorException,
-    TemporaryFailureException,
-    ProtocolException,
-    NoPermissionException,
-    ConfigException,
-    ServerTimeoutException,
-    ResponseException,
-)
-from aiospamc.client import Client
-from aiospamc.incremental_parser import ResponseParser
 from aiospamc.header_values import ActionOption, MessageClassOption
+from aiospamc.incremental_parser import ResponseParser
 from aiospamc.responses import Response
 
 

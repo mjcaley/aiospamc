@@ -3,19 +3,18 @@ import ssl
 import sys
 from pathlib import Path
 
+import certifi
 import pytest
 
 from aiospamc.connections import (
     ConnectionManager,
     TcpConnectionManager,
-    UnixConnectionManager,
     Timeout,
+    UnixConnectionManager,
     new_connection_manager,
     new_ssl_context,
 )
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
-
-import certifi
 
 
 @pytest.fixture

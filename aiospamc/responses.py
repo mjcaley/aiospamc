@@ -2,9 +2,9 @@
 
 """Contains classes used for responses."""
 
+import zlib
 from enum import IntEnum
 from typing import Any, Dict, SupportsBytes, Union
-import zlib
 
 from .exceptions import *
 from .header_values import ContentLengthValue, HeaderValue

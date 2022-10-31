@@ -2,9 +2,9 @@
 
 """Collection of request and response header value objects."""
 
-from enum import Enum
 import getpass
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from enum import Enum
 from typing import Any, Dict, Optional
 
 

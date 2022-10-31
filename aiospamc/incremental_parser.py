@@ -3,14 +3,15 @@
 """Module for the parsing functions and objects."""
 
 from __future__ import annotations
-from enum import Enum, auto
+
 import re
-from typing import Any, Callable, Mapping, Tuple, Union, Dict
+from enum import Enum, auto
+from typing import Any, Callable, Dict, Mapping, Tuple, Union
 
 import loguru
 from loguru import logger
 
-from .exceptions import ParseError, NotEnoughDataError, TooMuchDataError
+from .exceptions import NotEnoughDataError, ParseError, TooMuchDataError
 from .header_values import (
     ActionOption,
     BytesHeaderValue,

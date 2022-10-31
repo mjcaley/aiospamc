@@ -5,10 +5,10 @@ import pytest
 from aiospamc.header_values import (
     ActionOption,
     BytesHeaderValue,
-    HeaderValue,
-    GenericHeaderValue,
     CompressValue,
     ContentLengthValue,
+    GenericHeaderValue,
+    HeaderValue,
     MessageClassOption,
     MessageClassValue,
     SetOrRemoveValue,

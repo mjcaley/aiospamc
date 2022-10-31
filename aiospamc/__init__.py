@@ -19,7 +19,6 @@ from .frontend import (
 )
 from .header_values import ActionOption, MessageClassOption
 
-
 __author__ = "Michael Caley"
 __copyright__ = "Copyright 2016-2022 Michael Caley"
 __license__ = "MIT"
