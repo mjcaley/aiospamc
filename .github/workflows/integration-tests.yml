@@ -8,6 +8,7 @@ on:
     - cron: '0 0 * * 5'
 jobs:
   integration-tests:
+    runs-on: ubuntu-latest
     container: ${{ matrix.image }}
     name: "Run Integration Tests"
     strategy:
