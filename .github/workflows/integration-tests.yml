@@ -23,7 +23,7 @@ jobs:
       - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
-          pip install poetry
+          curl -sSL https://install.python-poetry.org | python3 -
       - name: Install dependencies
         run: poetry install
       - name: Install SpamAssassin
