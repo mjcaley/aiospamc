@@ -1,7 +1,7 @@
 name: Integration tests
 on:
   push:
-    branches: [ development, main ]
+    branches: [ development, main, integration-test-container ]
   pull_request:
     branches: [ development ]
   schedule:
