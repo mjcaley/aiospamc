@@ -21,14 +21,12 @@ jobs:
         with:
           python-version: '3.x'
       - run: |
-          sudo apt-get update
-          sudo apt-get install curl -y
+          apt-get update
+          apt-get install curl spamassassin -y
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 -
       - name: Install dependencies
         run: poetry install
-      - name: Install SpamAssassin
-        run: sudo apt-get update && sudo apt-get -y install spamassassin
       - name: Run integration tests
         run: |
           poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
