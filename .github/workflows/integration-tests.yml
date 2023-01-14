@@ -23,7 +23,7 @@ jobs:
       - run: |
           apt-get update
           apt-get upgrade -y
-          apt-get install curl spamassassin -y
+          apt-get install python3 curl spamassassin -y
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 -
       - name: Install dependencies
