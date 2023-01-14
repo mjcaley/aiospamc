@@ -22,7 +22,7 @@ jobs:
           python-version: '3.x'
       - run: |
           apt-get update
-          apt-get install python3 python3-setuptools curl spamassassin -y
+          apt-get install python3 python3-setuptools python3-pip curl spamassassin -y
       - name: Install Poetry
         run: python3 -m pip install poetry
       - name: Install dependencies
