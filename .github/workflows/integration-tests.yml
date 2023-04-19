@@ -13,7 +13,7 @@ jobs:
     name: "Run Integration Tests"
     strategy:
       matrix:
-        image: ["debian:stable", "debian:unstable"]
+        spamassassin: ["3.4.6", "4.0.0"]
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
@@ -27,6 +27,17 @@ jobs:
         run: python3 -m pip install poetry
       - name: Install dependencies
         run: poetry install
+      - name: Download SpamAssasin
+        run: |
+          curl -s https://dlcdn.apache.org//spamassassin/source/Mail-SpamAssassin-${{ matrix.spamassassin }}.tar.bz2 -o spamassassin.tar.bz2
+          tar -xvjf spamassassin.tar.bz2
+      - name: Build & Install SpamAssassin
+        run: |
+          ENABLE_SSL=yes perl Makefile.PL
+          make
+          make install
+        working-directory: ./Mail-SpamAssassin-${{ matrix.spamassassin }}
+      - run: sa-update
       - name: Run integration tests
         run: |
           poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
