@@ -16,10 +16,10 @@ jobs:
         spamassassin: ["3.4.6", "4.0.0"]
     steps:
       - uses: actions/checkout@v2
-      - name: Upgrade libc6
+      - name: Install software
         run: |
           apt update
-          apt install -y libc6 python3 python3-venv python3-pip
+          apt install -y libc6 python3 python3-venv python3-pip curl
       # - name: Setup Python
       #   uses: actions/setup-python@v2
       #   with:
