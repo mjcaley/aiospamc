@@ -20,10 +20,6 @@ jobs:
         run: |
           apt update
           apt install -y libc6 python3 python3-venv python3-pip curl
-      # - name: Setup Python
-      #   uses: actions/setup-python@v2
-      #   with:
-      #     python-version: '3.x'
       - name: Install Poetry
         run: python3 -m pip install poetry
       - name: Install dependencies
@@ -34,8 +30,6 @@ jobs:
           tar -xvjf spamassassin.tar.bz2
       - name: Build & Install SpamAssassin
         run: |
-          apt update
-          apt install lib6
           apt install perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
           perl Makefile.PL ENABLE_SSL=yes
           make
