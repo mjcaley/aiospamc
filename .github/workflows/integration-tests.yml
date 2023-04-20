@@ -30,7 +30,7 @@ jobs:
           tar -xvjf spamassassin.tar.bz2
       - name: Build & Install SpamAssassin
         run: |
-          apt install perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
+          apt install -y perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
           perl Makefile.PL ENABLE_SSL=yes
           make
           make install
