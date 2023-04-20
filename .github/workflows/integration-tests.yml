@@ -18,8 +18,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Upgrade lib6
         run: |
-          sudo apt update
-          sudo apt install lib6
+          apt update
+          apt install lib6
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -34,14 +34,14 @@ jobs:
           tar -xvjf spamassassin.tar.bz2
       - name: Build & Install SpamAssassin
         run: |
-          sudo apt update
-          sudo apt install lib6
-          sudo apt install perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
+          apt update
+          apt install lib6
+          apt install perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
           perl Makefile.PL ENABLE_SSL=yes
           make
-          sudo make install
+          make install
         working-directory: ./Mail-SpamAssassin-${{ matrix.spamassassin }}
-      - run: sudo sa-update
+      - run: sa-update
       - name: Run integration tests
         run: |
           poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
