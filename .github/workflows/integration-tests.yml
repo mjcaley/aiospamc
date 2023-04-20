@@ -33,7 +33,7 @@ jobs:
           sudo apt install perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
           perl Makefile.PL ENABLE_SSL=yes
           make
-          make install
+          sudo make install
         working-directory: ./Mail-SpamAssassin-${{ matrix.spamassassin }}
       - run: sa-update
       - name: Run integration tests
