@@ -19,7 +19,7 @@ jobs:
       - name: Upgrade libc6
         run: |
           apt update
-          apt install libc6 python3 python3-venv
+          apt install -y libc6 python3 python3-venv
       # - name: Setup Python
       #   uses: actions/setup-python@v2
       #   with:
