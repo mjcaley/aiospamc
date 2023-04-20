@@ -35,7 +35,7 @@ jobs:
           make
           sudo make install
         working-directory: ./Mail-SpamAssassin-${{ matrix.spamassassin }}
-      - run: sa-update
+      - run: sudo sa-update
       - name: Run integration tests
         run: |
           poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
