@@ -3,7 +3,7 @@
 """Contains all requests that can be made to the SPAMD service."""
 
 import zlib
-from typing import Any, Optional, SupportsBytes, Union
+from typing import Any, Dict, Optional, SupportsBytes, Union
 
 from .header_values import ContentLengthValue, HeaderValue
 
@@ -15,7 +15,7 @@ class Request:
         self,
         verb: str,
         version: str = "1.5",
-        headers: Optional[dict[str, HeaderValue]] = None,
+        headers: Optional[Dict[str, HeaderValue]] = None,
         body: Union[bytes, SupportsBytes] = b"",
         **_,
     ) -> None:
@@ -87,7 +87,7 @@ class Request:
 
         self._body = bytes(value)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """Converts the request to a dictionary."""
 
         request_dict = {
