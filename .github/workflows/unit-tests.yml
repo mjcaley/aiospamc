@@ -15,9 +15,9 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python: ['3.8', '3.9', '3.10', '3.11']
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
       - name: Install Poetry
@@ -35,7 +35,7 @@ jobs:
           --cov-report="html:output/htmlcov"
       - name: Publish test results
         if: success() || failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.python }}
           path: output/**
