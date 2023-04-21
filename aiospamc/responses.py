@@ -4,7 +4,7 @@
 
 import zlib
 from enum import IntEnum
-from typing import Any, Dict, SupportsBytes, Union
+from typing import Any, Optional, SupportsBytes, Union
 
 from .exceptions import *
 from .header_values import ContentLengthValue, HeaderValue
@@ -40,7 +40,7 @@ class Response:
         version: str = "1.5",
         status_code: Union[Status, int] = 0,
         message: str = "",
-        headers: Dict[str, HeaderValue] = None,
+        headers: Optional[dict[str, HeaderValue]] = None,
         body: bytes = b"",
         **_,
     ):
@@ -202,7 +202,7 @@ class Response:
             else:
                 raise ResponseException(self.status_code, self.message)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converts the response to a dictionary."""
 
         response_dict = {

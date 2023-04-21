@@ -5,16 +5,17 @@
 import getpass
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 
+@dataclass
 class HeaderValue:
     """Base class for header values."""
 
     def __bytes__(self) -> bytes:
         raise NotImplementedError
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converts the value to a dictionary."""
 
         return asdict(self)
@@ -87,7 +88,7 @@ class MessageClassValue(HeaderValue):
     def __bytes__(self) -> bytes:
         return self.value.name.encode("ascii")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converts the value to a dictionary."""
 
         return {"value": self.value.value}
