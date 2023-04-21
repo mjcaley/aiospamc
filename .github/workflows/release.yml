@@ -8,7 +8,7 @@ jobs:
     name: "Upload release artifacts"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Save tag
         run: |
           tag="$(git describe --tags --abbrev=0)"
@@ -16,7 +16,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
       - name: Install Poetry
@@ -33,14 +33,14 @@ jobs:
         run: poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
       - name: Publish test results
         if: success() || failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: output/**
       - name: Build package
         run: poetry build
       - name: Publish package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: dist/
