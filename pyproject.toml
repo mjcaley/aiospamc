@@ -12,7 +12,6 @@ documentation = "https://aiospamc.readthedocs.io"
 
 classifiers = [
     'Development Status :: 4 - Beta',
-    'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
@@ -26,17 +25,17 @@ classifiers = [
 keywords = ["spam", "spamc", "spamassassin"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 certifi = "*"
-loguru = "^0.6.0"
+loguru = "^0.7.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.1"
 pytest-cov = "^4.0"
-pytest-asyncio = "^0.20"
+pytest-asyncio = "^0.21"
 pytest-mock = "^3.10"
-mock = "^4.0"
-coverage = {extras = ["toml"], version = "^6.5"}
+mock = "^5.0"
+coverage = {extras = ["toml"], version = "^7.2"}
 trustme = "^0.9.0"
 
 [tool.pytest.ini_options]
@@ -62,19 +61,19 @@ exclude_lines = [
 fail_under = 95.0
 
 [tool.poetry.group.docs.dependencies]
-sphinx = "^5.3"
-sphinx-toolbox = "^3.2.0"
-reno = "^3.5.0"
+sphinx = "^6.1"
+sphinx-toolbox = "^3.4"
+reno = "^4.0"
 
 [tool.poetry.group.quality.dependencies]
-mypy = "^0.982"
-black = "^22"
+mypy = "^1.2"
+black = "^23"
 interrogate = "^1.5"
-isort = "^5.10.1"
-pre-commit = "^2.20.0"
+isort = "^5.12"
+pre-commit = "^3.2"
 
 [tool.black]
-target-version = ["py37"]
+target-version = ["py38"]
 exclude = """
     utils |
     docs |

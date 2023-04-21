@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Any, Dict, Optional
 
 
+@dataclass
 class HeaderValue:
     """Base class for header values."""
 
