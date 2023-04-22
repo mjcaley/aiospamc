@@ -1,9 +1,5 @@
-name: Unit tests
+name: Unit tests prerelease
 on:
-  push:
-    branches: [ development, main ]
-  pull_request:
-    branches: [ development ]
   schedule:
     - cron: '0 0 * * 5'
 jobs:
@@ -13,7 +9,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ['3.8', '3.9', '3.10', '3.11']
     steps:
       - uses: actions/checkout@v3
       - name: Install Poetry
@@ -21,7 +16,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python }}
+          python-version: '3.12-dev'
           cache: 'poetry'
       - name: Install dependencies
         run: poetry install
