@@ -47,10 +47,10 @@ class Client:
         req: Request,
         host: str = "localhost",
         port: int = 783,
-        socket_path: str = None,
-        timeout: Timeout = None,
-        verify: Optional[Any] = None,
-        user: str = None,
+        socket_path: Optional[str] = None,
+        timeout: Optional[Timeout] = None,
+        verify: Any = None,
+        user: Optional[str] = None,
         compress: bool = False,
     ) -> Response:
         """Sends a request and returns the parsed response.

@@ -15,13 +15,14 @@ jobs:
       matrix:
         spamassassin: ["3.4.6", "4.0.0"]
     steps:
-      - uses: actions/checkout@v2
-      - name: Install software
-        run: |
-          apt update
-          apt install -y libc6 python3 python3-venv python3-pip curl
+      - uses: actions/checkout@v3
       - name: Install Poetry
-        run: python3 -m pip install poetry
+        run: pipx install poetry
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          cache: 'poetry'
       - name: Install dependencies
         run: poetry install
       - name: Download SpamAssasin
@@ -42,7 +43,7 @@ jobs:
           poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
       - name: Publish test results
         if: success() || failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: output/**

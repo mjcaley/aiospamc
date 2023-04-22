@@ -20,7 +20,10 @@ class Timeout:
     """Container object for defining timeouts."""
 
     def __init__(
-        self, total: float = 600, connection: float = None, response: float = None
+        self,
+        total: float = 600,
+        connection: Optional[float] = None,
+        response: Optional[float] = None,
     ) -> None:
         """Timeout constructor.
 
@@ -46,7 +49,9 @@ class Timeout:
 class ConnectionManager:
     """Stores connection parameters and creates connections."""
 
-    def __init__(self, connection_string: str, timeout: Timeout = None) -> None:
+    def __init__(
+        self, connection_string: str, timeout: Optional[Timeout] = None
+    ) -> None:
         """ConnectionManager constructor.
 
         :param timeout: Timeout configuration
@@ -159,8 +164,8 @@ class TcpConnectionManager(ConnectionManager):
         self,
         host: str,
         port: int,
-        ssl_context: ssl.SSLContext = None,
-        timeout: Timeout = None,
+        ssl_context: Optional[ssl.SSLContext] = None,
+        timeout: Optional[Timeout] = None,
     ) -> None:
         """TcpConnectionManager constructor.
 
@@ -197,7 +202,7 @@ class TcpConnectionManager(ConnectionManager):
 class UnixConnectionManager(ConnectionManager):
     """Connection manager for Unix pipes."""
 
-    def __init__(self, path: str, timeout: Timeout = None):
+    def __init__(self, path: str, timeout: Optional[Timeout] = None):
         """UnixConnectionManager constructor.
 
         :param path: Unix socket path.

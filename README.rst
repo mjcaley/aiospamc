@@ -38,7 +38,7 @@ Documentation can be found at: https://aiospamc.readthedocs.io/
 Requirements
 ------------
 
-* Python 3.7 or higher
+* Python 3.8 or higher
 
 -------
 Example

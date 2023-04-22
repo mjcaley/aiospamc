@@ -4,7 +4,7 @@
 
 import zlib
 from enum import IntEnum
-from typing import Any, Dict, SupportsBytes, Union
+from typing import Any, Dict, Optional, SupportsBytes, Union
 
 from .exceptions import *
 from .header_values import ContentLengthValue, HeaderValue
@@ -40,7 +40,7 @@ class Response:
         version: str = "1.5",
         status_code: Union[Status, int] = 0,
         message: str = "",
-        headers: Dict[str, HeaderValue] = None,
+        headers: Optional[Dict[str, HeaderValue]] = None,
         body: bytes = b"",
         **_,
     ):
