@@ -336,8 +336,8 @@ def spamd(
         process = Popen(
             [which("spamd"), *options],
             cwd=spamd_path,
-            stdout=log,
-            stderr=DEVNULL,
+            # stdout=log,
+            # stderr=DEVNULL,
             universal_newlines=True,
         )
 
