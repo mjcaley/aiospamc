@@ -32,9 +32,11 @@ jobs:
         working-directory: ./Mail-SpamAssassin-${{ matrix.spamassassin }}
         run: |
           sudo apt install -y perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
+          sudo apt install -y adduser libarchive-tar-perl libhttp-date-perl libmail-dkim-perl libnet-dns-perl libnetaddr-ip-perl libsocket6-perl libio-socket-ssl-perl
           perl Makefile.PL BUILD_SPAMC=no ENABLE_SSL=yes CONTACT_ADDRESS=aiospamc-ci@example.org
           make
           sudo make install
+          perl
       - run: sudo sa-update
       - run: spamd --version
       - name: Run integration tests
