@@ -37,7 +37,6 @@ jobs:
           sudo make install
       - run: sudo sa-update
       - run: spamd --version
-      - run: spamd -p 1783
       - name: Run integration tests
         run: |
           poetry run pytest -m integration --junit-xml="output/integration-tests.xml" --spamd-process-timeout 30

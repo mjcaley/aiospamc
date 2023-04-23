@@ -309,13 +309,9 @@ def certificate(create_certificate):
 def spamd(
     tmp_path_factory, ip_address, tcp_port, ssl_port, unix_socket, certificate, request
 ):
-    # Setup log file
-    spamd_path = str(Path(which("spamd")).parent)
-    log_file = tmp_path_factory.mktemp("spamd") / "spamd.log"
-
     # Configure options
     options = [
-        f"--syslog={str(log_file)}",
+        # f"--syslog={str(log_file)}",
         "--local",
         "--allow-tell",
         f"--listen={ip_address}:{tcp_port}",
@@ -327,27 +323,34 @@ def spamd(
     ]
     if sys.platform != "win32":
         options += [f"--socketpath={unix_socket}"]
+    print(f"options used are: {options}")
+
+    # Setup log file
+    spamd_path = str(Path(which("spamd")).parent)
+    print(f"opening spamd from {spamd_path}")
+    log_file = tmp_path_factory.mktemp("spamd") / "spamd.log"
 
     # Spawn spamd
-    process = Popen(
-        [which("spamd"), *options],
-        cwd=spamd_path,
-        stdout=DEVNULL,
-        stderr=DEVNULL,
-        universal_newlines=True,
-    )
-
-    # Check the log to see if spamd is running
-    timeout = datetime.datetime.utcnow() + datetime.timedelta(
-        seconds=request.config.getoption("--spamd-process-timeout")
-    )
-    while not log_file.exists():
-        if datetime.datetime.utcnow() > timeout:
-            raise TimeoutError
-
-    running = False
-    spamd_start = "info: spamd: server started on"
     with open(str(log_file), "r") as log:
+        process = Popen(
+            [which("spamd"), *options],
+            cwd=spamd_path,
+            stdout=log,
+            stderr=DEVNULL,
+            universal_newlines=True,
+        )
+
+        # Check the log to see if spamd is running
+        timeout = datetime.datetime.utcnow() + datetime.timedelta(
+            seconds=request.config.getoption("--spamd-process-timeout")
+        )
+        while not log_file.exists():
+            if datetime.datetime.utcnow() > timeout:
+                raise TimeoutError
+
+        running = False
+        spamd_start = "info: spamd: server started on"
+        # with open(str(log_file), "r") as log:
         while not running:
             if datetime.datetime.utcnow() > timeout:
                 print(log_file.read_text())
@@ -359,15 +362,15 @@ def spamd(
                     running = True
                     break
 
-    if not running:
-        raise ChildProcessError
+        if not running:
+            raise ChildProcessError
 
-    yield
+        yield
 
-    # Stop spamd
-    process.terminate()
-    try:
-        process.wait(timeout=5)
-    except TimeoutExpired:
-        process.kill()
-        process.wait(timeout=5)
+        # Stop spamd
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
