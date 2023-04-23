@@ -329,9 +329,10 @@ def spamd(
     spamd_path = str(Path(which("spamd")).parent)
     print(f"opening spamd from {spamd_path}")
     log_file = tmp_path_factory.mktemp("spamd") / "spamd.log"
+    log_file.touch()
 
     # Spawn spamd
-    with open(str(log_file), "r") as log:
+    with open(log_file, "r") as log:
         process = Popen(
             [which("spamd"), *options],
             cwd=spamd_path,
