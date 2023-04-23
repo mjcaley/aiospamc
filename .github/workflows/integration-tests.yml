@@ -9,7 +9,6 @@ on:
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
-    container: debian:bullseye
     name: "Run Integration Tests"
     strategy:
       matrix:
@@ -17,12 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Poetry
-        run: |
-          apt update
-          apt install -y python3 python3-venv python3-pip
-          python3 -m pip install pipx
-          python3 -m pipx ensurepath
-          pipx install poetry
+        run: pipx install poetry
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -35,13 +29,13 @@ jobs:
           curl -s https://dlcdn.apache.org//spamassassin/source/Mail-SpamAssassin-${{ matrix.spamassassin }}.tar.bz2 -o spamassassin.tar.bz2
           tar -xvjf spamassassin.tar.bz2
       - name: Build & Install SpamAssassin
-        run: |
-          apt install -y perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
-          perl Makefile.PL ENABLE_SSL=yes
-          make
-          make install
         working-directory: ./Mail-SpamAssassin-${{ matrix.spamassassin }}
-      - run: sa-update
+        run: |
+          sudo apt install -y perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
+          perl Makefile.PL BUILD_SPAMC=no ENABLE_SSL=yes CONTACT_ADDRESS=aiospamc-ci@example.org
+          make
+          sudo make install
+      - run: sudo sa-update
       - run: spamd --version
       - name: Run integration tests
         run: |
