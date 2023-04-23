@@ -39,7 +39,7 @@ jobs:
       - run: spamd --version
       - name: Run integration tests
         run: |
-          poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
+          poetry run pytest -m integration --junit-xml="output/integration-tests.xml" --spamd-process-timeout 30
       - name: Publish test results
         if: success() || failure()
         uses: actions/upload-artifact@v3
