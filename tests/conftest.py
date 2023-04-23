@@ -343,7 +343,6 @@ def spamd(
     )
     while not log_file.exists():
         if datetime.datetime.utcnow() > timeout:
-            print(log_file.read())
             raise TimeoutError
 
     running = False
@@ -351,6 +350,7 @@ def spamd(
     with open(str(log_file), "r") as log:
         while not running:
             if datetime.datetime.utcnow() > timeout:
+                print(log_file.read())
                 raise TimeoutError
 
             log.seek(0)
