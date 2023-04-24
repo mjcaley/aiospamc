@@ -36,7 +36,7 @@ jobs:
           perl Makefile.PL BUILD_SPAMC=no ENABLE_SSL=yes CONTACT_ADDRESS=aiospamc-ci@example.org
           make
           sudo make install
-          perl
+          perl ./build/check-dependencies
       - run: sudo sa-update
       - run: spamd --version
       - name: Run integration tests
