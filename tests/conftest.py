@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from shutil import which
 from socket import gethostbyname
-from subprocess import DEVNULL, Popen, TimeoutExpired
+from subprocess import DEVNULL, PIPE, STDOUT, Popen, TimeoutExpired
 
 import pytest
 import trustme
@@ -323,54 +323,42 @@ def spamd(
     ]
     if sys.platform != "win32":
         options += [f"--socketpath={unix_socket}"]
-    print(f"options used are: {options}")
-
-    # Setup log file
-    spamd_path = str(Path(which("spamd")).parent)
-    log_file = tmp_path_factory.mktemp("spamd") / "spamd.log"
-    log_file.touch()
 
     # Spawn spamd
-    with open(log_file, "r") as log:
-        process = Popen(
-            [which("spamd"), *options],
-            cwd=spamd_path,
-            # stdout=log,
-            # stderr=DEVNULL,
-            universal_newlines=True,
-        )
+    spamd_exe = Path(which("spamd"))
+    process = Popen(
+        [spamd_exe, *options],
+        stdout=PIPE,
+        stderr=STDOUT,
+        cwd=spamd_exe.parent,
+        universal_newlines=True,
+    )
 
-        # Check the log to see if spamd is running
-        timeout = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=request.config.getoption("--spamd-process-timeout")
-        )
-        while not log_file.exists():
-            if datetime.datetime.utcnow() > timeout:
-                raise TimeoutError
+    # Check the log to see if spamd is running
+    timeout = datetime.datetime.utcnow() + datetime.timedelta(
+        seconds=request.config.getoption("--spamd-process-timeout")
+    )
 
-        running = False
-        spamd_start = "info: spamd: server started on"
-        # with open(str(log_file), "r") as log:
-        while not running:
-            if datetime.datetime.utcnow() > timeout:
-                print(log_file.read_text())
-                raise TimeoutError
+    running = False
+    spamd_start = "info: spamd: server started on"
+    while not running:
+        if datetime.datetime.utcnow() > timeout:
+            raise TimeoutError
 
-            log.seek(0)
-            for line in log:
-                if spamd_start in line:
-                    running = True
-                    break
+        for line in process.stdout:
+            if spamd_start in line:
+                running = True
+                break
 
-        if not running:
-            raise ChildProcessError
+    if not running:
+        raise ChildProcessError
 
-        yield
+    yield
 
-        # Stop spamd
-        process.terminate()
-        try:
-            process.wait(timeout=5)
-        except TimeoutExpired:
-            process.kill()
-            process.wait(timeout=5)
+    # Stop spamd
+    process.terminate()
+    try:
+        process.wait(timeout=5)
+    except TimeoutExpired:
+        process.kill()
+        process.wait(timeout=5)
