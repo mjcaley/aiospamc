@@ -48,3 +48,12 @@ jobs:
         with:
           name: test-results
           path: output/**
+  status:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: "Integration Test Status"
+    needs: integration-tests
+    steps:
+      - name: Check test matrix status
+        if: ${{ needs.unit-tests.result != 'success' }}
+        run: exit 1
