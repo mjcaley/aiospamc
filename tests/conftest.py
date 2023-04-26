@@ -306,9 +306,7 @@ def certificate(create_certificate):
 
 
 @pytest.fixture(scope="session")
-def spamd(
-    tmp_path_factory, ip_address, tcp_port, ssl_port, unix_socket, certificate, request
-):
+def spamd(ip_address, tcp_port, ssl_port, unix_socket, certificate, request):
     # Configure options
     options = [
         # f"--syslog={str(log_file)}",
