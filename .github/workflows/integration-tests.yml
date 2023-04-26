@@ -55,5 +55,5 @@ jobs:
     needs: integration-tests
     steps:
       - name: Check test matrix status
-        if: ${{ needs.unit-tests.result != 'success' }}
+        if: ${{ needs.integration-tests.result != 'success' }}
         run: exit 1
