@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from shutil import which
 from socket import gethostbyname
-from subprocess import DEVNULL, Popen, TimeoutExpired
+from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
 import pytest
 import trustme
@@ -306,16 +306,10 @@ def certificate(create_certificate):
 
 
 @pytest.fixture(scope="session")
-def spamd(
-    tmp_path_factory, ip_address, tcp_port, ssl_port, unix_socket, certificate, request
-):
-    # Setup log file
-    spamd_path = str(Path(which("spamd")).parent)
-    log_file = tmp_path_factory.mktemp("spamd") / "spamd.log"
-
+def spamd(ip_address, tcp_port, ssl_port, unix_socket, certificate, request):
     # Configure options
     options = [
-        f"--syslog={str(log_file)}",
+        # f"--syslog={str(log_file)}",
         "--local",
         "--allow-tell",
         f"--listen={ip_address}:{tcp_port}",
@@ -329,11 +323,12 @@ def spamd(
         options += [f"--socketpath={unix_socket}"]
 
     # Spawn spamd
+    spamd_exe = Path(which("spamd"))
     process = Popen(
-        [which("spamd"), *options],
-        cwd=spamd_path,
-        stdout=DEVNULL,
-        stderr=DEVNULL,
+        [spamd_exe, *options],
+        stdout=PIPE,
+        stderr=STDOUT,
+        cwd=spamd_exe.parent,
         universal_newlines=True,
     )
 
@@ -341,22 +336,17 @@ def spamd(
     timeout = datetime.datetime.utcnow() + datetime.timedelta(
         seconds=request.config.getoption("--spamd-process-timeout")
     )
-    while not log_file.exists():
-        if datetime.datetime.utcnow() > timeout:
-            raise TimeoutError
 
     running = False
     spamd_start = "info: spamd: server started on"
-    with open(str(log_file), "r") as log:
-        while not running:
-            if datetime.datetime.utcnow() > timeout:
-                raise TimeoutError
+    while not running:
+        if datetime.datetime.utcnow() > timeout:
+            raise TimeoutError
 
-            log.seek(0)
-            for line in log:
-                if spamd_start in line:
-                    running = True
-                    break
+        for line in process.stdout:
+            if spamd_start in line:
+                running = True
+                break
 
     if not running:
         raise ChildProcessError

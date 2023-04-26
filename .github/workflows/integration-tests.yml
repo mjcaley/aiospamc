@@ -8,8 +8,11 @@ on:
     - cron: '0 0 * * 5'
 jobs:
   integration-tests:
-    name: "Run Integration Tests"
     runs-on: ubuntu-latest
+    name: "Run Integration Tests"
+    strategy:
+      matrix:
+        spamassassin: ["3.4.6", "4.0.0"]
     steps:
       - uses: actions/checkout@v3
       - name: Install Poetry
@@ -21,8 +24,21 @@ jobs:
           cache: 'poetry'
       - name: Install dependencies
         run: poetry install
-      - name: Install SpamAssassin
-        run: sudo apt-get -y install spamassassin
+      - name: Download SpamAssasin
+        run: |
+          curl -s https://dlcdn.apache.org//spamassassin/source/Mail-SpamAssassin-${{ matrix.spamassassin }}.tar.bz2 -o spamassassin.tar.bz2
+          tar -xvjf spamassassin.tar.bz2
+      - name: Build & Install SpamAssassin
+        working-directory: ./Mail-SpamAssassin-${{ matrix.spamassassin }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y perl libssl-dev libhtml-parser-perl libnet-dns-perl libnetaddr-ip-perl debhelper-compat libberkeleydb-perl netbase libdbi-perl libdbd-mysql-perl libbsd-resource-perl libio-string-perl libtext-diff-perl
+          sudo apt-get install -y adduser libarchive-tar-perl libhttp-date-perl libmail-dkim-perl libnet-dns-perl libnetaddr-ip-perl libsocket6-perl libio-socket-ssl-perl
+          perl Makefile.PL BUILD_SPAMC=no ENABLE_SSL=yes CONTACT_ADDRESS=aiospamc-ci@example.org
+          make
+          sudo make install
+      - run: sudo sa-update
+      - run: spamd --version
       - name: Run integration tests
         run: |
           poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
@@ -32,3 +48,12 @@ jobs:
         with:
           name: test-results
           path: output/**
+  status:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: "Integration Test Status"
+    needs: integration-tests
+    steps:
+      - name: Check test matrix status
+        if: ${{ needs.integration-tests.result != 'success' }}
+        run: exit 1
