@@ -336,7 +336,7 @@ def spamd(
             [which("spamd"), *options],
             cwd=spamd_path,
             # stdout=log,
-            stderr=DEVNULL,
+            # stderr=DEVNULL,
             universal_newlines=True,
         )
 
