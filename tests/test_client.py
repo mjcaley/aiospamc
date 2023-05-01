@@ -1,8 +1,8 @@
 import pytest
 
 from aiospamc.client import Client
-from aiospamc.exceptions import (
-    BadResponse,
+from aiospamc.exceptions import BadResponse
+from aiospamc.responses import (
     CantCreateException,
     ConfigException,
     DataErrorException,
@@ -15,13 +15,13 @@ from aiospamc.exceptions import (
     OSErrorException,
     OSFileException,
     ProtocolException,
+    Response,
     ResponseException,
     ServerTimeoutException,
     TemporaryFailureException,
     UnavailableException,
     UsageException,
 )
-from aiospamc.responses import Response
 
 
 async def test_request_sent_to_connection(mock_client_dependency, mocker, hostname):

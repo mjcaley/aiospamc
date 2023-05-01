@@ -4,10 +4,29 @@ import zlib
 
 import pytest
 
-from aiospamc.exceptions import *
 from aiospamc.header_values import CompressValue, ContentLengthValue
 from aiospamc.incremental_parser import ResponseParser
-from aiospamc.responses import Response, Status
+from aiospamc.responses import (
+    CantCreateException,
+    ConfigException,
+    DataErrorException,
+    InternalSoftwareException,
+    IOErrorException,
+    NoHostException,
+    NoInputException,
+    NoPermissionException,
+    NoUserException,
+    OSErrorException,
+    OSFileException,
+    ProtocolException,
+    Response,
+    ResponseException,
+    ServerTimeoutException,
+    Status,
+    TemporaryFailureException,
+    UnavailableException,
+    UsageException,
+)
 
 
 def test_init_version():
