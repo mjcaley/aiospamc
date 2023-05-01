@@ -61,7 +61,7 @@ exclude_lines = [
 fail_under = 95.0
 
 [tool.poetry.group.docs.dependencies]
-sphinx = "^6.1"
+sphinx = ">=6.1,<8.0"
 sphinx-toolbox = "^3.4"
 reno = "^4.0"
 
