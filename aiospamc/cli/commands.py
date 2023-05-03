@@ -7,9 +7,11 @@ import sys
 from enum import Enum, auto
 from typing import Any, Optional
 
+import loguru
 import typer
+from loguru import logger
 
-from aiospamc.exceptions import ParseError
+from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
 from aiospamc.header_values import (
     ActionOption,
     MessageClassOption,
@@ -22,7 +24,6 @@ from .. import __version__
 from ..client import Client, Request
 from ..connections import Timeout
 from ..responses import Response, ResponseException
-
 
 app = typer.Typer()
 
@@ -65,6 +66,8 @@ class CommandRunner:
         self.exception: Optional[Exception] = None
         self.exit_code = SUCCESS
 
+        self._logger = logger.bind(request=request)
+
     async def run(
         self,
         host: Optional[str] = None,
@@ -78,27 +81,38 @@ class CommandRunner:
             host, port, socket_path, timeout, ssl_context
         )
         parser = self.client.parser_factory()
+        self._logger = self._logger.bind(host=host, port=port, socket_path=socket_path)
+        self._logger.info("Sending request")
+
         try:
             response = await self.client.request_new(self.request, connection, parser)
         except ResponseException as e:
+            self._logger = self._logger.bind(response=e.response)
+            self._logger.exception(e)
             self.response = e.response
             self.exit_code = int(self.response.status_code)
             self.exception = e
             self.exit(self.response.message, True)
         except ParseError as e:
+            self._logger.exception(e)
             self.exit_code = PARSE_ERROR
             self.exception = e
             self.exit("Error parsing response", True)
         except asyncio.TimeoutError as e:
+            self._logger.exception(e)
             self.exit_code = TIMEOUT_ERROR
             self.exception = e
             self.exit("Error: timeout", True)
-        except (OSError, ConnectionError, ssl.SSLError) as e:
+        except (AIOSpamcConnectionFailed, OSError, ConnectionError, ssl.SSLError) as e:
+            self._logger.exception(e)
             self.exit_code = CONNECTION_ERROR
             self.exception = e
             self.exit("Error: Connection error", True)
 
+        self._logger = self._logger.bind(response=response)
+        self._logger.info("Successfully recieved request")
         self.response = response
+
         return response
 
     def to_json(self) -> str:
@@ -350,15 +364,24 @@ def revoke(
         runner.exit("Unable to report revoked")
 
 
-def version_callback():
-    typer.echo(__version__)
-    raise typer.Exit()
+def version_callback(version: bool):
+    if version:
+        typer.echo(__version__)
+        raise typer.Exit()
+
+
+def debug_callback(debug: bool):
+    from sys import stderr, stdout
+
+    if debug:
+        logger.enable("aiospamc")
 
 
 @app.callback()
 def main(
     version: bool = typer.Option(
-        False, "--version", is_flag=True, expose_value=False, callback=version_callback
-    )
+        False, "--version", is_flag=True, callback=version_callback
+    ),
+    debug: bool = typer.Option(False, "--debug", is_flag=True, callback=debug_callback),
 ):
-    ...
+    pass
