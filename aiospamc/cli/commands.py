@@ -41,6 +41,14 @@ class Output(str, Enum):
     Text = "text"
 
 
+# Exit codes
+SUCCESS = 0
+IS_SPAM = 1
+PARSE_ERROR = 3
+TIMEOUT_ERROR = 4
+CONNECTION_ERROR = 5
+
+
 class CommandRunner:
     def __init__(
         self,
@@ -55,7 +63,7 @@ class CommandRunner:
         self.client = client or Client()
 
         self.exception: Optional[Exception] = None
-        self.exit_code = 0
+        self.exit_code = SUCCESS
 
     async def run(
         self,
@@ -78,15 +86,15 @@ class CommandRunner:
             self.exception = e
             self.exit(self.response.message, True)
         except ParseError as e:
-            self.exit_code = 3
+            self.exit_code = PARSE_ERROR
             self.exception = e
             self.exit("Error parsing response", True)
         except asyncio.TimeoutError as e:
-            self.exit_code = 4
+            self.exit_code = TIMEOUT_ERROR
             self.exception = e
             self.exit("Error: timeout", True)
         except (OSError, ConnectionError, ssl.SSLError) as e:
-            self.exit_code = 5
+            self.exit_code = CONNECTION_ERROR
             self.exception = e
             self.exit("Error: Connection error", True)
 
@@ -167,6 +175,8 @@ def check(
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
     debug: bool = typer.Option(False, help="Debug information"),
 ):
+    """Submits a message to SpamAssassin and returns the processed message."""
+
     message_data = read_message(message)
     request = Request("PROCESS", body=message_data)
     runner = CommandRunner(request, debug, out)
@@ -174,7 +184,7 @@ def check(
 
     spam_header: SpamValue = response.headers["Spam"]
     if spam_header.value:
-        runner.exit_code = 1
+        runner.exit_code = IS_SPAM
     runner.exit(f"{spam_header.score}/{spam_header.threshold}")
 
 
