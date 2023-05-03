@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import zlib
+from base64 import b64encode
 from enum import IntEnum
 from typing import Any, Dict, Optional, SupportsBytes, Union
 
@@ -204,18 +205,16 @@ class Response:
             else:
                 raise ResponseException(self.status_code, self.message, self)
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Converts the response to a dictionary."""
+    def to_json(self) -> Dict[str, Any]:
+        """Converts to JSON serializable object."""
 
-        response_dict = {
+        return {
             "version": self.version,
             "status_code": int(self.status_code),
             "message": self.message,
-            "headers": {key: value.to_dict() for key, value in self.headers.items()},
-            "body": self.body,
+            "headers": {key: value.to_json() for key, value in self.headers.items()},
+            "body": b64encode(self.body).decode(),
         }
-
-        return response_dict
 
 
 class ResponseException(Exception):

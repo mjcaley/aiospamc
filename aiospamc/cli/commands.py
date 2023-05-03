@@ -1,10 +1,11 @@
 """CLI commands."""
 
 import asyncio
+import json
 import ssl
 import sys
 from enum import Enum, auto
-from typing import Optional
+from typing import Any, Optional
 
 import typer
 
@@ -14,6 +15,7 @@ from aiospamc.header_values import (
     MessageClassOption,
     MessageClassValue,
     SetOrRemoveValue,
+    SpamValue,
 )
 
 from ..client import Client, Request
@@ -37,54 +39,73 @@ class Output(str, Enum):
     Text = "text"
 
 
-class CLIRunner:
+class CommandRunner:
     def __init__(
         self,
         request: Request,
         debug: bool = False,
         output: Output = Output.Text,
-        client: Client = None,
+        client: Optional[Client] = None,
     ):
         self.request = request
         self.debug = debug
         self.output = output
         self.client = client or Client()
 
-        self.response: Optional[Response] = None
         self.exception: Optional[Exception] = None
+        self.exit_code = 0
 
     async def run(
         self,
         host: Optional[str] = None,
         port: Optional[int] = None,
         socket_path: Optional[str] = None,
-        verify=None,
-    ):
+        timeout: Optional[Timeout] = None,
+        verify: Any = None,
+    ) -> Response:
+        ssl_context = self.client.ssl_context_factory(verify)
+        connection = self.client.connection_factory(
+            host, port, socket_path, timeout, ssl_context
+        )
+        parser = self.client.parser_factory()
         try:
-            ssl_context = self.client.ssl_context_factory(verify)
-            connection = self.client.connection_factory(
-                host, port, socket_path, ssl_context
-            )
-            parser = self.client.parser_factory()
-            self.response = await self.client.request_new(
-                self.request, connection, parser
-            )
-
-            return ResultKind.Success
-
+            response = await self.client.request_new(self.request, connection, parser)
         except ResponseException as e:
             self.response = e.response
+            self.exit_code = int(self.response.status_code)
             self.exception = e
-            return ResultKind.ResponseError
+            self.exit(self.response.message, True)
         except ParseError as e:
+            self.exit_code = 3
             self.exception = e
-            return ResultKind.ParseError
+            self.exit("Error parsing response", True)
         except asyncio.TimeoutError as e:
+            self.exit_code = 4
             self.exception = e
-            return ResultKind.TimeoutError
+            self.exit("Error: timeout", True)
         except (OSError, ConnectionError, ssl.SSLError) as e:
+            self.exit_code = 5
             self.exception = e
-            return ConnectionError
+            self.exit("Error: Connection error", True)
+
+        self.response = response
+        return response
+
+    def to_json(self) -> str:
+        obj = {
+            "request": self.request.to_json(),
+            "response": self.response.to_json() if self.response is not None else None,
+            "exit_code": self.exit_code,
+        }
+
+        return json.dumps(obj, indent=4)
+
+    def exit(self, message: str, err=False):
+        if self.output == Output.Text:
+            typer.echo(message, err=err)
+        else:
+            typer.echo(self.to_json())
+        typer.Exit(self.exit_code)
 
 
 @app.command()
@@ -111,15 +132,9 @@ def ping(
     """
 
     request = Request("PING")
-    runner = CLIRunner(request, debug, out)
-    result = asyncio.run(runner.run(host, port, socket_path, ssl))
-    if result == ResultKind.Success:
-        typer.echo(runner.response.message)
-    elif result == ResultKind.ResponseError:
-        typer.echo(runner.response.message)
-        typer.Exit(runner.response.status_code)
-    else:
-        typer.Exit(1)
+    runner = CommandRunner(request, debug, out)
+    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+    runner.exit(response.message)
 
 
 def read_message(file) -> bytes:
@@ -152,19 +167,13 @@ def check(
 ):
     message_data = read_message(message)
     request = Request("PROCESS", body=message_data)
-    runner = CLIRunner(request, debug, out)
-    result = asyncio.run(runner.run(host, port, socket_path, ssl))
-    if result == ResultKind.Success:
-        spam_header = runner.response.headers["Spam"]
-        typer.echo(f"{spam_header.score}/{spam_header.threshold}")
-        if spam_header.value:
-            typer.Exit(code=1)
-    elif result == ResultKind.ResponseError:
-        typer.echo(runner.response.message)
-        typer.Exit(runner.response.status_code)
-    else:
-        typer.echo
-        typer.Exit(1)
+    runner = CommandRunner(request, debug, out)
+    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+
+    spam_header: SpamValue = response.headers["Spam"]
+    if spam_header.value:
+        runner.exit_code = 1
+    runner.exit(f"{spam_header.score}/{spam_header.threshold}")
 
 
 @app.command()
@@ -200,19 +209,12 @@ def learn(
         },
         body=message_data,
     )
-    runner = CLIRunner(request, debug, out)
-    result = asyncio.run(runner.run(host, port, socket_path, ssl))
-    if result == ResultKind.Success:
-        if "DidSet" in runner.response.headers:
-            typer.echo("Message successfully learned")
-        else:
-            typer.echo("Message was already learned")
-    elif result == ResultKind.ResponseError:
-        typer.echo(runner.response.message)
-        typer.Exit(runner.response.status_code)
+    runner = CommandRunner(request, debug, out)
+    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+    if "DidSet" in response.headers:
+        runner.exit("Message successfully learned")
     else:
-        typer.echo("Unknown error occurred", err=True)
-        typer.Exit(1)
+        runner.exit("Message was already learned")
 
 
 @app.command()
@@ -244,19 +246,13 @@ def forget(
         },
         body=message_data,
     )
-    runner = CLIRunner(request, debug, out)
-    result = asyncio.run(runner.run(host, port, socket_path, ssl))
-    if result == ResultKind.Success:
-        if "DidRemove" in runner.response.headers:
-            typer.echo("Message successfully forgotten")
-        else:
-            typer.echo("Message was already forgotten")
-    elif result == ResultKind.ResponseError:
-        typer.echo(runner.response.message)
-        typer.Exit(runner.response.status_code)
+    runner = CommandRunner(request, debug, out)
+    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+
+    if "DidRemove" in response.headers:
+        runner.exit("Message successfully forgotten")
     else:
-        typer.echo("Unknown error occurred", err=True)
-        typer.Exit(1)
+        runner.exit("Message was already forgotten")
 
 
 @app.command()
@@ -292,20 +288,13 @@ def report(
         },
         body=message_data,
     )
-    runner = CLIRunner(request, debug, out)
-    result = asyncio.run(runner.run(host, port, socket_path, ssl))
-    if result == ResultKind.Success:
-        if didset := runner.response.headers.get("DidSet") and didset.action.remote:
-            typer.echo("Message successfully reported")
-        else:
-            typer.echo("Unable to report message")
-            typer.Exit(1)
-    elif result == ResultKind.ResponseError:
-        typer.echo(runner.response.message)
-        typer.Exit(runner.response.status_code)
+    runner = CommandRunner(request, debug, out)
+    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+
+    if didset := response.headers.get("DidSet") and didset.action.remote:
+        runner.exit("Message successfully reported")
     else:
-        typer.echo("Unknown error occurred", err=True)
-        typer.Exit(1)
+        runner.exit("Unable to report message")
 
 
 @app.command()
@@ -341,20 +330,9 @@ def revoke(
         },
         body=message_data,
     )
-    runner = CLIRunner(request, debug, out)
-    result = asyncio.run(runner.run(host, port, socket_path, ssl))
-    if result == ResultKind.Success:
-        if (
-            didremove := runner.response.headers.get("DidRemove")
-            and didremove.action.remote
-        ):
-            typer.echo("Message successfully revoked")
-        else:
-            typer.echo("Unable to report revoked")
-            typer.Exit(1)
-    elif result == ResultKind.ResponseError:
-        typer.echo(runner.response.message)
-        typer.Exit(runner.response.status_code)
+    runner = CommandRunner(request, debug, out)
+    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+    if didremove := response.headers.get("DidRemove") and didremove.action.remote:
+        runner.exit("Message successfully revoked")
     else:
-        typer.echo("Unknown error occurred", err=True)
-        typer.Exit(1)
+        runner.exit("Unable to report revoked")

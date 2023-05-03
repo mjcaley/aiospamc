@@ -3,6 +3,7 @@
 """Collection of request and response header value objects."""
 
 import getpass
+from base64 import b64encode
 from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any, Dict, Optional
@@ -15,10 +16,10 @@ class HeaderValue:
     def __bytes__(self) -> bytes:
         raise NotImplementedError
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Converts the value to a dictionary."""
+    def to_json(self) -> Any:
+        """Converts object to a JSON serializable object."""
 
-        return asdict(self)
+        raise NotImplementedError
 
 
 @dataclass
@@ -33,6 +34,11 @@ class BytesHeaderValue(HeaderValue):
     def __bytes__(self) -> bytes:
         return self.value
 
+    def to_json(self) -> Any:
+        """Converts object to a JSON serializable object."""
+
+        return b64encode(self.value).decode()
+
 
 @dataclass
 class GenericHeaderValue(HeaderValue):
@@ -43,6 +49,11 @@ class GenericHeaderValue(HeaderValue):
 
     def __bytes__(self) -> bytes:
         return self.value.encode(self.encoding)
+
+    def to_json(self) -> Any:
+        """Converts object to a JSON serializable object."""
+
+        return self.value
 
 
 @dataclass
@@ -56,6 +67,11 @@ class CompressValue(HeaderValue):
     def __bytes__(self) -> bytes:
         return self.algorithm.encode("ascii")
 
+    def to_json(self) -> Any:
+        """Converts object to a JSON serializable object."""
+
+        return self.algorithm
+
 
 @dataclass
 class ContentLengthValue(HeaderValue):
@@ -68,6 +84,11 @@ class ContentLengthValue(HeaderValue):
 
     def __bytes__(self) -> bytes:
         return str(self.length).encode("ascii")
+
+    def to_json(self) -> Any:
+        """Converts object to a JSON serializable object."""
+
+        return self.length
 
 
 class MessageClassOption(Enum):
@@ -92,6 +113,11 @@ class MessageClassValue(HeaderValue):
         """Converts the value to a dictionary."""
 
         return {"value": self.value.value}
+
+    def to_json(self) -> Any:
+        """Converts object to a JSON serializable object."""
+
+        return self.value.value
 
 
 @dataclass
@@ -126,6 +152,11 @@ class SetOrRemoveValue(HeaderValue):
 
         return b", ".join(values)
 
+    def to_json(self) -> Any:
+        """Converts object to a JSON serializable object."""
+
+        return {"local": self.action.local, "remote": self.action.remote}
+
 
 @dataclass
 class SpamValue(HeaderValue):
@@ -146,6 +177,11 @@ class SpamValue(HeaderValue):
             self.threshold,
         )
 
+    def to_json(self) -> Any:
+        """Converts object to a JSON serializable object."""
+
+        return {"value": self.value, "score": self.score, "threshold": self.threshold}
+
 
 @dataclass
 class UserValue(HeaderValue):
@@ -158,4 +194,9 @@ class UserValue(HeaderValue):
         return self.name.encode("ascii")
 
     def __str__(self) -> str:
+        return self.name
+
+    def to_json(self) -> Any:
+        """Converts object to a JSON serializable object."""
+
         return self.name

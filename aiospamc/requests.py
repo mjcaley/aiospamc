@@ -3,6 +3,7 @@
 """Contains all requests that can be made to the SPAMD service."""
 
 import zlib
+from base64 import b64encode
 from typing import Any, Dict, Optional, SupportsBytes, Union
 
 from .header_values import ContentLengthValue, HeaderValue
@@ -87,14 +88,12 @@ class Request:
 
         self._body = bytes(value)
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Converts the request to a dictionary."""
+    def to_json(self):
+        """Converts to JSON serializable object."""
 
-        request_dict = {
+        return {
             "verb": self.verb,
             "version": self.version,
-            "headers": {key: value.to_dict() for key, value in self.headers.items()},
-            "body": self.body,
+            "headers": {key: value.to_json() for key, value in self.headers.items()},
+            "body": b64encode(self.body).decode(),
         }
-
-        return request_dict
