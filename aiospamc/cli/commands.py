@@ -18,9 +18,11 @@ from aiospamc.header_values import (
     SpamValue,
 )
 
+from .. import __version__
 from ..client import Client, Request
 from ..connections import Timeout
 from ..responses import Response, ResponseException
+
 
 app = typer.Typer()
 
@@ -105,7 +107,7 @@ class CommandRunner:
             typer.echo(message, err=err)
         else:
             typer.echo(self.to_json())
-        typer.Exit(self.exit_code)
+        raise typer.Exit(self.exit_code)
 
 
 @app.command()
@@ -336,3 +338,17 @@ def revoke(
         runner.exit("Message successfully revoked")
     else:
         runner.exit("Unable to report revoked")
+
+
+def version_callback():
+    typer.echo(__version__)
+    raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        False, "--version", is_flag=True, expose_value=False, callback=version_callback
+    )
+):
+    ...
