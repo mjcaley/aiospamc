@@ -371,10 +371,8 @@ def version_callback(version: bool):
 
 
 def debug_callback(debug: bool):
-    from sys import stderr, stdout
-
     if debug:
-        logger.enable("aiospamc")
+        logger.enable(__package__)
 
 
 @app.callback()
