@@ -6,7 +6,7 @@ import zlib
 from base64 import b64encode
 from typing import Any, Dict, Optional, SupportsBytes, Union
 
-from .header_values import ContentLengthValue, HeaderValue
+from .header_values import ContentLengthValue, Headers, HeaderValue
 
 
 class Request:
@@ -16,7 +16,7 @@ class Request:
         self,
         verb: str,
         version: str = "1.5",
-        headers: Optional[Dict[str, HeaderValue]] = None,
+        headers: Union[Dict[str, Any], Headers, None] = None,
         body: Union[bytes, SupportsBytes] = b"",
         **_,
     ) -> None:
@@ -30,7 +30,12 @@ class Request:
 
         self.verb = verb
         self.version = version
-        self.headers = headers or {}
+        if isinstance(headers, dict):
+            self.headers = Headers(headers)
+        elif isinstance(headers, Headers):
+            self.headers = headers
+        else:
+            self.headers = Headers()
         self.body = bytes(body)
 
     def __bytes__(self) -> bytes:

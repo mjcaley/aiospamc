@@ -7,7 +7,6 @@ import sys
 from enum import Enum, auto
 from typing import Any, Optional
 
-import loguru
 import typer
 from loguru import logger
 
@@ -17,7 +16,6 @@ from aiospamc.header_values import (
     MessageClassOption,
     MessageClassValue,
     SetOrRemoveValue,
-    SpamValue,
 )
 
 from .. import __version__
@@ -48,6 +46,7 @@ IS_SPAM = 1
 PARSE_ERROR = 3
 TIMEOUT_ERROR = 4
 CONNECTION_ERROR = 5
+UNEXPECTED_ERROR = 6
 
 
 class CommandRunner:
@@ -196,10 +195,13 @@ def check(
     runner = CommandRunner(request, debug, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
 
-    spam_header: SpamValue = response.headers["Spam"]
-    if spam_header.value:
-        runner.exit_code = IS_SPAM
-    runner.exit(f"{spam_header.score}/{spam_header.threshold}")
+    if spam_header := response.headers.spam:
+        if spam_header.value:
+            runner.exit_code = IS_SPAM
+        runner.exit(f"{spam_header.score}/{spam_header.threshold}")
+    else:
+        typer.echo("Could not find 'Spam' header", err=True)
+        raise typer.Exit(UNEXPECTED_ERROR)
 
 
 @app.command()
@@ -237,7 +239,7 @@ def learn(
     )
     runner = CommandRunner(request, debug, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
-    if "DidSet" in response.headers:
+    if response.headers.did_set:
         runner.exit("Message successfully learned")
     else:
         runner.exit("Message was already learned")
@@ -275,7 +277,7 @@ def forget(
     runner = CommandRunner(request, debug, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
 
-    if "DidRemove" in response.headers:
+    if response.headers.did_remove:
         runner.exit("Message successfully forgotten")
     else:
         runner.exit("Message was already forgotten")
@@ -317,7 +319,7 @@ def report(
     runner = CommandRunner(request, debug, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
 
-    if didset := response.headers.get("DidSet") and didset.action.remote:
+    if response.headers.did_set and response.headers.did_set.action.remote:
         runner.exit("Message successfully reported")
     else:
         runner.exit("Unable to report message")
@@ -358,7 +360,7 @@ def revoke(
     )
     runner = CommandRunner(request, debug, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
-    if didremove := response.headers.get("DidRemove") and didremove.action.remote:
+    if response.headers.did_remove and response.headers.did_remove.action.remote:
         runner.exit("Message successfully revoked")
     else:
         runner.exit("Unable to report revoked")

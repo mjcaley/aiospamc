@@ -4,26 +4,26 @@
 
 import getpass
 from base64 import b64encode
+from collections import UserDict
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Protocol, Union
 
 
-@dataclass
-class HeaderValue:
+class HeaderValue(Protocol):
     """Base class for header values."""
 
     def __bytes__(self) -> bytes:
-        raise NotImplementedError
+        pass
 
     def to_json(self) -> Any:
         """Converts object to a JSON serializable object."""
 
-        raise NotImplementedError
+        pass
 
 
 @dataclass
-class BytesHeaderValue(HeaderValue):
+class BytesHeaderValue:
     """Header with bytes value.
 
     :param value: Value of the header.
@@ -41,7 +41,7 @@ class BytesHeaderValue(HeaderValue):
 
 
 @dataclass
-class GenericHeaderValue(HeaderValue):
+class GenericHeaderValue:
     """Generic header value."""
 
     value: str
@@ -57,7 +57,7 @@ class GenericHeaderValue(HeaderValue):
 
 
 @dataclass
-class CompressValue(HeaderValue):
+class CompressValue:
     """Compress header.  Specifies what encryption scheme to use.  So far only
     'zlib' is supported.
     """
@@ -74,7 +74,7 @@ class CompressValue(HeaderValue):
 
 
 @dataclass
-class ContentLengthValue(HeaderValue):
+class ContentLengthValue:
     """ContentLength header.  Indicates the length of the body in bytes."""
 
     length: int = 0
@@ -99,7 +99,7 @@ class MessageClassOption(Enum):
 
 
 @dataclass
-class MessageClassValue(HeaderValue):
+class MessageClassValue:
     """MessageClass header.  Used to specify whether a message is 'spam' or
     'ham.'
     """
@@ -133,7 +133,7 @@ class ActionOption:
 
 
 @dataclass
-class SetOrRemoveValue(HeaderValue):
+class SetOrRemoveValue:
     """Base class for headers that implement "local" and "remote" rules."""
 
     action: ActionOption
@@ -159,7 +159,7 @@ class SetOrRemoveValue(HeaderValue):
 
 
 @dataclass
-class SpamValue(HeaderValue):
+class SpamValue:
     """Spam header.  Used by the SPAMD service to report on if the submitted
     message was spam and the score/threshold that it used."""
 
@@ -184,7 +184,7 @@ class SpamValue(HeaderValue):
 
 
 @dataclass
-class UserValue(HeaderValue):
+class UserValue:
     """User header.  Used to specify which user the SPAMD service should use
     when loading configuration files."""
 
@@ -200,3 +200,89 @@ class UserValue(HeaderValue):
         """Converts object to a JSON serializable object."""
 
         return self.name
+
+
+class Headers(UserDict):
+    def get_header(self, name: str) -> Optional[GenericHeaderValue]:
+        return self.data.get(name)
+
+    def set_header(self, name: str, value: GenericHeaderValue):
+        self.data[name] = value
+
+    def get_bytes_header(self, name: str) -> Optional[BytesHeaderValue]:
+        return self.data.get(name)
+
+    def set_bytes_header(self, name: str, value: BytesHeaderValue):
+        self.data[name] = value
+
+    @property
+    def compress(self) -> Optional[CompressValue]:
+        return self.data.get("Compress")
+
+    @compress.setter
+    def compress(self, value: CompressValue):
+        self.data["Compress"] = value
+
+    @property
+    def content_length(self) -> Optional[ContentLengthValue]:
+        return self.data.get("Content-length")
+
+    @content_length.setter
+    def content_length(self, value: ContentLengthValue):
+        self.data["Content-length"] = value
+
+    @property
+    def message_class(self) -> Optional[MessageClassValue]:
+        return self.data.get("Message-class")
+
+    @message_class.setter
+    def message_class(self, value: MessageClassValue):
+        self.data["Message-class"] = value
+
+    @property
+    def set_(self) -> Optional[SetOrRemoveValue]:
+        return self.data.get("Set")
+
+    @set_.setter
+    def set_(self, value: SetOrRemoveValue):
+        self.data["Set"] = value
+
+    @property
+    def remove(self) -> Optional[SetOrRemoveValue]:
+        return self.data.get("Remove")
+
+    @remove.setter
+    def remove(self, value: SetOrRemoveValue):
+        self.data["Remove"] = value
+
+    @property
+    def did_set(self) -> Optional[SetOrRemoveValue]:
+        return self.data.get("DidSet")
+
+    @did_set.setter
+    def did_set(self, value: SetOrRemoveValue):
+        self.data["DidSet"] = value
+
+    @property
+    def did_remove(self) -> Optional[SetOrRemoveValue]:
+        return self.data.get("DidRemove")
+
+    @did_remove.setter
+    def did_remove(self, value: SetOrRemoveValue):
+        self.data["DidRemove"] = value
+
+    @property
+    def spam(self) -> Optional[SpamValue]:
+        return self.data.get("Spam")
+
+    @spam.setter
+    def spam(self, value: SpamValue):
+        self.data["Spam"] = value
+
+    @property
+    def user(self) -> Optional[UserValue]:
+        return self.data.get("User")
+
+    @user.setter
+    def user(self, value: UserValue):
+        self.data["User"] = value

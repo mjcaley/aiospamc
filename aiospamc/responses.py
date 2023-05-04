@@ -10,7 +10,7 @@ from enum import IntEnum
 from typing import Any, Dict, Optional, SupportsBytes, Union
 
 from .exceptions import TimeoutException
-from .header_values import ContentLengthValue, HeaderValue
+from .header_values import ContentLengthValue, Headers, HeaderValue
 
 
 class Status(IntEnum):
@@ -43,7 +43,7 @@ class Response:
         version: str = "1.5",
         status_code: Union[Status, int] = 0,
         message: str = "",
-        headers: Optional[Dict[str, HeaderValue]] = None,
+        headers: Union[Dict[str, Any], Headers, None] = None,
         body: bytes = b"",
         **_,
     ):
@@ -57,7 +57,12 @@ class Response:
         """
 
         self.version = version
-        self.headers = headers or {}
+        if isinstance(headers, dict):
+            self.headers = Headers(headers)
+        elif isinstance(headers, Headers):
+            self.headers = headers
+        else:
+            self.headers = Headers()
         self._status_code: Union[Status, int]
         self.status_code = status_code
         self.message = message
