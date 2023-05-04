@@ -461,7 +461,7 @@ def parse_user_value(stream: str) -> UserValue:
     return UserValue(name=stream.strip())
 
 
-def parse_header_value(header: str, value: Union[str, bytes]) -> HeaderValue:
+def parse_header_value(header: str, value: Union[str, bytes]) -> Any:
     """Sends the header value stream to the header value parsing function.
 
     :param header: Name of the header.
