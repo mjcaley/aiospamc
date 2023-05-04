@@ -4,9 +4,9 @@
 
 import zlib
 from base64 import b64encode
-from typing import Any, Dict, Optional, SupportsBytes, Union
+from typing import Any, Dict, SupportsBytes, Union
 
-from .header_values import ContentLengthValue, Headers, HeaderValue
+from .header_values import ContentLengthValue, Headers
 
 
 class Request:

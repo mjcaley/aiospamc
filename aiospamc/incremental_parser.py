@@ -18,7 +18,6 @@ from .header_values import (
     CompressValue,
     ContentLengthValue,
     GenericHeaderValue,
-    HeaderValue,
     MessageClassOption,
     MessageClassValue,
     SetOrRemoveValue,
@@ -488,7 +487,7 @@ def parse_header_value(header: str, value: Union[str, bytes]) -> Any:
             return GenericHeaderValue(value)
 
 
-def parse_header(stream: bytes) -> Tuple[str, HeaderValue]:
+def parse_header(stream: bytes) -> Tuple[str, Any]:
     """Splits the header line and sends to the header parsing function.
 
     :param stream: Byte stream of the header line.

@@ -10,7 +10,7 @@ from enum import IntEnum
 from typing import Any, Dict, Optional, SupportsBytes, Union
 
 from .exceptions import TimeoutException
-from .header_values import ContentLengthValue, Headers, HeaderValue
+from .header_values import ContentLengthValue, Headers
 
 
 class Status(IntEnum):
