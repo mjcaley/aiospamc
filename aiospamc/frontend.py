@@ -105,10 +105,7 @@ async def check(
     )
     context_logger.info("Sending CHECK request")
 
-    if "client" in kwargs:
-        client = kwargs["client"]
-    else:
-        client = Client()
+    client = kwargs.get("client", Client)
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -191,10 +188,7 @@ async def headers(
     )
     context_logger.info("Sending HEADERS request")
 
-    if "client" in kwargs:
-        client = kwargs["client"]
-    else:
-        client = Client()
+    client = kwargs.get("client", Client)
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -265,10 +259,7 @@ async def ping(
     )
     context_logger.info("Sending PING request")
 
-    if "client" in kwargs:
-        client = kwargs["client"]
-    else:
-        client = Client()
+    client = kwargs.get("client", Client)
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -351,10 +342,7 @@ async def process(
     )
     context_logger.info("Sending PROCESS request")
 
-    if "client" in kwargs:
-        client = kwargs["client"]
-    else:
-        client = Client()
+    client = kwargs.get("client", Client)
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -436,10 +424,7 @@ async def report(
     )
     context_logger.info("Sending REPORT request")
 
-    if "client" in kwargs:
-        client = kwargs["client"]
-    else:
-        client = Client()
+    client = kwargs.get("client", Client)
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -522,10 +507,7 @@ async def report_if_spam(
     )
     context_logger.info("Sending REPORT_IFSPAM request")
 
-    if "client" in kwargs:
-        client = kwargs["client"]
-    else:
-        client = Client()
+    client = kwargs.get("client", Client)
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -608,10 +590,7 @@ async def symbols(
     )
     context_logger.info("Sending SYMBOLS request")
 
-    if "client" in kwargs:
-        client = kwargs["client"]
-    else:
-        client = Client()
+    client = kwargs.get("client", Client)
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -706,10 +685,7 @@ async def tell(
     )
     context_logger.info("Sending TELL request")
 
-    if "client" in kwargs:
-        client = kwargs["client"]
-    else:
-        client = Client()
+    client = kwargs.get("client", Client)
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
