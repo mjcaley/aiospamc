@@ -2,16 +2,32 @@
 
 """Frontend functions for the package."""
 
-from typing import Any, Dict, Optional, SupportsBytes, Union
+from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union
 
 from loguru import logger
 
 from .client import Client
-from .connections import Timeout
-from .header_values import ActionOption, MessageClassOption, MessageClassValue
-from .incremental_parser import parse_set_remove_value
+from .connections import ConnectionManager, Timeout
+from .header_values import (
+    ActionOption,
+    CompressValue,
+    MessageClassOption,
+    MessageClassValue,
+    UserValue,
+)
+from .incremental_parser import ResponseParser, parse_set_remove_value
 from .requests import Request
 from .responses import Response
+
+
+def _add_compress_header(request: Request, compress: bool):
+    if compress:
+        request.headers.compress = CompressValue()
+
+
+def _add_user_header(request: Request, user: Optional[str]):
+    if user:
+        request.headers.user = UserValue(user)
 
 
 async def check(
@@ -65,9 +81,9 @@ async def check(
     :raises ClientTimeoutException: Client timed out during connection.
     """
 
-    client = kwargs.get("client", Client())
-
     req = Request("CHECK", body=bytes(message))
+    _add_compress_header(req, compress)
+    _add_user_header(req, user)
     context_logger = logger.bind(
         host=host,
         port=port,
@@ -77,17 +93,17 @@ async def check(
     )
     context_logger.info("Sending CHECK request")
 
+    if "client" in kwargs:
+        client = kwargs["client"]
+    else:
+        client = Client()
+    ssl_context = client.ssl_context_factory(verify)
+    connection = client.connection_factory(
+        host, port, socket_path, timeout, ssl_context
+    )
+    parser = client.parser_factory()
     try:
-        response = await client.request(
-            req,
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            timeout=timeout,
-            verify=verify,
-            user=user,
-            compress=compress,
-        )
+        response = await client.request(req, connection, parser)
     except Exception:
         context_logger.exception("Exception when calling check function")
         raise
@@ -151,9 +167,9 @@ async def headers(
     :raises ClientTimeoutException: Client timed out during connection.
     """
 
-    client = kwargs.get("client", Client())
-
     req = Request("HEADERS", body=bytes(message))
+    _add_compress_header(req, compress)
+    _add_user_header(req, user)
     context_logger = logger.bind(
         host=host,
         port=port,
@@ -163,17 +179,17 @@ async def headers(
     )
     context_logger.info("Sending HEADERS request")
 
+    if "client" in kwargs:
+        client = kwargs["client"]
+    else:
+        client = Client()
+    ssl_context = client.ssl_context_factory(verify)
+    connection = client.connection_factory(
+        host, port, socket_path, timeout, ssl_context
+    )
+    parser = client.parser_factory()
     try:
-        response = await client.request(
-            req,
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            timeout=timeout,
-            verify=verify,
-            user=user,
-            compress=compress,
-        )
+        response = await client.request(req, connection, parser)
     except Exception:
         context_logger.exception("Exception when calling headers function")
         raise
@@ -228,8 +244,6 @@ async def ping(
     :raises ClientTimeoutException: Client timed out during connection.
     """
 
-    client = kwargs.get("client", Client())
-
     req = Request("PING")
     context_logger = logger.bind(
         host=host,
@@ -239,15 +253,17 @@ async def ping(
     )
     context_logger.info("Sending PING request")
 
+    if "client" in kwargs:
+        client = kwargs["client"]
+    else:
+        client = Client()
+    ssl_context = client.ssl_context_factory(verify)
+    connection = client.connection_factory(
+        host, port, socket_path, timeout, ssl_context
+    )
+    parser = client.parser_factory()
     try:
-        response = await client.request(
-            req,
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            timeout=timeout,
-            verify=verify,
-        )
+        response = await client.request(req, connection, parser)
     except Exception:
         context_logger.exception("Exception when calling ping function")
         raise
@@ -311,9 +327,9 @@ async def process(
     :raises ClientTimeoutException: Client timed out during connection.
     """
 
-    client = kwargs.get("client", Client())
-
     req = Request("PROCESS", body=bytes(message))
+    _add_compress_header(req, compress)
+    _add_user_header(req, user)
     context_logger = logger.bind(
         host=host,
         port=port,
@@ -323,17 +339,17 @@ async def process(
     )
     context_logger.info("Sending PROCESS request")
 
+    if "client" in kwargs:
+        client = kwargs["client"]
+    else:
+        client = Client()
+    ssl_context = client.ssl_context_factory(verify)
+    connection = client.connection_factory(
+        host, port, socket_path, timeout, ssl_context
+    )
+    parser = client.parser_factory()
     try:
-        response = await client.request(
-            req,
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            timeout=timeout,
-            verify=verify,
-            user=user,
-            compress=compress,
-        )
+        response = await client.request(req, connection, parser)
     except Exception:
         context_logger.exception("Exception when calling process function")
         raise
@@ -396,9 +412,9 @@ async def report(
     :raises ClientTimeoutException: Client timed out during connection.
     """
 
-    client = kwargs.get("client", Client())
-
     req = Request("REPORT", body=bytes(message))
+    _add_compress_header(req, compress)
+    _add_user_header(req, user)
     context_logger = logger.bind(
         host=host,
         port=port,
@@ -408,17 +424,17 @@ async def report(
     )
     context_logger.info("Sending REPORT request")
 
+    if "client" in kwargs:
+        client = kwargs["client"]
+    else:
+        client = Client()
+    ssl_context = client.ssl_context_factory(verify)
+    connection = client.connection_factory(
+        host, port, socket_path, timeout, ssl_context
+    )
+    parser = client.parser_factory()
     try:
-        response = await client.request(
-            req,
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            timeout=timeout,
-            verify=verify,
-            user=user,
-            compress=compress,
-        )
+        response = await client.request(req, connection, parser)
     except Exception:
         context_logger.exception("Exception when calling report function")
         raise
@@ -482,9 +498,9 @@ async def report_if_spam(
     :raises ClientTimeoutException: Client timed out during connection.
     """
 
-    client = kwargs.get("client", Client())
-
     req = Request("REPORT_IFSPAM", body=bytes(message))
+    _add_compress_header(req, compress)
+    _add_user_header(req, user)
     context_logger = logger.bind(
         host=host,
         port=port,
@@ -494,17 +510,17 @@ async def report_if_spam(
     )
     context_logger.info("Sending REPORT_IFSPAM request")
 
+    if "client" in kwargs:
+        client = kwargs["client"]
+    else:
+        client = Client()
+    ssl_context = client.ssl_context_factory(verify)
+    connection = client.connection_factory(
+        host, port, socket_path, timeout, ssl_context
+    )
+    parser = client.parser_factory()
     try:
-        response = await client.request(
-            req,
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            timeout=timeout,
-            verify=verify,
-            user=user,
-            compress=compress,
-        )
+        response = await client.request(req, connection, parser)
     except Exception:
         context_logger.exception("Exception when calling report_if_spam function")
         raise
@@ -568,9 +584,9 @@ async def symbols(
     :raises ClientTimeoutException: Client timed out during connection.
     """
 
-    client = kwargs.get("client", Client())
-
     req = Request("SYMBOLS", body=bytes(message))
+    _add_compress_header(req, compress)
+    _add_user_header(req, user)
     context_logger = logger.bind(
         host=host,
         port=port,
@@ -580,17 +596,17 @@ async def symbols(
     )
     context_logger.info("Sending SYMBOLS request")
 
+    if "client" in kwargs:
+        client = kwargs["client"]
+    else:
+        client = Client()
+    ssl_context = client.ssl_context_factory(verify)
+    connection = client.connection_factory(
+        host, port, socket_path, timeout, ssl_context
+    )
+    parser = client.parser_factory()
     try:
-        response = await client.request(
-            req,
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            timeout=timeout,
-            verify=verify,
-            user=user,
-            compress=compress,
-        )
+        response = await client.request(req, connection, parser)
     except Exception:
         context_logger.exception("Exception when calling symbols function")
         raise
@@ -659,8 +675,6 @@ async def tell(
     :raises ClientTimeoutException: Client timed out during connection.
     """
 
-    client = kwargs.get("client", Client())
-
     headers: Dict[str, Any] = {
         "Message-class": MessageClassValue(MessageClassOption(message_class))
     }
@@ -669,6 +683,8 @@ async def tell(
     if set_action:
         headers["Set"] = parse_set_remove_value(set_action)
     req = Request("TELL", headers=headers, body=bytes(message))
+    _add_compress_header(req, compress)
+    _add_user_header(req, user)
     context_logger = logger.bind(
         host=host,
         port=port,
@@ -678,17 +694,17 @@ async def tell(
     )
     context_logger.info("Sending TELL request")
 
+    if "client" in kwargs:
+        client = kwargs["client"]
+    else:
+        client = Client()
+    ssl_context = client.ssl_context_factory(verify)
+    connection = client.connection_factory(
+        host, port, socket_path, timeout, ssl_context
+    )
+    parser = client.parser_factory()
     try:
-        response = await client.request(
-            req,
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            timeout=timeout,
-            verify=verify,
-            user=user,
-            compress=compress,
-        )
+        response = await client.request(req, connection, parser)
     except Exception:
         context_logger.exception("Exception when calling tell function")
         raise

@@ -83,8 +83,13 @@ class CommandRunner:
         self._logger = self._logger.bind(host=host, port=port, socket_path=socket_path)
         self._logger.info("Sending request")
 
+        ssl_context = self.client.ssl_context_factory(verify)
+        connection = self.client.connection_factory(
+            host, port, socket_path, timeout, ssl_context
+        )
+        parser = self.client.parser_factory()
         try:
-            response = await self.client.request_new(self.request, connection, parser)
+            response = await self.client.request(self.request, connection, parser)
         except ResponseException as e:
             self._logger = self._logger.bind(response=e.response)
             self._logger.exception(e)
