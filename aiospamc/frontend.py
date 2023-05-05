@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union
 from loguru import logger
 
 from .client import Client
-from .connections import ConnectionManager, Timeout
+from .connections import Timeout
 from .header_values import (
     ActionOption,
     CompressValue,
@@ -15,17 +15,29 @@ from .header_values import (
     MessageClassValue,
     UserValue,
 )
-from .incremental_parser import ResponseParser, parse_set_remove_value
+from .incremental_parser import parse_set_remove_value
 from .requests import Request
 from .responses import Response
 
 
 def _add_compress_header(request: Request, compress: bool):
+    """Adds a compress header to the request if specified.
+
+    :param request: The request to be modified.
+    :param compress: Switch if to add compress header.
+    """
+
     if compress:
         request.headers.compress = CompressValue()
 
 
 def _add_user_header(request: Request, user: Optional[str]):
+    """Adds a user header to the request if specified.
+
+    :param request: The request to be modified.
+    :param user: Optional username to be added.
+    """
+
     if user:
         request.headers.user = UserValue(user)
 

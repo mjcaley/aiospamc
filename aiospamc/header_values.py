@@ -194,86 +194,201 @@ class UserValue:
 
 
 class Headers(UserDict):
+    """Class to store headers with shortcut properties."""
+
     def get_header(self, name: str) -> Optional[GenericHeaderValue]:
+        """Get a string header if it exists.
+
+        :param name: Name of the header.
+        :return: The header value.
+        """
+
         return self.data.get(name)
 
     def set_header(self, name: str, value: GenericHeaderValue):
+        """Sets a string header.
+
+        :param name: Name of the header.
+        :param value: Value of the header.
+        """
+
         self.data[name] = value
 
     def get_bytes_header(self, name: str) -> Optional[BytesHeaderValue]:
+        """Get a bytes header if it exists.
+
+        :param name: Name of the header.
+        :return: The header value.
+        """
+
         return self.data.get(name)
 
     def set_bytes_header(self, name: str, value: BytesHeaderValue):
+        """Sets a string header.
+
+        :param name: Name of the header.
+        :param value: Value of the header.
+        """
+
         self.data[name] = value
 
     @property
     def compress(self) -> Optional[CompressValue]:
+        """Gets the Compress header if it exists.
+
+        :return: Compress header value.
+        """
+
         return self.data.get("Compress")
 
     @compress.setter
     def compress(self, value: CompressValue):
+        """Sets the Compress header.
+
+        :param value: Value of the header.
+        """
+
         self.data["Compress"] = value
 
     @property
     def content_length(self) -> Optional[ContentLengthValue]:
+        """Gets the Content-length header if it exists.
+
+        :return: Content-length header value.
+        """
+
         return self.data.get("Content-length")
 
     @content_length.setter
     def content_length(self, value: ContentLengthValue):
+        """Sets the Content-length header.
+
+        :param value: Value of the header.
+        """
+
         self.data["Content-length"] = value
 
     @property
     def message_class(self) -> Optional[MessageClassValue]:
+        """Gets the Message-class header if it exists.
+
+        :return: Message-class header value.
+        """
+
         return self.data.get("Message-class")
 
     @message_class.setter
     def message_class(self, value: MessageClassValue):
+        """Sets the Message-class header.
+
+        :param value: Value of the header.
+        """
+
         self.data["Message-class"] = value
 
     @property
     def set_(self) -> Optional[SetOrRemoveValue]:
+        """Gets the Set header if it exists.
+
+        :return: Set header value.
+        """
+
         return self.data.get("Set")
 
     @set_.setter
     def set_(self, value: SetOrRemoveValue):
+        """Sets the Set header.
+
+        :param value: Value of the header.
+        """
+
         self.data["Set"] = value
 
     @property
     def remove(self) -> Optional[SetOrRemoveValue]:
+        """Gets the Remove header if it exists.
+
+        :return: Remove header value.
+        """
+
         return self.data.get("Remove")
 
     @remove.setter
     def remove(self, value: SetOrRemoveValue):
+        """Sets the Remove header.
+
+        :param value: Value of the header.
+        """
+
         self.data["Remove"] = value
 
     @property
     def did_set(self) -> Optional[SetOrRemoveValue]:
+        """Gets the DidSet header if it exists.
+
+        :return: DidSet header value.
+        """
+
         return self.data.get("DidSet")
 
     @did_set.setter
     def did_set(self, value: SetOrRemoveValue):
+        """Sets the DidSet header.
+
+        :param value: Value of the header.
+        """
+
         self.data["DidSet"] = value
 
     @property
     def did_remove(self) -> Optional[SetOrRemoveValue]:
+        """Gets the DidRemove header if it exists.
+
+        :return: DidRemove header value.
+        """
+
         return self.data.get("DidRemove")
 
     @did_remove.setter
     def did_remove(self, value: SetOrRemoveValue):
+        """Sets the DidRemove header.
+
+        :param value: Value of the header.
+        """
+
         self.data["DidRemove"] = value
 
     @property
     def spam(self) -> Optional[SpamValue]:
+        """Gets the Spam header if it exists.
+
+        :return: Spam header value.
+        """
+
         return self.data.get("Spam")
 
     @spam.setter
     def spam(self, value: SpamValue):
+        """Sets the Spam header.
+
+        :param value: Value of the header.
+        """
+
         self.data["Spam"] = value
 
     @property
     def user(self) -> Optional[UserValue]:
+        """Gets the User header if it exists.
+
+        :return: User header value.
+        """
         return self.data.get("User")
 
     @user.setter
     def user(self, value: UserValue):
+        """Sets the User header.
+
+        :param value: Value of the header.
+        """
+
         self.data["User"] = value
