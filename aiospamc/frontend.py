@@ -105,7 +105,7 @@ async def check(
     )
     context_logger.info("Sending CHECK request")
 
-    client = kwargs.get("client", Client)
+    client = Client()
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -188,7 +188,7 @@ async def headers(
     )
     context_logger.info("Sending HEADERS request")
 
-    client = kwargs.get("client", Client)
+    client = Client()
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -259,7 +259,7 @@ async def ping(
     )
     context_logger.info("Sending PING request")
 
-    client = kwargs.get("client", Client)
+    client = Client()
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -342,7 +342,7 @@ async def process(
     )
     context_logger.info("Sending PROCESS request")
 
-    client = kwargs.get("client", Client)
+    client = Client()
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -424,7 +424,7 @@ async def report(
     )
     context_logger.info("Sending REPORT request")
 
-    client = kwargs.get("client", Client)
+    client = Client()
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -507,7 +507,7 @@ async def report_if_spam(
     )
     context_logger.info("Sending REPORT_IFSPAM request")
 
-    client = kwargs.get("client", Client)
+    client = Client()
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -590,7 +590,7 @@ async def symbols(
     )
     context_logger.info("Sending SYMBOLS request")
 
-    client = kwargs.get("client", Client)
+    client = Client()
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
@@ -685,7 +685,7 @@ async def tell(
     )
     context_logger.info("Sending TELL request")
 
-    client = kwargs.get("client", Client)
+    client = Client()
     ssl_context = client.ssl_context_factory(verify)
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context

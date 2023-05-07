@@ -4,7 +4,7 @@ import asyncio
 import json
 import ssl
 import sys
-from enum import Enum, auto
+from enum import Enum
 from typing import Any, Optional
 
 import typer
@@ -18,19 +18,23 @@ from aiospamc.header_values import (
     SetOrRemoveValue,
 )
 
-from .. import __version__
-from ..client import Client, Request
-from ..connections import Timeout
-from ..responses import Response, ResponseException
+from . import __version__
+from .client import Client, Request
+from .connections import Timeout
+from .responses import Response, ResponseException
+
+
+def run():
+    try:
+        from .cli import app
+    except ImportError:
+        print("The optional 'cli' needed")
+        sys.exit(-1)
+
+    app()
+
 
 app = typer.Typer()
-
-
-class ResultKind(Enum):
-    Success = auto()
-    ParseError = auto()
-    ResponseError = auto()
-    TimeoutError = auto()
 
 
 class Output(str, Enum):
@@ -55,12 +59,12 @@ class CommandRunner:
         request: Request,
         debug: bool = False,
         output: Output = Output.Text,
-        client: Optional[Client] = None,
     ):
         self.request = request
+        self.response: Optional[Response] = None
         self.debug = debug
         self.output = output
-        self.client = client or Client()
+        self.client = Client()
 
         self.exception: Optional[Exception] = None
         self.exit_code = SUCCESS

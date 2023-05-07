@@ -5,7 +5,7 @@ from base64 import b64encode
 
 import pytest
 
-from aiospamc.header_values import CompressValue, ContentLengthValue
+from aiospamc.header_values import CompressValue, ContentLengthValue, Headers
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.responses import (
     CantCreateException,
@@ -28,6 +28,13 @@ from aiospamc.responses import (
     UnavailableException,
     UsageException,
 )
+
+
+def test_init_headers_type():
+    headers = Headers()
+    r = Response(headers=headers)
+
+    assert headers is r.headers
 
 
 def test_init_version():

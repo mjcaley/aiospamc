@@ -9,6 +9,7 @@ from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
 import pytest
 import trustme
+from pytest_mock import MockerFixture
 
 from aiospamc.client import Client
 from aiospamc.header_values import ContentLengthValue
@@ -256,23 +257,22 @@ def unix_socket(tmp_path_factory):
 
 
 @pytest.fixture
-def mock_client_dependency(mocker, response_ok):
-    ssl_factory = mocker.Mock()
+def mock_client(mocker: MockerFixture, response_ok):
     connection_factory = mocker.Mock()
     connection_factory.return_value.request = mocker.AsyncMock(return_value=response_ok)
-    parser_factory = mocker.Mock(return_value=ResponseParser())
 
-    return Client(ssl_factory, connection_factory, parser_factory)
+    mock_connection_factory = mocker.patch.object(
+        Client, "default_connection_factory", connection_factory
+    )
+
+    return mock_connection_factory
 
 
 @pytest.fixture
-def mock_client_response(mock_client_dependency):
+def mock_client_response(mock_client):
     def inner(response):
-        mock_client_dependency.connection_factory.return_value.request.return_value = (
-            response
-        )
-
-        return mock_client_dependency
+        mock_client.return_value.request.return_value = response
+        return mock_client
 
     return inner
 

@@ -3,7 +3,7 @@
 import zlib
 from base64 import b64encode
 
-from aiospamc.header_values import CompressValue, ContentLengthValue
+from aiospamc.header_values import CompressValue, ContentLengthValue, Headers
 from aiospamc.incremental_parser import RequestParser
 from aiospamc.requests import Request
 
@@ -24,6 +24,13 @@ def test_init_headers():
     r = Request(verb="TEST")
 
     assert hasattr(r, "headers")
+
+
+def test_init_headers_type():
+    headers = Headers()
+    r = Request(verb="TEST", headers=headers)
+
+    assert headers is r.headers
 
 
 def test_bytes_starts_with_verb():

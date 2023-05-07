@@ -24,222 +24,207 @@ from aiospamc.responses import (
 )
 
 
-async def test_request_sent_to_connection(mock_client_dependency, mocker):
+async def test_request_sent_to_connection(mock_client, mocker):
     mock_req = mocker.MagicMock()
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    await mock_client_dependency.request(mock_req, connection, parser)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
+    await client.request(mock_req, connection, parser)
 
-    assert (
-        bytes(mock_req)
-        == mock_client_dependency.connection_factory().request.await_args[0][0]
-    )
+    assert bytes(mock_req) == client.connection_factory().request.await_args[0][0]
 
 
-async def test_request_response_sent_to_parser(mock_client_dependency, mocker):
+async def test_request_response_sent_to_parser(mock_client, mocker):
     mock_req = mocker.MagicMock()
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
     mocker.spy(parser, "parse")
-    await mock_client_dependency.request(mock_req, connection, parser)
+    await client.request(mock_req, connection, parser)
 
     response = connection.request.return_value
     assert response == parser.parse.call_args[0][0]
 
 
-async def test_request_returns_response(mock_client_dependency, mocker):
+async def test_request_returns_response(mock_client, mocker):
     mock_req = mocker.MagicMock()
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
     parse_spy = mocker.spy(parser, "parse")
-    result = await mock_client_dependency.request(mock_req, connection, parser)
+    result = await client.request(mock_req, connection, parser)
     expected = Response(**parse_spy.spy_return)
 
     assert expected == result
 
 
-async def test_request_raises_usage(
-    mock_client_dependency, mock_client_response, mocker, ex_usage
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_usage)
+async def test_request_raises_usage(mock_client_response, mocker, ex_usage):
+    mock_client_response(ex_usage)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(UsageException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_data_err(
-    mock_client_dependency, mock_client_response, mocker, ex_data_err
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_data_err)
+async def test_request_raises_data_err(mock_client_response, mocker, ex_data_err):
+    mock_client_response(ex_data_err)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(DataErrorException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_no_input(
-    mock_client_dependency, mock_client_response, mocker, ex_no_input
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_no_input)
+async def test_request_raises_no_input(mock_client_response, mocker, ex_no_input):
+    mock_client_response(ex_no_input)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(NoInputException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_no_user(
-    mock_client_dependency, mock_client_response, mocker, ex_no_user
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_no_user)
+async def test_request_raises_no_user(mock_client_response, mocker, ex_no_user):
+    mock_client_response(ex_no_user)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(NoUserException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_no_host(
-    mock_client_dependency, mock_client_response, mocker, ex_no_host
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_no_host)
+async def test_request_raises_no_host(mock_client_response, mocker, ex_no_host):
+    mock_client_response(ex_no_host)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(NoHostException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_unavailable(
-    mock_client_dependency, mock_client_response, mocker, ex_unavailable
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_unavailable)
+async def test_request_raises_unavailable(mock_client_response, mocker, ex_unavailable):
+    mock_client_response(ex_unavailable)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(UnavailableException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_software(
-    mock_client_dependency, mock_client_response, mocker, ex_software
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_software)
+async def test_request_raises_software(mock_client_response, mocker, ex_software):
+    mock_client_response(ex_software)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(InternalSoftwareException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_os_error(
-    mock_client_dependency, mock_client_response, mocker, ex_os_err
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_os_err)
+async def test_request_raises_os_error(mock_client_response, mocker, ex_os_err):
+    mock_client_response(ex_os_err)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(OSErrorException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_os_file(
-    mock_client_dependency, mock_client_response, mocker, ex_os_file
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_os_file)
+async def test_request_raises_os_file(mock_client_response, mocker, ex_os_file):
+    mock_client_response(ex_os_file)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(OSFileException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_cant_create(
-    mock_client_dependency, mock_client_response, mocker, ex_cant_create
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_cant_create)
+async def test_request_raises_cant_create(mock_client_response, mocker, ex_cant_create):
+    mock_client_response(ex_cant_create)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(CantCreateException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_io_error(
-    mock_client_dependency, mock_client_response, mocker, ex_io_err
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_io_err)
+async def test_request_raises_io_error(mock_client_response, mocker, ex_io_err):
+    mock_client_response(ex_io_err)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(IOErrorException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
 async def test_request_raises_temporary_failure(
-    mock_client_dependency, mock_client_response, mocker, ex_temp_fail
+    mock_client_response, mocker, ex_temp_fail
 ):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_temp_fail)
+    mock_client_response(ex_temp_fail)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(TemporaryFailureException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_protocol(
-    mock_client_dependency, mock_client_response, mocker, ex_protocol
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_protocol)
+async def test_request_raises_protocol(mock_client_response, mocker, ex_protocol):
+    mock_client_response(ex_protocol)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(ProtocolException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_no_permission(
-    mock_client_dependency, mock_client_response, mocker, ex_no_perm
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_no_perm)
+async def test_request_raises_no_permission(mock_client_response, mocker, ex_no_perm):
+    mock_client_response(ex_no_perm)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(NoPermissionException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_config(
-    mock_client_dependency, mock_client_response, mocker, ex_config
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_config)
+async def test_request_raises_config(mock_client_response, mocker, ex_config):
+    mock_client_response(ex_config)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(ConfigException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_timeout(
-    mock_client_dependency, mock_client_response, mocker, ex_timeout
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_timeout)
+async def test_request_raises_timeout(mock_client_response, mocker, ex_timeout):
+    mock_client_response(ex_timeout)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(ServerTimeoutException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)
 
 
-async def test_request_raises_undefined(
-    mock_client_dependency, mock_client_response, mocker, ex_undefined
-):
-    connection = mock_client_dependency.connection_factory()
-    parser = mock_client_dependency.parser_factory()
-    mock_client = mock_client_response(ex_undefined)
+async def test_request_raises_undefined(mock_client_response, mocker, ex_undefined):
+    mock_client_response(ex_undefined)
+    client = Client()
+    connection = client.connection_factory()
+    parser = client.parser_factory()
 
     with pytest.raises(ResponseException):
-        await mock_client.request(mocker.MagicMock(), connection, parser)
+        await client.request(mocker.MagicMock(), connection, parser)

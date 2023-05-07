@@ -2,7 +2,6 @@
 
 """Module implementing client objects that all requests go through."""
 
-from dataclasses import dataclass
 from ssl import SSLContext
 from typing import Any, Callable, Optional, Type
 
@@ -15,7 +14,6 @@ from .connections import (
     new_ssl_context,
 )
 from .exceptions import BadResponse
-from .header_values import CompressValue, UserValue
 from .incremental_parser import ParseError, ResponseParser
 from .requests import Request
 from .responses import Response
@@ -34,13 +32,21 @@ ConnectionFactory = Callable[
 SSLFactory = Callable[[Any], Optional[SSLContext]]
 
 
-@dataclass
 class Client:
     """Client class containing factories."""
 
-    ssl_context_factory: SSLFactory = new_ssl_context
-    connection_factory: ConnectionFactory = new_connection_manager
-    parser_factory: Type[ResponseParser] = ResponseParser
+    default_ssl_context_factory: SSLFactory = staticmethod(new_ssl_context)
+    default_connection_factory: ConnectionFactory = staticmethod(new_connection_manager)
+    default_parser_factory: Type[ResponseParser] = ResponseParser
+
+    def __init__(
+        self, ssl_context_factory=None, connection_factory=None, parser_factory=None
+    ):
+        self.ssl_context_factory = staticmethod(
+            ssl_context_factory or self.default_ssl_context_factory
+        )
+        self.connection_factory = connection_factory or self.default_connection_factory
+        self.parser_factory = parser_factory or self.default_parser_factory
 
     @staticmethod
     async def request(

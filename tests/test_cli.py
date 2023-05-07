@@ -1,14 +1,18 @@
+from functools import partial
+
 import pytest
+from pytest_mock import MockerFixture
 from typer.testing import CliRunner
 
-from aiospamc.cli.commands import app
+from aiospamc.cli import app
+from aiospamc.client import Client
+from aiospamc.incremental_parser import ResponseParser
 
 runner = CliRunner()
 
 
-@pytest.mark.integration
-def test_ping(spamd, ip_address, tcp_port):
+def test_ping(mock_client, ip_address, tcp_port):
     result = runner.invoke(app, ["ping", "--host", ip_address, "--port", tcp_port])
 
     assert 0 == result.exit_code
-    assert "PONG\n" == result.stdout
+    assert "EX_OK\n" == result.stdout
