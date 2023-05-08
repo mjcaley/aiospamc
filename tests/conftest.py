@@ -105,6 +105,12 @@ def response_spam_header():
 
 
 @pytest.fixture
+def response_not_spam():
+    """Response with Spam header, but it's ham."""
+    return b"SPAMD/1.1 0 EX_OK\r\nSpam: False ; 0.0 / 1.0\r\n\r\n"
+
+
+@pytest.fixture
 def response_with_body():
     """Response with body and Content-length header in bytes."""
     return b"SPAMD/1.5 0 EX_OK\r\nContent-length: 10\r\n\r\nTest body\n"
@@ -272,6 +278,15 @@ def mock_client(mocker: MockerFixture, response_ok):
 def mock_client_response(mock_client):
     def inner(response):
         mock_client.return_value.request.return_value = response
+        return mock_client
+
+    return inner
+
+
+@pytest.fixture
+def mock_client_raises(mock_client):
+    def inner(side_effect):
+        mock_client.return_value.request.side_effect = side_effect
         return mock_client
 
     return inner

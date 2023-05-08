@@ -101,18 +101,6 @@ def test_spam_bytes(value, score, threshold, expected):
     assert bytes(s) == expected
 
 
-def test_spam_bool_true():
-    s = SpamValue(value=True)
-
-    assert True is bool(s)
-
-
-def test_spam_bool_false():
-    s = SpamValue(value=False)
-
-    assert False is bool(s)
-
-
 def test_user_str():
     u = UserValue(name="username")
 

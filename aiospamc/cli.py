@@ -23,18 +23,13 @@ from .client import Client, Request
 from .connections import Timeout
 from .responses import Response, ResponseException
 
+app = typer.Typer()
+
 
 def run():
-    try:
-        from .cli import app
-    except ImportError:
-        print("The optional 'cli' needed")
-        sys.exit(-1)
+    """Entrypoint for CLI."""
 
     app()
-
-
-app = typer.Typer()
 
 
 class Output(str, Enum):
@@ -45,12 +40,13 @@ class Output(str, Enum):
 
 
 # Exit codes
-SUCCESS = 0
+SUCCESS = NOT_SPAM = PING_SUCCESS = 0
 IS_SPAM = 1
 PARSE_ERROR = 3
 TIMEOUT_ERROR = 4
 CONNECTION_ERROR = 5
 UNEXPECTED_ERROR = 6
+FILE_NOT_FOUND_ERROR = 7
 
 
 class CommandRunner:
@@ -64,11 +60,10 @@ class CommandRunner:
         self.response: Optional[Response] = None
         self.debug = debug
         self.output = output
-        self.client = Client()
-
         self.exception: Optional[Exception] = None
         self.exit_code = SUCCESS
 
+        self._client = Client()
         self._logger = logger.bind(request=request)
 
     async def run(
@@ -79,28 +74,28 @@ class CommandRunner:
         timeout: Optional[Timeout] = None,
         verify: Any = None,
     ) -> Response:
-        ssl_context = self.client.ssl_context_factory(verify)
-        connection = self.client.connection_factory(
+        ssl_context = self._client.ssl_context_factory(verify)
+        connection = self._client.connection_factory(
             host, port, socket_path, timeout, ssl_context
         )
-        parser = self.client.parser_factory()
+        parser = self._client.parser_factory()
         self._logger = self._logger.bind(host=host, port=port, socket_path=socket_path)
         self._logger.info("Sending request")
 
-        ssl_context = self.client.ssl_context_factory(verify)
-        connection = self.client.connection_factory(
+        ssl_context = self._client.ssl_context_factory(verify)
+        connection = self._client.connection_factory(
             host, port, socket_path, timeout, ssl_context
         )
-        parser = self.client.parser_factory()
+        parser = self._client.parser_factory()
         try:
-            response = await self.client.request(self.request, connection, parser)
+            response = await self._client.request(self.request, connection, parser)
         except ResponseException as e:
             self._logger = self._logger.bind(response=e.response)
             self._logger.exception(e)
             self.response = e.response
             self.exit_code = int(self.response.status_code)
             self.exception = e
-            self.exit(self.response.message, True)
+            self.exit(f"Response error from server: {self.response.message}", True)
         except ParseError as e:
             self._logger.exception(e)
             self.exit_code = PARSE_ERROR
@@ -118,7 +113,7 @@ class CommandRunner:
             self.exit("Error: Connection error", True)
 
         self._logger = self._logger.bind(response=response)
-        self._logger.info("Successfully recieved request")
+        self._logger.success("Successfully recieved request")
         self.response = response
 
         return response
@@ -232,7 +227,7 @@ def learn(
     ),
     timeout: float = typer.Option(10, help="Timeout in seconds"),
     message_class: MessageClassOption = typer.Option(
-        MessageClassOption.spam, help="Message class to classify the message"
+        "spam", help="Message class to classify the message"
     ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
     debug: bool = typer.Option(False, help="Debug information"),
@@ -311,7 +306,7 @@ def report(
     ),
     timeout: float = typer.Option(10, help="Timeout in seconds"),
     message_class: MessageClassOption = typer.Option(
-        MessageClassOption.spam, help="Message class to classify the message"
+        "spam", help="Message class to classify the message"
     ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
     debug: bool = typer.Option(False, help="Debug information"),
@@ -353,7 +348,7 @@ def revoke(
     ),
     timeout: float = typer.Option(10, help="Timeout in seconds"),
     message_class: MessageClassOption = typer.Option(
-        MessageClassOption.spam, help="Message class to classify the message"
+        "spam", help="Message class to classify the message"
     ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
     debug: bool = typer.Option(False, help="Debug information"),
@@ -391,6 +386,8 @@ def main(
     version: bool = typer.Option(
         False, "--version", is_flag=True, callback=version_callback
     ),
-    debug: bool = typer.Option(False, "--debug", is_flag=True, callback=debug_callback),
+    debug: bool = typer.Option(
+        False, "--debug", is_flag=True, callback=debug_callback, help=""
+    ),
 ):
     pass

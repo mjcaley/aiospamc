@@ -158,9 +158,6 @@ class SpamValue:
     score: float = 0.0
     threshold: float = 0.0
 
-    def __bool__(self) -> bool:
-        return self.value
-
     def __bytes__(self) -> bytes:
         return b"%b ; %.1f / %.1f" % (
             str(self.value).encode("ascii"),
