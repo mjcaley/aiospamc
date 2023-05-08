@@ -42,7 +42,9 @@ class Client:
     def __init__(
         self, ssl_context_factory=None, connection_factory=None, parser_factory=None
     ):
-        self.ssl_context_factory = ssl_context_factory or self.default_ssl_context_factory
+        self.ssl_context_factory = (
+            ssl_context_factory or self.default_ssl_context_factory
+        )
         self.connection_factory = connection_factory or self.default_connection_factory
         self.parser_factory = parser_factory or self.default_parser_factory
 
