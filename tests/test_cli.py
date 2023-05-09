@@ -1,7 +1,5 @@
 import asyncio
 import json
-from functools import partial
-from pathlib import Path
 from ssl import SSLError
 
 import pytest
@@ -78,38 +76,85 @@ def test_cli_runner_to_json():
     assert json.dumps(expected, indent=4) == result
 
 
-def test_command_without_message_json(mock_client, response_ok):
-    expected = {
-        "request": {"verb": "PING", "version": "1.5", "headers": {}, "body": ""},
-        "response": Response(**ResponseParser().parse(response_ok)).to_json(),
-        "exit_code": 0,
-    }
+def test_ping_json(mocker, mock_client):
+    request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
     result = runner.invoke(app, ["ping", "--out", "json"])
+    expected = {
+        "request": request_spy.call_args.args[0].to_json(),
+        "response": request_spy.spy_return.to_json(),
+        "exit_code": 0,
+    }
 
-    assert SUCCESS == result.exit_code
     assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
 
 
 @pytest.mark.parametrize(
     "args",
     [
-        ["check"],
         ["forget"],
         ["learn", "--message-class", "spam"],
-        ["report", "--message-class", "spam"],
-        ["revoke", "--message-class", "spam"],
     ],
 )
-def test_command_with_message_response_exception(
-    mock_client_response, ex_usage, spam, gtube, args
-):
+def test_command_with_message_json(mocker, mock_client, gtube, args):
+    request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
-    mock_client_response(ex_usage)
-    result = runner.invoke(app, args + [str(gtube)])
+    result = runner.invoke(app, args + [str(gtube), "--out", "json"])
+    expected = {
+        "request": request_spy.call_args.args[0].to_json(),
+        "response": request_spy.spy_return.to_json(),
+        "exit_code": 0,
+    }
 
-    assert 64 == result.exit_code
-    assert "Response error from server: EX_USAGE\n" == result.stdout
+    assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
+
+
+def test_check_json(
+    mocker: MockerFixture, mock_client_response, response_not_spam, gtube
+):
+    request_spy = mocker.spy(Client, "request")
+    mock_client_response(response_not_spam)
+    runner = CliRunner()
+    result = runner.invoke(app, ["check", str(gtube), "--out", "json"])
+    expected = {
+        "request": request_spy.call_args.args[0].to_json(),
+        "response": request_spy.spy_return.to_json(),
+        "exit_code": 0,
+    }
+
+    assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
+
+
+def test_report_json(mocker, mock_client_response, response_reported, gtube):
+    mock_client_response(response_reported)
+    request_spy = mocker.spy(Client, "request")
+    runner = CliRunner()
+    result = runner.invoke(
+        app, ["report", str(gtube), "--message-class", "spam", "--out", "json"]
+    )
+    expected = {
+        "request": request_spy.call_args.args[0].to_json(),
+        "response": request_spy.spy_return.to_json(),
+        "exit_code": 0,
+    }
+
+    assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
+
+
+def test_revoke_json(mocker, mock_client_response, response_revoked, gtube):
+    mock_client_response(response_revoked)
+    request_spy = mocker.spy(Client, "request")
+    runner = CliRunner()
+    result = runner.invoke(
+        app, ["revoke", str(gtube), "--message-class", "spam", "--out", "json"]
+    )
+    expected = {
+        "request": request_spy.call_args.args[0].to_json(),
+        "response": request_spy.spy_return.to_json(),
+        "exit_code": 0,
+    }
+
+    assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
 
 
 def test_command_without_message_response_exception(mock_client_response, ex_usage):
@@ -132,7 +177,7 @@ def test_command_without_message_response_exception(mock_client_response, ex_usa
     ],
 )
 def test_command_with_message_response_exception(
-    mock_client_response, ex_usage, spam, gtube, args
+    mock_client_response, ex_usage, gtube, args
 ):
     runner = CliRunner()
     mock_client_response(ex_usage)
@@ -161,7 +206,7 @@ def test_command_without_message_parser_exception(mock_client_raises):
         ["revoke", "--message-class", "spam"],
     ],
 )
-def test_command_with_message_parser_exception(mock_client_raises, spam, gtube, args):
+def test_command_with_message_parser_exception(mock_client_raises, gtube, args):
     runner = CliRunner()
     mock_client_raises(ParseError())
     result = runner.invoke(app, args + [str(gtube)])
@@ -189,7 +234,7 @@ def test_command_without_message_timeout_exception(mock_client_raises):
         ["revoke", "--message-class", "spam"],
     ],
 )
-def test_command_with_message_timeout_exception(mock_client_raises, spam, gtube, args):
+def test_command_with_message_timeout_exception(mock_client_raises, gtube, args):
     runner = CliRunner()
     mock_client_raises(asyncio.TimeoutError())
     result = runner.invoke(app, args + [str(gtube)])
@@ -224,7 +269,7 @@ def test_command_without_message_connection_exception(mock_client_raises, raises
     ],
 )
 def test_command_with_message_connection_exception(
-    mock_client_raises, raises, spam, gtube, args
+    mock_client_raises, raises, gtube, args
 ):
     runner = CliRunner()
     mock_client_raises(raises)

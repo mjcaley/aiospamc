@@ -44,11 +44,21 @@ FILE_NOT_FOUND_ERROR = 7
 
 
 class CommandRunner:
+    """Object to execute requests and handle exceptions."""
+
     def __init__(
         self,
         request: Request,
         output: Output = Output.Text,
     ):
+        """CommandRunner constructor.
+
+        :param request: Request to send.
+        :param response: Response if returned from server.
+        :param output: Output format.
+
+        """
+
         self.request = request
         self.response: Optional[Response] = None
         self.output = output
