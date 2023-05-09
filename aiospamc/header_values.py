@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """Collection of request and response header value objects."""
 
 import getpass

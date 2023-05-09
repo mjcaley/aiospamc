@@ -188,15 +188,6 @@ async def test_tcp_connection_manager_open_refused(
         await t.open()
 
 
-async def test_tcp_connection_manager_open_refused(
-    mock_open_connection_error, hostname, tcp_port
-):
-    t = TcpConnectionManager(hostname, tcp_port)
-
-    with pytest.raises(AIOSpamcConnectionFailed):
-        await t.open()
-
-
 def test_tcp_connection_manager_connection_string(hostname, tcp_port):
     t = TcpConnectionManager(hostname, tcp_port)
 
@@ -225,18 +216,6 @@ async def test_unix_connection_manager_open(mock_open_unix_connection, unix_sock
 )
 async def test_unix_connection_manager_open_refused(
     mock_open_unix_connection_refused, unix_socket
-):
-    u = UnixConnectionManager(unix_socket)
-
-    with pytest.raises(AIOSpamcConnectionFailed):
-        await u.open()
-
-
-@pytest.mark.skipif(
-    sys.platform == "win32", reason="Unix sockets not supported on Windows"
-)
-async def test_unix_connection_manager_open_refused(
-    mock_open_unix_connection_error, unix_socket
 ):
     u = UnixConnectionManager(unix_socket)
 

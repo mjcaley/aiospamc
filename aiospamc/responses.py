@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """Contains classes used for responses."""
 
 from __future__ import annotations
@@ -7,7 +5,7 @@ from __future__ import annotations
 import zlib
 from base64 import b64encode
 from enum import IntEnum
-from typing import Any, Dict, Optional, SupportsBytes, Union
+from typing import Any, Dict, SupportsBytes, Union
 
 from .exceptions import TimeoutException
 from .header_values import ContentLengthValue, Headers

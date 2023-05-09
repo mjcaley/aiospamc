@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import datetime
 import sys
 from pathlib import Path
@@ -13,7 +11,6 @@ from pytest_mock import MockerFixture
 
 from aiospamc.client import Client
 from aiospamc.header_values import ContentLengthValue
-from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request
 
 

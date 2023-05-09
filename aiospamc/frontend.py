@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Frontend functions for the package."""
 
 from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union

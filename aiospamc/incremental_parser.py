@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """Module for the parsing functions and objects."""
 
 from __future__ import annotations

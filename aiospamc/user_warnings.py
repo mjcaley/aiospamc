@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Functions to raise warnings based on user inputs."""
 
 from warnings import warn

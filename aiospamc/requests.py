@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """Contains all requests that can be made to the SPAMD service."""
 
 import zlib

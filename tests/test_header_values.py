@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from base64 import b64decode, b64encode
+from base64 import b64encode
 
 import pytest
 

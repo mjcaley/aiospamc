@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import pytest
 
 from aiospamc.exceptions import NotEnoughDataError, ParseError, TooMuchDataError

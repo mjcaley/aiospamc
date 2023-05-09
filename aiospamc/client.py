@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """Module implementing client objects that all requests go through."""
 
 from ssl import SSLContext

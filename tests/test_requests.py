@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import zlib
 from base64 import b64encode
 

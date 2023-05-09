@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-
 import pytest
 
-import aiospamc
 from aiospamc.client import Client
 from aiospamc.exceptions import BadResponse
 from aiospamc.frontend import (
