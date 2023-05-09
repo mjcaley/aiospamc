@@ -55,8 +55,7 @@ class CommandRunner:
 
         :param request: Request to send.
         :param response: Response if returned from server.
-        :param output: Output format.
-
+        :param output: Output format when printing to console.
         """
 
         self.request = request
@@ -76,6 +75,18 @@ class CommandRunner:
         timeout: Optional[Timeout] = None,
         verify: Any = None,
     ) -> Response:
+        """Send the request, get the response and handle common exceptions.
+
+        :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
+        :param port: Port number for the SPAMD service, defaults to 783.
+        :param socket_path: Path to Unix socket.
+        :param timeout: Timeout settings.
+        :param verify:
+            Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
+            `False` will use SSL, but not verify the root certificates. Passing a string to a filename
+            will use the path to verify the root certificates.
+        """
+
         ssl_context = self._client.ssl_context_factory(verify)
         connection = self._client.connection_factory(
             host, port, socket_path, timeout, ssl_context
@@ -121,6 +132,11 @@ class CommandRunner:
         return response
 
     def to_json(self) -> str:
+        """Converts the object to a JSON string.
+
+        :returns: JSON string.
+        """
+
         obj = {
             "request": self.request.to_json(),
             "response": self.response.to_json() if self.response is not None else None,
@@ -130,6 +146,13 @@ class CommandRunner:
         return json.dumps(obj, indent=4)
 
     def exit(self, message: str, err=False):
+        """Exits the program, echoing the message if outputting text.
+        Otherwise prints the JSON object.
+
+        :param message: Message text to print.
+        :param err: Flag if message is an error.
+        """
+
         if self.output == Output.Text:
             typer.echo(message, err=err)
         else:
@@ -166,6 +189,11 @@ def ping(
 
 
 def read_message(file) -> bytes:
+    """Utility function to read data from stdin.
+
+    :param file: File-like object.
+    """
+
     if not file.isatty():
         return file.read()
 
@@ -231,6 +259,8 @@ def learn(
     ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
+    """Ask server to learn the message as spam or ham."""
+
     message_data = read_message(message)
     request = Request(
         "TELL",
@@ -269,6 +299,8 @@ def forget(
     timeout: float = typer.Option(10, help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
+    """Forgets the classification of a message."""
+
     message_data = read_message(message)
     request = Request(
         "TELL",
@@ -309,6 +341,8 @@ def report(
     ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
+    """Report a message to collaborative filtering databases as spam."""
+
     message_data = read_message(message)
     request = Request(
         "TELL",
@@ -351,6 +385,8 @@ def revoke(
     ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
+    """Revoke a message to collaborative filtering databases."""
+
     message_data = read_message(message)
     request = Request(
         "TELL",
@@ -370,12 +406,22 @@ def revoke(
 
 
 def version_callback(version: bool):
+    """Callback to print the version.
+
+    :param version: Switch on whether to print and exit.
+    """
+
     if version:
         typer.echo(__version__)
         raise typer.Exit()
 
 
 def debug_callback(debug: bool):
+    """Callback to enable debug logging.
+
+    :param debug: Switch on whether to enable debug logging.
+    """
+
     if debug:
         logger.enable(__package__)
 

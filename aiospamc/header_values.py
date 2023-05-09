@@ -7,14 +7,18 @@ from base64 import b64encode
 from collections import UserDict
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Protocol
+from typing import Any, Optional, Protocol
 
 
 class HeaderValue(Protocol):  # pragma: no cover
+    """Protocol for headers."""
+
     def __bytes__(self) -> bytes:
         pass
 
     def to_json(self) -> Any:
+        """Convert to a JSON object."""
+
         pass
 
 

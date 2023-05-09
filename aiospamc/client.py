@@ -42,6 +42,13 @@ class Client:
     def __init__(
         self, ssl_context_factory=None, connection_factory=None, parser_factory=None
     ):
+        """Client constructor.
+
+        :param default_ssl_context_factory: SSL context factory function.
+        :param default_connection_factory: `ConnectionManager` factory function.
+        :param default_parser_factory: Response parser type.
+        """
+
         self.ssl_context_factory = (
             ssl_context_factory or self.default_ssl_context_factory
         )
