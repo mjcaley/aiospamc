@@ -379,6 +379,7 @@ class Headers(UserDict):
 
         :return: User header value.
         """
+
         return self.data.get("User")
 
     @user.setter

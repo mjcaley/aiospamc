@@ -31,7 +31,7 @@ loguru = "^0.7.0"
 typer = "^0.7.0"
 
 [tool.poetry.scripts]
-aiospamc = "aiospamc.cli:run"
+aiospamc = "aiospamc.cli:app"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.1"

@@ -123,6 +123,30 @@ def response_empty_body():
 
 
 @pytest.fixture
+def response_learned():
+    """Response with DidSet set to local."""
+    return b"SPAMD/1.1 0 EX_OK\r\nDidSet: local\r\n\r\n"
+
+
+@pytest.fixture
+def response_forgotten():
+    """Response with DidRemove set to local."""
+    return b"SPAMD/1.1 0 EX_OK\r\nDidRemove: local\r\n\r\n"
+
+
+@pytest.fixture
+def response_reported():
+    """Response with DidSet set to remote."""
+    return b"SPAMD/1.1 0 EX_OK\r\nDidSet: remote\r\n\r\n"
+
+
+@pytest.fixture
+def response_revoked():
+    """Response with DidRemove set to remote."""
+    return b"SPAMD/1.1 0 EX_OK\r\nDidRemove: remote\r\n\r\n"
+
+
+@pytest.fixture
 def response_timeout():
     """Server timeout response."""
     return b"SPAMD/1.0 79 Timeout: (30 second timeout while trying to CHECK)\r\n"

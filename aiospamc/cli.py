@@ -26,12 +26,6 @@ from .responses import Response, ResponseException
 app = typer.Typer()
 
 
-def run():
-    """Entrypoint for CLI."""
-
-    app()
-
-
 class Output(str, Enum):
     """Output formats."""
 
@@ -41,7 +35,7 @@ class Output(str, Enum):
 
 # Exit codes
 SUCCESS = NOT_SPAM = PING_SUCCESS = 0
-IS_SPAM = 1
+IS_SPAM = REPORT_FAILED = REVOKE_FAILED = 1
 PARSE_ERROR = 3
 TIMEOUT_ERROR = 4
 CONNECTION_ERROR = 5
@@ -53,12 +47,10 @@ class CommandRunner:
     def __init__(
         self,
         request: Request,
-        debug: bool = False,
         output: Output = Output.Text,
     ):
         self.request = request
         self.response: Optional[Response] = None
-        self.debug = debug
         self.output = output
         self.exception: Optional[Exception] = None
         self.exit_code = SUCCESS
@@ -151,7 +143,6 @@ def ping(
     ),
     timeout: float = typer.Option(10, help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
-    debug: bool = typer.Option(False, help="Debug information"),
 ):
     """Pings the SpamAssassin daemon.
 
@@ -159,7 +150,7 @@ def ping(
     """
 
     request = Request("PING")
-    runner = CommandRunner(request, debug, out)
+    runner = CommandRunner(request, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
     runner.exit(response.message)
 
@@ -190,13 +181,12 @@ def check(
     ),
     timeout: float = typer.Option(10, help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
-    debug: bool = typer.Option(False, help="Debug information"),
 ):
     """Submits a message to SpamAssassin and returns the processed message."""
 
     message_data = read_message(message)
     request = Request("PROCESS", body=message_data)
-    runner = CommandRunner(request, debug, out)
+    runner = CommandRunner(request, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
 
     if spam_header := response.headers.spam:
@@ -230,7 +220,6 @@ def learn(
         "spam", help="Message class to classify the message"
     ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
-    debug: bool = typer.Option(False, help="Debug information"),
 ):
     message_data = read_message(message)
     request = Request(
@@ -241,8 +230,9 @@ def learn(
         },
         body=message_data,
     )
-    runner = CommandRunner(request, debug, out)
+    runner = CommandRunner(request, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+
     if response.headers.did_set:
         runner.exit("Message successfully learned")
     else:
@@ -268,7 +258,6 @@ def forget(
     ),
     timeout: float = typer.Option(10, help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
-    debug: bool = typer.Option(False, help="Debug information"),
 ):
     message_data = read_message(message)
     request = Request(
@@ -278,7 +267,7 @@ def forget(
         },
         body=message_data,
     )
-    runner = CommandRunner(request, debug, out)
+    runner = CommandRunner(request, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
 
     if response.headers.did_remove:
@@ -309,7 +298,6 @@ def report(
         "spam", help="Message class to classify the message"
     ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
-    debug: bool = typer.Option(False, help="Debug information"),
 ):
     message_data = read_message(message)
     request = Request(
@@ -320,12 +308,13 @@ def report(
         },
         body=message_data,
     )
-    runner = CommandRunner(request, debug, out)
+    runner = CommandRunner(request, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
 
-    if response.headers.did_set and response.headers.did_set.action.remote:
+    if response.headers.did_set and response.headers.did_set.action.remote is True:
         runner.exit("Message successfully reported")
     else:
+        runner.exit_code = REPORT_FAILED
         runner.exit("Unable to report message")
 
 
@@ -351,7 +340,6 @@ def revoke(
         "spam", help="Message class to classify the message"
     ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
-    debug: bool = typer.Option(False, help="Debug information"),
 ):
     message_data = read_message(message)
     request = Request(
@@ -362,12 +350,13 @@ def revoke(
         },
         body=message_data,
     )
-    runner = CommandRunner(request, debug, out)
+    runner = CommandRunner(request, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
     if response.headers.did_remove and response.headers.did_remove.action.remote:
         runner.exit("Message successfully revoked")
     else:
-        runner.exit("Unable to report revoked")
+        runner.exit_code = REVOKE_FAILED
+        runner.exit("Unable to revoke message")
 
 
 def version_callback(version: bool):
@@ -384,10 +373,18 @@ def debug_callback(debug: bool):
 @app.callback()
 def main(
     version: bool = typer.Option(
-        False, "--version", is_flag=True, callback=version_callback
+        False,
+        "--version",
+        is_flag=True,
+        callback=version_callback,
+        help="Output format for stdout",
     ),
     debug: bool = typer.Option(
-        False, "--debug", is_flag=True, callback=debug_callback, help=""
+        False,
+        "--debug",
+        is_flag=True,
+        callback=debug_callback,
+        help="Enable debug logging",
     ),
 ):
     pass
