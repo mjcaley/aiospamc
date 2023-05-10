@@ -336,9 +336,6 @@ def report(
         envvar="AIOSPAMC_CERT_FILE",
     ),
     timeout: float = typer.Option(10, help="Timeout in seconds"),
-    message_class: MessageClassOption = typer.Option(
-        "spam", help="Message class to classify the message"
-    ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
     """Report a message to collaborative filtering databases as spam."""
@@ -347,7 +344,7 @@ def report(
     request = Request(
         "TELL",
         headers={
-            "Message-class": MessageClassValue(message_class),
+            "Message-class": MessageClassValue(MessageClassOption.spam),
             "Set": SetOrRemoveValue(ActionOption(local=True, remote=True)),
         },
         body=message_data,
@@ -380,9 +377,6 @@ def revoke(
         envvar="AIOSPAMC_CERT_FILE",
     ),
     timeout: float = typer.Option(10, help="Timeout in seconds"),
-    message_class: MessageClassOption = typer.Option(
-        "spam", help="Message class to classify the message"
-    ),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
     """Revoke a message to collaborative filtering databases."""
@@ -391,7 +385,7 @@ def revoke(
     request = Request(
         "TELL",
         headers={
-            "Message-class": MessageClassValue(message_class),
+            "Message-class": MessageClassValue(MessageClassOption.ham),
             "Remove": SetOrRemoveValue(ActionOption(local=True, remote=True)),
         },
         body=message_data,

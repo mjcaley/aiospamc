@@ -129,9 +129,7 @@ def test_report_json(mocker, mock_client_response, response_reported, gtube):
     mock_client_response(response_reported)
     request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
-    result = runner.invoke(
-        app, ["report", str(gtube), "--message-class", "spam", "--out", "json"]
-    )
+    result = runner.invoke(app, ["report", str(gtube), "--out", "json"])
     expected = {
         "request": request_spy.call_args.args[0].to_json(),
         "response": request_spy.spy_return.to_json(),
@@ -145,9 +143,7 @@ def test_revoke_json(mocker, mock_client_response, response_revoked, gtube):
     mock_client_response(response_revoked)
     request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
-    result = runner.invoke(
-        app, ["revoke", str(gtube), "--message-class", "spam", "--out", "json"]
-    )
+    result = runner.invoke(app, ["revoke", str(gtube), "--out", "json"])
     expected = {
         "request": request_spy.call_args.args[0].to_json(),
         "response": request_spy.spy_return.to_json(),
@@ -172,8 +168,8 @@ def test_command_without_message_response_exception(mock_client_response, ex_usa
         ["check"],
         ["forget"],
         ["learn", "--message-class", "spam"],
-        ["report", "--message-class", "spam"],
-        ["revoke", "--message-class", "spam"],
+        ["report"],
+        ["revoke"],
     ],
 )
 def test_command_with_message_response_exception(
@@ -202,8 +198,8 @@ def test_command_without_message_parser_exception(mock_client_raises):
         ["check"],
         ["forget"],
         ["learn", "--message-class", "spam"],
-        ["report", "--message-class", "spam"],
-        ["revoke", "--message-class", "spam"],
+        ["report"],
+        ["revoke"],
     ],
 )
 def test_command_with_message_parser_exception(mock_client_raises, gtube, args):
@@ -230,8 +226,8 @@ def test_command_without_message_timeout_exception(mock_client_raises):
         ["check"],
         ["forget"],
         ["learn", "--message-class", "spam"],
-        ["report", "--message-class", "spam"],
-        ["revoke", "--message-class", "spam"],
+        ["report"],
+        ["revoke"],
     ],
 )
 def test_command_with_message_timeout_exception(mock_client_raises, gtube, args):
@@ -264,8 +260,12 @@ def test_command_without_message_connection_exception(mock_client_raises, raises
         ["check"],
         ["forget"],
         ["learn", "--message-class", "spam"],
-        ["report", "--message-class", "spam"],
-        ["revoke", "--message-class", "spam"],
+        [
+            "report",
+        ],
+        [
+            "revoke",
+        ],
     ],
 )
 def test_command_with_message_connection_exception(
