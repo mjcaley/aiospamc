@@ -23,7 +23,7 @@ from .client import Client, Request
 from .connections import Timeout
 from .responses import Response, ResponseException
 
-app = typer.Typer()
+app = typer.Typer(no_args_is_help=True)
 
 
 class Output(str, Enum):
