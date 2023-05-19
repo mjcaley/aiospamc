@@ -26,7 +26,7 @@ def _add_compress_header(request: Request, compress: bool):
     """
 
     if compress:
-        request.headers.compress = CompressValue()
+        request.headers.compress = "zlib"
 
 
 def _add_user_header(request: Request, user: Optional[str]):
@@ -37,7 +37,7 @@ def _add_user_header(request: Request, user: Optional[str]):
     """
 
     if user:
-        request.headers.user = UserValue(user)
+        request.headers.user = user
 
 
 async def check(

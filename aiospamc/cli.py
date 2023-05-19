@@ -163,18 +163,22 @@ class CommandRunner:
 @app.command()
 def ping(
     host: str = typer.Option(
-        "localhost", help="Hostname to use when connecting using TCP"
+        "localhost",
+        metavar="HOSTNAME",
+        help="Hostname to use when connecting using TCP",
     ),
-    port: int = typer.Option(783, help="Port to use when connecting using TCP"),
+    port: int = typer.Option(
+        783, metavar="PORT", help="Port to use when connecting using TCP"
+    ),
     socket_path: str = typer.Option(
-        None, help="Path to use when connecting using Unix sockets"
+        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
     ),
     ssl: bool = typer.Option(
         None,
         help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
         envvar="AIOSPAMC_CERT_FILE",
     ),
-    timeout: float = typer.Option(10, help="Timeout in seconds"),
+    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
     """Pings the SpamAssassin daemon.
@@ -203,21 +207,25 @@ def read_message(file) -> bytes:
 @app.command()
 def check(
     message: Optional[typer.FileBinaryRead] = typer.Argument(
-        sys.stdin.buffer, help="Message to check, [default: stdin]"
+        sys.stdin.buffer, show_default=False, help="Message to check, [default: stdin]"
     ),
     host: str = typer.Option(
-        "localhost", help="Hostname to use when connecting using TCP"
+        "localhost",
+        metavar="HOSTNAME",
+        help="Hostname to use when connecting using TCP",
     ),
-    port: int = typer.Option(783, help="Port to use when connecting using TCP"),
+    port: int = typer.Option(
+        783, metavar="PORT", help="Port to use when connecting using TCP"
+    ),
     socket_path: str = typer.Option(
-        None, help="Path to use when connecting using Unix sockets"
+        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
     ),
     ssl: bool = typer.Option(
         None,
         help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
         envvar="AIOSPAMC_CERT_FILE",
     ),
-    timeout: float = typer.Option(10, help="Timeout in seconds"),
+    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
     """Submits a message to SpamAssassin and returns the processed message."""
@@ -241,22 +249,26 @@ def learn(
     message: Optional[typer.FileBinaryRead] = typer.Argument(
         sys.stdin.buffer, help="Message to check, [default: stdin]"
     ),
-    host: str = typer.Option(
-        "localhost", help="Hostname to use when connecting using TCP"
+    message_class: MessageClassOption = typer.Option(
+        "spam", help="Message class to classify the message"
     ),
-    port: int = typer.Option(783, help="Port to use when connecting using TCP"),
+    host: str = typer.Option(
+        "localhost",
+        metavar="HOSTNAME",
+        help="Hostname to use when connecting using TCP",
+    ),
+    port: int = typer.Option(
+        783, metavar="PORT", help="Port to use when connecting using TCP"
+    ),
     socket_path: str = typer.Option(
-        None, help="Path to use when connecting using Unix sockets"
+        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
     ),
     ssl: bool = typer.Option(
         None,
         help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
         envvar="AIOSPAMC_CERT_FILE",
     ),
-    timeout: float = typer.Option(10, help="Timeout in seconds"),
-    message_class: MessageClassOption = typer.Option(
-        "spam", help="Message class to classify the message"
-    ),
+    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
     """Ask server to learn the message as spam or ham."""
@@ -285,18 +297,22 @@ def forget(
         sys.stdin.buffer, help="Message to check, [default: stdin]"
     ),
     host: str = typer.Option(
-        "localhost", help="Hostname to use when connecting using TCP"
+        "localhost",
+        metavar="HOSTNAME",
+        help="Hostname to use when connecting using TCP",
     ),
-    port: int = typer.Option(783, help="Port to use when connecting using TCP"),
+    port: int = typer.Option(
+        783, metavar="PORT", help="Port to use when connecting using TCP"
+    ),
     socket_path: str = typer.Option(
-        None, help="Path to use when connecting using Unix sockets"
+        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
     ),
     ssl: bool = typer.Option(
         None,
         help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
         envvar="AIOSPAMC_CERT_FILE",
     ),
-    timeout: float = typer.Option(10, help="Timeout in seconds"),
+    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
     """Forgets the classification of a message."""
@@ -324,18 +340,22 @@ def report(
         sys.stdin.buffer, help="Message to check, [default: stdin]"
     ),
     host: str = typer.Option(
-        "localhost", help="Hostname to use when connecting using TCP"
+        "localhost",
+        metavar="HOSTNAME",
+        help="Hostname to use when connecting using TCP",
     ),
-    port: int = typer.Option(783, help="Port to use when connecting using TCP"),
+    port: int = typer.Option(
+        783, metavar="PORT", help="Port to use when connecting using TCP"
+    ),
     socket_path: str = typer.Option(
-        None, help="Path to use when connecting using Unix sockets"
+        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
     ),
     ssl: bool = typer.Option(
         None,
         help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
         envvar="AIOSPAMC_CERT_FILE",
     ),
-    timeout: float = typer.Option(10, help="Timeout in seconds"),
+    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
     """Report a message to collaborative filtering databases as spam."""
@@ -343,16 +363,13 @@ def report(
     message_data = read_message(message)
     request = Request(
         "TELL",
-        headers={
-            "Message-class": MessageClassValue(MessageClassOption.spam),
-            "Set": SetOrRemoveValue(ActionOption(local=True, remote=True)),
-        },
+        headers={"Message-class": MessageClassValue(MessageClassOption.spam)},
         body=message_data,
     )
     runner = CommandRunner(request, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
 
-    if response.headers.did_set and response.headers.did_set.action.remote is True:
+    if response.headers.did_set and response.headers.did_set.remote is True:
         runner.exit("Message successfully reported")
     else:
         runner.exit_code = REPORT_FAILED
@@ -365,18 +382,22 @@ def revoke(
         sys.stdin.buffer, help="Message to check, [default: stdin]"
     ),
     host: str = typer.Option(
-        "localhost", help="Hostname to use when connecting using TCP"
+        "localhost",
+        metavar="HOSTNAME",
+        help="Hostname to use when connecting using TCP",
     ),
-    port: int = typer.Option(783, help="Port to use when connecting using TCP"),
+    port: int = typer.Option(
+        783, metavar="PORT", help="Port to use when connecting using TCP"
+    ),
     socket_path: str = typer.Option(
-        None, help="Path to use when connecting using Unix sockets"
+        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
     ),
     ssl: bool = typer.Option(
         None,
         help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
         envvar="AIOSPAMC_CERT_FILE",
     ),
-    timeout: float = typer.Option(10, help="Timeout in seconds"),
+    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
     out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
 ):
     """Revoke a message to collaborative filtering databases."""
@@ -392,7 +413,7 @@ def revoke(
     )
     runner = CommandRunner(request, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
-    if response.headers.did_remove and response.headers.did_remove.action.remote:
+    if response.headers.did_remove and response.headers.did_remove.remote:
         runner.exit("Message successfully revoked")
     else:
         runner.exit_code = REVOKE_FAILED

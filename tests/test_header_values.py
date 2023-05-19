@@ -175,7 +175,7 @@ def test_to_json(test_input, expected):
 
 
 def test_headers_get_header():
-    h = Headers({"Exists": "test"})
+    h = Headers({"Exists": GenericHeaderValue("test")})
 
     assert None is h.get_header("Doesnt-exist")
     assert "test" == h.get_header("Exists")
@@ -190,7 +190,7 @@ def test_headers_set_header():
 
 def test_headers_get_bytes_header():
     test_input = BytesHeaderValue(b"test")
-    h = Headers({"Exists": test_input})
+    h = Headers({"Exists": BytesHeaderValue(test_input)})
 
     assert None is h.get_bytes_header("Doesnt-exist")
     assert test_input == h.get_bytes_header("Exists")
@@ -223,7 +223,7 @@ def test_headers_content_length():
 
 
 def test_headers_message_class():
-    test_input = MessageClassValue()
+    test_input = MessageClassOption.ham
     h = Headers()
 
     assert None is h.message_class
