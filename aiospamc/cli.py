@@ -1,11 +1,11 @@
 """CLI commands."""
 
 import asyncio
-from getpass import getuser
 import json
 import ssl
 import sys
 from enum import Enum
+from getpass import getuser
 from typing import Any, Optional
 
 import typer
