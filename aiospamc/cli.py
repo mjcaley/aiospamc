@@ -164,11 +164,17 @@ class CommandRunner:
 def ping(
     host: str = typer.Option(
         "localhost",
+        "-h",
+        "--host",
         metavar="HOSTNAME",
         help="Hostname to use when connecting using TCP",
     ),
     port: int = typer.Option(
-        783, metavar="PORT", help="Port to use when connecting using TCP"
+        783,
+        "-p",
+        "--port",
+        metavar="PORT",
+        help="Port to use when connecting using TCP",
     ),
     socket_path: str = typer.Option(
         None, metavar="PATH", help="Path to use when connecting using Unix sockets"
@@ -211,11 +217,17 @@ def check(
     ),
     host: str = typer.Option(
         "localhost",
+        "-h",
+        "--host",
         metavar="HOSTNAME",
         help="Hostname to use when connecting using TCP",
     ),
     port: int = typer.Option(
-        783, metavar="PORT", help="Port to use when connecting using TCP"
+        783,
+        "-p",
+        "--port",
+        metavar="PORT",
+        help="Port to use when connecting using TCP",
     ),
     socket_path: str = typer.Option(
         None, metavar="PATH", help="Path to use when connecting using Unix sockets"
@@ -254,11 +266,17 @@ def learn(
     ),
     host: str = typer.Option(
         "localhost",
+        "-h",
+        "--host",
         metavar="HOSTNAME",
         help="Hostname to use when connecting using TCP",
     ),
     port: int = typer.Option(
-        783, metavar="PORT", help="Port to use when connecting using TCP"
+        783,
+        "-p",
+        "--port",
+        metavar="PORT",
+        help="Port to use when connecting using TCP",
     ),
     socket_path: str = typer.Option(
         None, metavar="PATH", help="Path to use when connecting using Unix sockets"
@@ -298,11 +316,17 @@ def forget(
     ),
     host: str = typer.Option(
         "localhost",
+        "-h",
+        "--host",
         metavar="HOSTNAME",
         help="Hostname to use when connecting using TCP",
     ),
     port: int = typer.Option(
-        783, metavar="PORT", help="Port to use when connecting using TCP"
+        783,
+        "-p",
+        "--port",
+        metavar="PORT",
+        help="Port to use when connecting using TCP",
     ),
     socket_path: str = typer.Option(
         None, metavar="PATH", help="Path to use when connecting using Unix sockets"
@@ -341,11 +365,17 @@ def report(
     ),
     host: str = typer.Option(
         "localhost",
+        "-h",
+        "--host",
         metavar="HOSTNAME",
         help="Hostname to use when connecting using TCP",
     ),
     port: int = typer.Option(
-        783, metavar="PORT", help="Port to use when connecting using TCP"
+        783,
+        "-p",
+        "--port",
+        metavar="PORT",
+        help="Port to use when connecting using TCP",
     ),
     socket_path: str = typer.Option(
         None, metavar="PATH", help="Path to use when connecting using Unix sockets"
@@ -383,11 +413,17 @@ def revoke(
     ),
     host: str = typer.Option(
         "localhost",
+        "-h",
+        "--host",
         metavar="HOSTNAME",
         help="Hostname to use when connecting using TCP",
     ),
     port: int = typer.Option(
-        783, metavar="PORT", help="Port to use when connecting using TCP"
+        783,
+        "-p",
+        "--port",
+        metavar="PORT",
+        help="Port to use when connecting using TCP",
     ),
     socket_path: str = typer.Option(
         None, metavar="PATH", help="Path to use when connecting using Unix sockets"

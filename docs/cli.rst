@@ -150,11 +150,13 @@ Commands
 
     Report a message to collaborative filtering databases as spam.
 
-    .. option:: --host HOSTNAME
+    If reporting fails will exit with a code of 1.
+
+    .. option:: -h, --host HOSTNAME
 
         |host_description|
 
-    .. option:: --port PORT
+    .. option:: -p, --port PORT
 
         |port_description|
 
@@ -177,6 +179,8 @@ Commands
 .. option:: revoke [MESSAGE]
 
     Revoke a message to collaborative filtering databases.
+
+    If revoking fails will exit with a code of 1.
 
     .. option:: --host HOSTNAME
 
@@ -214,7 +218,8 @@ Commands
 .. |timeout_description| replace:: Set the connection timeout. Default is 10 seconds.
 
 .. |out_description| replace:: Choose the output format to the console. `text` will print human friendly
-                               output. `json` will display JSON formatted output. Default is `text`.
+                               output. `json` will display JSON formatted output with keys for `request`,
+                               `response`, and `exit_code`. Default is `text`.
 
 *********************
 Environment Variables
@@ -224,3 +229,13 @@ Environment Variables
 
     Path to the file containing trusted certificates. These will be used in place of
     the default root certificates when using the :option:`--ssl` option.
+
+**********
+Exit Codes
+**********
+
+`3` - Error occurred when parsing response.
+`4` - Network timeout.
+`5` - Connection error. Check the host, port, or socket path.
+`6` - Unexpected error.
+`7` - Could not open the message.
