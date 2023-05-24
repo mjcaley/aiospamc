@@ -1,6 +1,7 @@
 """CLI commands."""
 
 import asyncio
+from getpass import getuser
 import json
 import ssl
 import sys
@@ -13,6 +14,7 @@ from loguru import logger
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
 from aiospamc.header_values import (
     ActionOption,
+    Headers,
     MessageClassOption,
     MessageClassValue,
     SetOrRemoveValue,
@@ -222,6 +224,7 @@ def check(
         metavar="HOSTNAME",
         help="Hostname to use when connecting using TCP",
     ),
+    user: str = typer.Option(getuser(), help="User to send the request as."),
     port: int = typer.Option(
         783,
         "-p",
@@ -243,7 +246,9 @@ def check(
     """Submits a message to SpamAssassin and returns the processed message."""
 
     message_data = read_message(message)
-    request = Request("PROCESS", body=message_data)
+    headers = Headers()
+    headers.user = user
+    request = Request("PROCESS", headers=headers, body=message_data)
     runner = CommandRunner(request, out)
     response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
 
