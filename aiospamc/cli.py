@@ -10,6 +10,7 @@ from typing import Any, Optional
 
 import typer
 from loguru import logger
+from typing_extensions import Annotated
 
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
 from aiospamc.header_values import (
@@ -33,6 +34,9 @@ class Output(str, Enum):
 
     Json = "json"
     Text = "text"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 # Exit codes
@@ -164,30 +168,38 @@ class CommandRunner:
 
 @app.command()
 def ping(
-    host: str = typer.Option(
-        "localhost",
-        "-h",
-        "--host",
-        metavar="HOSTNAME",
-        help="Hostname to use when connecting using TCP",
-    ),
-    port: int = typer.Option(
-        783,
-        "-p",
-        "--port",
-        metavar="PORT",
-        help="Port to use when connecting using TCP",
-    ),
-    socket_path: str = typer.Option(
-        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
-    ),
-    ssl: bool = typer.Option(
-        None,
-        help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-        envvar="AIOSPAMC_CERT_FILE",
-    ),
-    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
-    out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
+    host: Annotated[
+        str,
+        typer.Option(
+            "-h",
+            "--host",
+            metavar="HOSTNAME",
+            help="Hostname to use when connecting using TCP",
+        ),
+    ] = "localhost",
+    port: Annotated[
+        int,
+        typer.Option(
+            "-p", "--port", metavar="PORT", help="Port to use when connecting using TCP"
+        ),
+    ] = 783,
+    socket_path: Annotated[
+        str,
+        typer.Option(
+            metavar="PATH", help="Path to use when connecting using Unix sockets"
+        ),
+    ] = "",
+    ssl: Annotated[
+        Optional[bool],
+        typer.Option(
+            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    timeout: Annotated[
+        float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
+    ] = 10,
+    out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
 ):
     """Pings the SpamAssassin daemon.
 
@@ -206,6 +218,8 @@ def read_message(file) -> bytes:
     :param file: File-like object.
     """
 
+    if not file:
+        return sys.stdin.buffer.read()
     if not file.isatty():
         return file.read()
 
@@ -214,34 +228,46 @@ def read_message(file) -> bytes:
 
 @app.command()
 def check(
-    message: Optional[typer.FileBinaryRead] = typer.Argument(
-        sys.stdin.buffer, show_default=False, help="Message to check, [default: stdin]"
-    ),
-    host: str = typer.Option(
-        "localhost",
-        "-h",
-        "--host",
-        metavar="HOSTNAME",
-        help="Hostname to use when connecting using TCP",
-    ),
-    user: str = typer.Option(getuser(), help="User to send the request as."),
-    port: int = typer.Option(
-        783,
-        "-p",
-        "--port",
-        metavar="PORT",
-        help="Port to use when connecting using TCP",
-    ),
-    socket_path: str = typer.Option(
-        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
-    ),
-    ssl: bool = typer.Option(
-        None,
-        help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-        envvar="AIOSPAMC_CERT_FILE",
-    ),
-    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
-    out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
+    message: Annotated[
+        Optional[typer.FileBinaryRead],
+        typer.Argument(show_default=False, help="Message to check, [default: stdin]"),
+    ] = None,
+    host: Annotated[
+        str,
+        typer.Option(
+            "-h",
+            "--host",
+            metavar="HOSTNAME",
+            help="Hostname to use when connecting using TCP",
+        ),
+    ] = "localhost",
+    port: Annotated[
+        int,
+        typer.Option(
+            "-p",
+            "--port",
+            metavar="PORT",
+            help="Port to use when connecting using TCP",
+        ),
+    ] = 783,
+    socket_path: Annotated[
+        str,
+        typer.Option(
+            metavar="PATH", help="Path to use when connecting using Unix sockets"
+        ),
+    ] = "",
+    ssl: Annotated[
+        Optional[bool],
+        typer.Option(
+            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    timeout: Annotated[
+        float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
+    ] = 10,
+    out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
 ):
     """Submits a message to SpamAssassin and returns the processed message."""
 
@@ -263,46 +289,60 @@ def check(
 
 @app.command()
 def learn(
-    message: Optional[typer.FileBinaryRead] = typer.Argument(
-        sys.stdin.buffer, help="Message to check, [default: stdin]"
-    ),
-    message_class: MessageClassOption = typer.Option(
-        "spam", help="Message class to classify the message"
-    ),
-    host: str = typer.Option(
-        "localhost",
-        "-h",
-        "--host",
-        metavar="HOSTNAME",
-        help="Hostname to use when connecting using TCP",
-    ),
-    port: int = typer.Option(
-        783,
-        "-p",
-        "--port",
-        metavar="PORT",
-        help="Port to use when connecting using TCP",
-    ),
-    socket_path: str = typer.Option(
-        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
-    ),
-    ssl: bool = typer.Option(
-        None,
-        help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-        envvar="AIOSPAMC_CERT_FILE",
-    ),
-    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
-    out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
+    message: Annotated[
+        Optional[typer.FileBinaryRead],
+        typer.Argument(help="Message to check, [default: stdin]"),
+    ] = None,
+    message_class: Annotated[
+        MessageClassOption, typer.Option(help="Message class to classify the message")
+    ] = MessageClassOption.spam,
+    host: Annotated[
+        str,
+        typer.Option(
+            "-h",
+            "--host",
+            metavar="HOSTNAME",
+            help="Hostname to use when connecting using TCP",
+        ),
+    ] = "localhost",
+    port: Annotated[
+        int,
+        typer.Option(
+            "-p",
+            "--port",
+            metavar="PORT",
+            help="Port to use when connecting using TCP",
+        ),
+    ] = 783,
+    socket_path: Annotated[
+        str,
+        typer.Option(
+            metavar="PATH", help="Path to use when connecting using Unix sockets"
+        ),
+    ] = "",
+    ssl: Annotated[
+        Optional[bool],
+        typer.Option(
+            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    timeout: Annotated[
+        float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
+    ] = 10,
+    out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
 ):
     """Ask server to learn the message as spam or ham."""
 
     message_data = read_message(message)
+    headers = Headers()
+    headers.user = user
+    headers.message_class = message_class
+    headers.set_ = ActionOption(local=True, remote=False)
     request = Request(
         "TELL",
-        headers={
-            "Message-class": MessageClassValue(message_class),
-            "Set": SetOrRemoveValue(ActionOption(local=True, remote=False)),
-        },
+        headers=headers,
         body=message_data,
     )
     runner = CommandRunner(request, out)
@@ -316,42 +356,56 @@ def learn(
 
 @app.command()
 def forget(
-    message: Optional[typer.FileBinaryRead] = typer.Argument(
-        sys.stdin.buffer, help="Message to check, [default: stdin]"
-    ),
-    host: str = typer.Option(
-        "localhost",
-        "-h",
-        "--host",
-        metavar="HOSTNAME",
-        help="Hostname to use when connecting using TCP",
-    ),
-    port: int = typer.Option(
-        783,
-        "-p",
-        "--port",
-        metavar="PORT",
-        help="Port to use when connecting using TCP",
-    ),
-    socket_path: str = typer.Option(
-        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
-    ),
-    ssl: bool = typer.Option(
-        None,
-        help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-        envvar="AIOSPAMC_CERT_FILE",
-    ),
-    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
-    out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
+    message: Annotated[
+        Optional[typer.FileBinaryRead],
+        typer.Argument(help="Message to check, [default: stdin]"),
+    ] = None,
+    host: Annotated[
+        str,
+        typer.Option(
+            "-h",
+            "--host",
+            metavar="HOSTNAME",
+            help="Hostname to use when connecting using TCP",
+        ),
+    ] = "localhost",
+    port: Annotated[
+        int,
+        typer.Option(
+            "-p",
+            "--port",
+            metavar="PORT",
+            help="Port to use when connecting using TCP",
+        ),
+    ] = 783,
+    socket_path: Annotated[
+        str,
+        typer.Option(
+            metavar="PATH", help="Path to use when connecting using Unix sockets"
+        ),
+    ] = "",
+    ssl: Annotated[
+        Optional[bool],
+        typer.Option(
+            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    timeout: Annotated[
+        float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
+    ] = 10,
+    out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
 ):
     """Forgets the classification of a message."""
 
     message_data = read_message(message)
+    headers = Headers()
+    headers.user = user
+    headers.remove = ActionOption(local=True, remote=False)
     request = Request(
         "TELL",
-        headers={
-            "Remove": SetOrRemoveValue(ActionOption(local=True, remote=False)),
-        },
+        headers=headers,
         body=message_data,
     )
     runner = CommandRunner(request, out)
@@ -365,33 +419,46 @@ def forget(
 
 @app.command()
 def report(
-    message: Optional[typer.FileBinaryRead] = typer.Argument(
-        sys.stdin.buffer, help="Message to check, [default: stdin]"
-    ),
-    host: str = typer.Option(
-        "localhost",
-        "-h",
-        "--host",
-        metavar="HOSTNAME",
-        help="Hostname to use when connecting using TCP",
-    ),
-    port: int = typer.Option(
-        783,
-        "-p",
-        "--port",
-        metavar="PORT",
-        help="Port to use when connecting using TCP",
-    ),
-    socket_path: str = typer.Option(
-        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
-    ),
-    ssl: bool = typer.Option(
-        None,
-        help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-        envvar="AIOSPAMC_CERT_FILE",
-    ),
-    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
-    out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
+    message: Annotated[
+        Optional[typer.FileBinaryRead],
+        typer.Argument(help="Message to check, [default: stdin]"),
+    ] = None,
+    host: Annotated[
+        str,
+        typer.Option(
+            "-h",
+            "--host",
+            metavar="HOSTNAME",
+            help="Hostname to use when connecting using TCP",
+        ),
+    ] = "localhost",
+    port: Annotated[
+        int,
+        typer.Option(
+            "-p",
+            "--port",
+            metavar="PORT",
+            help="Port to use when connecting using TCP",
+        ),
+    ] = 783,
+    socket_path: Annotated[
+        str,
+        typer.Option(
+            metavar="PATH", help="Path to use when connecting using Unix sockets"
+        ),
+    ] = "",
+    ssl: Annotated[
+        Optional[bool],
+        typer.Option(
+            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    timeout: Annotated[
+        float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
+    ] = 10,
+    out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
 ):
     """Report a message to collaborative filtering databases as spam."""
 
@@ -413,37 +480,53 @@ def report(
 
 @app.command()
 def revoke(
-    message: Optional[typer.FileBinaryRead] = typer.Argument(
-        sys.stdin.buffer, help="Message to check, [default: stdin]"
-    ),
-    host: str = typer.Option(
-        "localhost",
-        "-h",
-        "--host",
-        metavar="HOSTNAME",
-        help="Hostname to use when connecting using TCP",
-    ),
-    port: int = typer.Option(
-        783,
-        "-p",
-        "--port",
-        metavar="PORT",
-        help="Port to use when connecting using TCP",
-    ),
-    socket_path: str = typer.Option(
-        None, metavar="PATH", help="Path to use when connecting using Unix sockets"
-    ),
-    ssl: bool = typer.Option(
-        None,
-        help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-        envvar="AIOSPAMC_CERT_FILE",
-    ),
-    timeout: float = typer.Option(10, metavar="SECONDS", help="Timeout in seconds"),
-    out: Output = typer.Option(Output.Text.value, help="Output format for stdout"),
+    message: Annotated[
+        Optional[typer.FileBinaryRead],
+        typer.Argument(help="Message to check, [default: stdin]"),
+    ] = None,
+    host: Annotated[
+        str,
+        typer.Option(
+            "-h",
+            "--host",
+            metavar="HOSTNAME",
+            help="Hostname to use when connecting using TCP",
+        ),
+    ] = "localhost",
+    port: Annotated[
+        int,
+        typer.Option(
+            "-p",
+            "--port",
+            metavar="PORT",
+            help="Port to use when connecting using TCP",
+        ),
+    ] = 783,
+    socket_path: Annotated[
+        str,
+        typer.Option(
+            metavar="PATH", help="Path to use when connecting using Unix sockets"
+        ),
+    ] = "",
+    ssl: Annotated[
+        Optional[bool],
+        typer.Option(
+            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    timeout: Annotated[
+        float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
+    ] = 10,
+    out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
 ):
     """Revoke a message to collaborative filtering databases."""
 
     message_data = read_message(message)
+    headers = Headers()
+    headers.user = user
+    headers.message_class = MessageClassOption.ham
     request = Request(
         "TELL",
         headers={
@@ -484,19 +567,23 @@ def debug_callback(debug: bool):
 
 @app.callback()
 def main(
-    version: bool = typer.Option(
-        False,
-        "--version",
-        is_flag=True,
-        callback=version_callback,
-        help="Output format for stdout",
-    ),
-    debug: bool = typer.Option(
-        False,
-        "--debug",
-        is_flag=True,
-        callback=debug_callback,
-        help="Enable debug logging",
-    ),
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            is_flag=True,
+            callback=version_callback,
+            help="Output format for stdout",
+        ),
+    ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "--debug",
+            is_flag=True,
+            callback=debug_callback,
+            help="Enable debug logging",
+        ),
+    ] = False,
 ):
     pass

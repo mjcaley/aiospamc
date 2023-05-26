@@ -89,11 +89,14 @@ class ContentLengthValue:
         return self.length
 
 
-class MessageClassOption(Enum):
+class MessageClassOption(str, Enum):
     """Option to be used for the MessageClass header."""
 
     spam = "spam"
     ham = "ham"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 @dataclass
@@ -276,7 +279,7 @@ class Headers(UserDict):
         self.data["Content-length"] = ContentLengthValue(value)
 
     @property
-    def message_class(self) -> Optional[MessageClassValue]:
+    def message_class(self) -> Optional[MessageClassOption]:
         """Gets the Message-class header if it exists.
 
         :return: Message-class header value.
