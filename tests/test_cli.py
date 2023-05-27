@@ -402,18 +402,17 @@ def test_debug(mocker: MockerFixture):
     assert ("aiospamc",) == logger_spy.call_args.args
 
 
-def test_read_message_interactive(mocker):
-    mock_file = mocker.MagicMock()
-    mock_file.isatty.return_value = False
-    mock_file.read.return_value = b"test"
-    result = read_message(mock_file)
+def test_read_message_stdin(mocker):
+    mock_buffer = mocker.patch("sys.stdin.buffer.read")
+    mock_buffer.return_value = b"test"
+    result = read_message(None)
 
     assert b"test" == result
 
 
-def test_read_message_not_interactive(mocker):
+def test_read_message_not_interactive(mocker: MockerFixture):
     mock_file = mocker.MagicMock()
-    mock_file.isatty.return_value = True
+    mock_file.read.return_value = b"test"
+    result = read_message(mock_file)
 
-    with pytest.raises(IOError):
-        read_message(mock_file)
+    assert b"test" == result

@@ -6,7 +6,8 @@ import ssl
 import sys
 from enum import Enum
 from getpass import getuser
-from typing import Any, Optional
+from io import BufferedReader
+from typing import Any, Optional, Union
 
 import typer
 from loguru import logger
@@ -212,7 +213,7 @@ def ping(
     runner.exit(response.message)
 
 
-def read_message(file) -> bytes:
+def read_message(file: Optional[BufferedReader]) -> bytes:
     """Utility function to read data from stdin.
 
     :param file: File-like object.
@@ -220,17 +221,14 @@ def read_message(file) -> bytes:
 
     if not file:
         return sys.stdin.buffer.read()
-    if not file.isatty():
-        return file.read()
-
-    raise IOError
+    return file.read()
 
 
 @app.command()
 def check(
     message: Annotated[
         Optional[typer.FileBinaryRead],
-        typer.Argument(show_default=False, help="Message to check, [default: stdin]"),
+        typer.Argument(show_default=False, help="Filename of message"),
     ] = None,
     host: Annotated[
         str,
@@ -291,7 +289,7 @@ def check(
 def learn(
     message: Annotated[
         Optional[typer.FileBinaryRead],
-        typer.Argument(help="Message to check, [default: stdin]"),
+        typer.Argument(help="Filename of message"),
     ] = None,
     message_class: Annotated[
         MessageClassOption, typer.Option(help="Message class to classify the message")
@@ -358,7 +356,7 @@ def learn(
 def forget(
     message: Annotated[
         Optional[typer.FileBinaryRead],
-        typer.Argument(help="Message to check, [default: stdin]"),
+        typer.Argument(help="Filename of message"),
     ] = None,
     host: Annotated[
         str,
@@ -421,7 +419,7 @@ def forget(
 def report(
     message: Annotated[
         Optional[typer.FileBinaryRead],
-        typer.Argument(help="Message to check, [default: stdin]"),
+        typer.Argument(help="Filename of message"),
     ] = None,
     host: Annotated[
         str,
@@ -482,7 +480,7 @@ def report(
 def revoke(
     message: Annotated[
         Optional[typer.FileBinaryRead],
-        typer.Argument(help="Message to check, [default: stdin]"),
+        typer.Argument(help="Filename of message"),
     ] = None,
     host: Annotated[
         str,
