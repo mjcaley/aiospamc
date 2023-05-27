@@ -36,11 +36,11 @@ Commands
 
     The exit code will be 0 if the message is ham and 1 if it's spam.
 
-    .. option:: --host HOSTNAME
+    .. option:: -h, --host HOSTNAME
 
         |host_description|
 
-    .. option:: --port PORT
+    .. option:: -p, --port PORT
 
         |port_description|
 
@@ -51,6 +51,10 @@ Commands
     .. option:: --ssl
 
         |ssl_description|
+
+    .. option:: --user
+
+        |user_description|
 
     .. option:: --timeout SECONDS
 
@@ -64,11 +68,11 @@ Commands
 
     Forgets the classification of a message.
 
-    .. option:: --host HOSTNAME
+    .. option:: -h, --host HOSTNAME
 
         |host_description|
 
-    .. option:: --port PORT
+    .. option:: -p, --port PORT
 
         |port_description|
 
@@ -79,6 +83,10 @@ Commands
     .. option:: --ssl
 
         |ssl_description|
+
+    .. option:: --user
+
+        |user_description|
 
     .. option:: --timeout SECONDS
 
@@ -92,11 +100,11 @@ Commands
 
     Ask SpamAssassin to learn the message as spam or ham.
 
-    .. option:: --host HOSTNAME
+    .. option:: -h, --host HOSTNAME
 
         |host_description|
 
-    .. option:: --port PORT
+    .. option:: -p, --port PORT
 
         |port_description|
 
@@ -107,6 +115,10 @@ Commands
     .. option:: --ssl
 
         |ssl_description|
+
+    .. option:: --user
+
+        |user_description|
 
     .. option:: --timeout SECONDS
 
@@ -122,11 +134,11 @@ Commands
 
     An exit code of 0 is successful, 1 is not successful.
 
-    .. option:: --host HOSTNAME
+    .. option:: -h, --host HOSTNAME
 
         |host_description|
 
-    .. option:: --port PORT
+    .. option:: -p, --port PORT
 
         |port_description|
 
@@ -137,6 +149,10 @@ Commands
     .. option:: --ssl
 
         |ssl_description|
+
+    .. option:: --user
+
+        |user_description|
 
     .. option:: --timeout SECONDS
 
@@ -168,6 +184,10 @@ Commands
 
         |ssl_description|
 
+    .. option:: --user
+
+        |user_description|
+
     .. option:: --timeout SECONDS
 
         |timeout_description|
@@ -182,11 +202,11 @@ Commands
 
     If revoking fails will exit with a code of 1.
 
-    .. option:: --host HOSTNAME
+    .. option:: -h, --host HOSTNAME
 
         |host_description|
 
-    .. option:: --port PORT
+    .. option:: -p, --port PORT
 
         |port_description|
 
@@ -197,6 +217,10 @@ Commands
     .. option:: --ssl
 
         |ssl_description|
+
+    .. option:: --user
+
+        |user_description|
 
     .. option:: --timeout SECONDS
 
@@ -214,6 +238,8 @@ Commands
 
 .. |ssl_description| replace:: Enables or disables SSL when using a TCP connection. Will use the
                                system's root certificates by default.
+
+.. |user_description| replace:: User to send the request as.
 
 .. |timeout_description| replace:: Set the connection timeout. Default is 10 seconds.
 
