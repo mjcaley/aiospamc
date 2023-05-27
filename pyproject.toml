@@ -71,7 +71,7 @@ urllib3 = "<2"
 
 
 [tool.poetry.group.docs.dependencies]
-sphinx = "^6.2"
+sphinx = ">=6.2,<8.0"
 sphinx-toolbox = "^3.4"
 reno = "^4.0"
 
