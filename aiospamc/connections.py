@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """ConnectionManager classes for TCP and Unix sockets."""
 
 from __future__ import annotations

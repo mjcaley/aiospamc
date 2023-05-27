@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import datetime
 import sys
 from pathlib import Path
@@ -9,10 +7,10 @@ from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
 import pytest
 import trustme
+from pytest_mock import MockerFixture
 
 from aiospamc.client import Client
 from aiospamc.header_values import ContentLengthValue
-from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request
 
 
@@ -104,6 +102,12 @@ def response_spam_header():
 
 
 @pytest.fixture
+def response_not_spam():
+    """Response with Spam header, but it's ham."""
+    return b"SPAMD/1.1 0 EX_OK\r\nSpam: False ; 0.0 / 1.0\r\n\r\n"
+
+
+@pytest.fixture
 def response_with_body():
     """Response with body and Content-length header in bytes."""
     return b"SPAMD/1.5 0 EX_OK\r\nContent-length: 10\r\n\r\nTest body\n"
@@ -113,6 +117,30 @@ def response_with_body():
 def response_empty_body():
     """Response with Content-length header, but empty body in bytes."""
     return b"SPAMD/1.5 0 EX_OK\r\nContent-length: 0\r\n\r\n"
+
+
+@pytest.fixture
+def response_learned():
+    """Response with DidSet set to local."""
+    return b"SPAMD/1.1 0 EX_OK\r\nDidSet: local\r\n\r\n"
+
+
+@pytest.fixture
+def response_forgotten():
+    """Response with DidRemove set to local."""
+    return b"SPAMD/1.1 0 EX_OK\r\nDidRemove: local\r\n\r\n"
+
+
+@pytest.fixture
+def response_reported():
+    """Response with DidSet set to remote."""
+    return b"SPAMD/1.1 0 EX_OK\r\nDidSet: remote\r\n\r\n"
+
+
+@pytest.fixture
+def response_revoked():
+    """Response with DidRemove set to remote."""
+    return b"SPAMD/1.1 0 EX_OK\r\nDidRemove: remote\r\n\r\n"
 
 
 @pytest.fixture
@@ -256,23 +284,31 @@ def unix_socket(tmp_path_factory):
 
 
 @pytest.fixture
-def mock_client_dependency(mocker, response_ok):
-    ssl_factory = mocker.Mock()
+def mock_client(mocker: MockerFixture, response_ok):
     connection_factory = mocker.Mock()
     connection_factory.return_value.request = mocker.AsyncMock(return_value=response_ok)
-    parser_factory = mocker.Mock(return_value=ResponseParser())
 
-    return Client(ssl_factory, connection_factory, parser_factory)
+    mock_connection_factory = mocker.patch.object(
+        Client, "default_connection_factory", connection_factory
+    )
+
+    return mock_connection_factory
 
 
 @pytest.fixture
-def mock_client_response(mock_client_dependency):
+def mock_client_response(mock_client):
     def inner(response):
-        mock_client_dependency.connection_factory.return_value.request.return_value = (
-            response
-        )
+        mock_client.return_value.request.return_value = response
+        return mock_client
 
-        return mock_client_dependency
+    return inner
+
+
+@pytest.fixture
+def mock_client_raises(mock_client):
+    def inner(side_effect):
+        mock_client.return_value.request.side_effect = side_effect
+        return mock_client
 
     return inner
 

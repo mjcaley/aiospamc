@@ -1,13 +1,14 @@
-#!/usr/bin/env python3
-
 """Contains classes used for responses."""
 
-import zlib
-from enum import IntEnum
-from typing import Any, Dict, Optional, SupportsBytes, Union
+from __future__ import annotations
 
-from .exceptions import *
-from .header_values import ContentLengthValue, HeaderValue
+import zlib
+from base64 import b64encode
+from enum import IntEnum
+from typing import Any, Dict, SupportsBytes, Union
+
+from .exceptions import TimeoutException
+from .header_values import ContentLengthValue, Headers
 
 
 class Status(IntEnum):
@@ -40,7 +41,7 @@ class Response:
         version: str = "1.5",
         status_code: Union[Status, int] = 0,
         message: str = "",
-        headers: Optional[Dict[str, HeaderValue]] = None,
+        headers: Union[Dict[str, Any], Headers, None] = None,
         body: bytes = b"",
         **_,
     ):
@@ -54,7 +55,12 @@ class Response:
         """
 
         self.version = version
-        self.headers = headers or {}
+        if isinstance(headers, dict):
+            self.headers = Headers(headers)
+        elif isinstance(headers, Headers):
+            self.headers = headers
+        else:
+            self.headers = Headers()
         self._status_code: Union[Status, int]
         self.status_code = status_code
         self.message = message
@@ -198,19 +204,224 @@ class Response:
                 79: ServerTimeoutException,
             }
             if self.status_code in status_exception:
-                raise status_exception[self.status_code](self.message)
+                raise status_exception[self.status_code](self.message, self)
             else:
-                raise ResponseException(self.status_code, self.message)
+                raise ResponseException(self.status_code, self.message, self)
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Converts the response to a dictionary."""
+    def to_json(self) -> Dict[str, Any]:
+        """Converts to JSON serializable object."""
 
-        response_dict = {
+        return {
             "version": self.version,
             "status_code": int(self.status_code),
             "message": self.message,
-            "headers": {key: value.to_dict() for key, value in self.headers.items()},
-            "body": self.body,
+            "headers": {key: value.to_json() for key, value in self.headers.items()},
+            "body": b64encode(self.body).decode(),
         }
 
-        return response_dict
+
+class ResponseException(Exception):
+    """Base class for exceptions raised from a response."""
+
+    def __init__(self, code: int, message: str, response: Response):
+        """ResponseException constructor.
+
+        :param code: Response code number.
+        :param message: Message response.
+        """
+
+        self.code = code
+        self.response = response
+        super().__init__(message)
+
+
+class UsageException(ResponseException):
+    """Command line usage error."""
+
+    def __init__(self, message: str, response: Response):
+        """UsageException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(64, message, response)
+
+
+class DataErrorException(ResponseException):
+    """Data format error."""
+
+    def __init__(self, message: str, response: Response):
+        """DataErrorException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(65, message, response)
+
+
+class NoInputException(ResponseException):
+    """Cannot open input."""
+
+    def __init__(self, message: str, response: Response):
+        """NoInputException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(66, message, response)
+
+
+class NoUserException(ResponseException):
+    """Addressee unknown."""
+
+    def __init__(self, message: str, response: Response):
+        """NoUserException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(67, message, response)
+
+
+class NoHostException(ResponseException):
+    """Hostname unknown."""
+
+    def __init__(self, message: str, response: Response):
+        """NoHostException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(68, message, response)
+
+
+class UnavailableException(ResponseException):
+    """Service unavailable."""
+
+    def __init__(self, message: str, response: Response):
+        """UnavailableException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(69, message, response)
+
+
+class InternalSoftwareException(ResponseException):
+    """Internal software error."""
+
+    def __init__(self, message: str, response: Response):
+        """InternalSoftwareException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(70, message, response)
+
+
+class OSErrorException(ResponseException):
+    """System error (e.g. can't fork the process)."""
+
+    def __init__(self, message: str, response: Response):
+        """OSErrorException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(71, message, response)
+
+
+class OSFileException(ResponseException):
+    """Critical operating system file missing."""
+
+    def __init__(self, message: str, response: Response):
+        """OSFileException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(72, message, response)
+
+
+class CantCreateException(ResponseException):
+    """Can't create (user) output file."""
+
+    def __init__(self, message: str, response: Response):
+        """CantCreateException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(73, message, response)
+
+
+class IOErrorException(ResponseException):
+    """Input/output error."""
+
+    def __init__(self, message: str, response: Response):
+        """IOErrorException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(74, message, response)
+
+
+class TemporaryFailureException(ResponseException):
+    """Temporary failure, user is invited to try again."""
+
+    def __init__(self, message: str, response: Response):
+        """TemporaryFailureException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(75, message, response)
+
+
+class ProtocolException(ResponseException):
+    """Remote error in protocol."""
+
+    def __init__(self, message: str, response: Response):
+        """ProtocolException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(76, message, response)
+
+
+class NoPermissionException(ResponseException):
+    """Permission denied."""
+
+    def __init__(self, message: str, response: Response):
+        """NoPermissionException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(77, message, response)
+
+
+class ConfigException(ResponseException):
+    """Configuration error."""
+
+    def __init__(self, message: str, response: Response):
+        """ConfigException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(78, message, response)
+
+
+class ServerTimeoutException(ResponseException, TimeoutException):
+    """Timeout exception from the server."""
+
+    def __init__(self, message: str, response: Response):
+        """ServerTimeoutException constructor.
+
+        :param message: Message response.
+        """
+
+        super().__init__(79, message, response)

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from base64 import b64encode
+
 import pytest
 
 from aiospamc.header_values import (
@@ -8,18 +10,13 @@ from aiospamc.header_values import (
     CompressValue,
     ContentLengthValue,
     GenericHeaderValue,
-    HeaderValue,
+    Headers,
     MessageClassOption,
     MessageClassValue,
     SetOrRemoveValue,
     SpamValue,
     UserValue,
 )
-
-
-def test_header_value_bytes_raises():
-    with pytest.raises(NotImplementedError):
-        bytes(HeaderValue())
 
 
 def test_bytes_value():
@@ -34,22 +31,11 @@ def test_bytes_bytes():
     assert b"test" == bytes(b)
 
 
-def test_bytes_eq_true():
+def test_bytes_to_json():
     b = BytesHeaderValue(b"test")
+    expected = b64encode(b"test").decode()
 
-    assert BytesHeaderValue(b"test") == b
-
-
-def test_bytes_eq_false():
-    b = BytesHeaderValue(b"test")
-
-    assert BytesHeaderValue(b"other") != b
-
-
-def test_bytes_eq_fail():
-    b = BytesHeaderValue(b"test")
-
-    assert "other" != b
+    assert expected == b.to_json()
 
 
 def test_header_bytes():
@@ -83,7 +69,7 @@ def test_content_length_int():
 def test_message_class_bytes(test_input, expected):
     m = MessageClassValue(value=test_input)
 
-    assert bytes(m) == expected
+    assert expected == bytes(m)
 
 
 @pytest.mark.parametrize(
@@ -113,18 +99,6 @@ def test_spam_bytes(value, score, threshold, expected):
     s = SpamValue(value=value, score=score, threshold=threshold)
 
     assert bytes(s) == expected
-
-
-def test_spam_bool_true():
-    s = SpamValue(value=True)
-
-    assert True is bool(s)
-
-
-def test_spam_bool_false():
-    s = SpamValue(value=False)
-
-    assert False is bool(s)
 
 
 def test_user_str():
@@ -179,22 +153,133 @@ def test_eq_attribute_exception_false(test_input):
 @pytest.mark.parametrize(
     "test_input,expected",
     [
-        (GenericHeaderValue("value"), {"encoding": "utf8", "value": "value"}),
-        (CompressValue(), {"algorithm": "zlib"}),
-        (ContentLengthValue(42), {"length": 42}),
+        (GenericHeaderValue("value"), "value"),
+        (CompressValue(), "zlib"),
+        (ContentLengthValue(42), 42),
         (
             SetOrRemoveValue(ActionOption(local=True, remote=False)),
-            {"action": {"local": True, "remote": False}},
+            {"local": True, "remote": False},
         ),
-        (MessageClassValue(value=MessageClassOption.ham), {"value": "ham"}),
+        (MessageClassValue(value=MessageClassOption.ham), "ham"),
         (
             SpamValue(value=True, score=1.0, threshold=10.0),
             {"value": True, "score": 1.0, "threshold": 10.0},
         ),
-        (UserValue("username"), {"name": "username"}),
+        (UserValue("username"), "username"),
     ],
 )
-def test_to_dict(test_input, expected):
-    result = test_input.to_dict()
+def test_to_json(test_input, expected):
+    result = test_input.to_json()
 
     assert expected == result
+
+
+def test_headers_get_header():
+    h = Headers({"Exists": GenericHeaderValue("test")})
+
+    assert None is h.get_header("Doesnt-exist")
+    assert "test" == h.get_header("Exists")
+
+
+def test_headers_set_header():
+    h = Headers()
+    h.set_header("Test", "test")
+
+    assert "test" == h.get_header("Test")
+
+
+def test_headers_get_bytes_header():
+    test_input = BytesHeaderValue(b"test")
+    h = Headers({"Exists": BytesHeaderValue(test_input)})
+
+    assert None is h.get_bytes_header("Doesnt-exist")
+    assert test_input == h.get_bytes_header("Exists")
+
+
+def test_headers_set_bytes_header():
+    test_input = BytesHeaderValue(b"test")
+    h = Headers()
+    h.set_bytes_header("Test", test_input)
+
+    assert test_input == h.get_bytes_header("Test")
+
+
+def test_headers_compress():
+    test_input = CompressValue()
+    h = Headers()
+
+    assert None is h.compress
+    h.compress = test_input
+    assert test_input == h.compress
+
+
+def test_headers_content_length():
+    test_input = ContentLengthValue()
+    h = Headers()
+
+    assert None is h.content_length
+    h.content_length = test_input
+    assert test_input == h.content_length
+
+
+def test_headers_message_class():
+    test_input = MessageClassOption.ham
+    h = Headers()
+
+    assert None is h.message_class
+    h.message_class = test_input
+    assert test_input == h.message_class
+
+
+def test_headers_set():
+    test_input = SetOrRemoveValue(action=ActionOption(False, False))
+    h = Headers()
+
+    assert None is h.set_
+    h.set_ = test_input
+    assert test_input == h.set_
+
+
+def test_headers_remove():
+    test_input = SetOrRemoveValue(action=ActionOption(False, False))
+    h = Headers()
+
+    assert None is h.remove
+    h.remove = test_input
+    assert test_input == h.remove
+
+
+def test_headers_did_set():
+    test_input = SetOrRemoveValue(action=ActionOption(False, False))
+    h = Headers()
+
+    assert None is h.did_set
+    h.did_set = test_input
+    assert test_input == h.did_set
+
+
+def test_headers_did_remove():
+    test_input = SetOrRemoveValue(action=ActionOption(False, False))
+    h = Headers()
+
+    assert None is h.did_remove
+    h.did_remove = test_input
+    assert test_input == h.did_remove
+
+
+def test_headers_spam():
+    test_input = SpamValue()
+    h = Headers()
+
+    assert None is h.spam
+    h.spam = test_input
+    assert test_input == h.spam
+
+
+def test_headers_user():
+    test_input = UserValue()
+    h = Headers()
+
+    assert None is h.user
+    h.user = test_input
+    assert test_input == h.user

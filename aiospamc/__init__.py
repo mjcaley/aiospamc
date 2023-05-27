@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """aiospamc package.
 
 An asyncio-based library to communicate with SpamAssassin's SPAMD service."""
