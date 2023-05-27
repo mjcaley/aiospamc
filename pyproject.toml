@@ -70,12 +70,10 @@ fail_under = 95.0
 urllib3 = "<2"
 
 
-
 [tool.poetry.group.docs.dependencies]
-sphinx = "^7.0"
+sphinx = "^6.2"
 sphinx-toolbox = "^3.4"
 reno = "^4.0"
-
 
 
 [tool.poetry.group.quality.dependencies]
