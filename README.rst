@@ -40,9 +40,28 @@ Requirements
 
 * Python 3.8 or higher
 
--------
-Example
--------
+----------------------
+As a Command Line Tool
+----------------------
+
+`aiospamc` is your interface to SpamAssassin through CLI. To submit a message
+for a score, use:
+
+.. code::
+
+    cat ./gtube.msg | aiospamc check
+
+and the response will be the score of the message:
+
+.. code::
+
+    1000.0/5.0
+
+Sub-commands for learning and reporting are also supported.
+
+------------
+As a Library
+------------
 
 .. code:: python
 

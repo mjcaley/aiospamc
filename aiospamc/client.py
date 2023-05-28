@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-
 """Module implementing client objects that all requests go through."""
 
-from dataclasses import dataclass
 from ssl import SSLContext
 from typing import Any, Callable, Optional, Type
 
@@ -15,7 +12,6 @@ from .connections import (
     new_ssl_context,
 )
 from .exceptions import BadResponse
-from .header_values import CompressValue, UserValue
 from .incremental_parser import ParseError, ResponseParser
 from .requests import Request
 from .responses import Response
@@ -34,38 +30,38 @@ ConnectionFactory = Callable[
 SSLFactory = Callable[[Any], Optional[SSLContext]]
 
 
-@dataclass
 class Client:
     """Client class containing factories."""
 
-    ssl_context_factory: SSLFactory = new_ssl_context
-    connection_factory: ConnectionFactory = new_connection_manager
-    parser_factory: Type[ResponseParser] = ResponseParser
+    default_ssl_context_factory: Optional[SSLFactory] = staticmethod(new_ssl_context)
+    default_connection_factory: ConnectionFactory = staticmethod(new_connection_manager)
+    default_parser_factory: Type[ResponseParser] = ResponseParser
 
+    def __init__(
+        self, ssl_context_factory=None, connection_factory=None, parser_factory=None
+    ):
+        """Client constructor.
+
+        :param default_ssl_context_factory: SSL context factory function.
+        :param default_connection_factory: `ConnectionManager` factory function.
+        :param default_parser_factory: Response parser type.
+        """
+
+        self.ssl_context_factory = (
+            ssl_context_factory or self.default_ssl_context_factory
+        )
+        self.connection_factory = connection_factory or self.default_connection_factory
+        self.parser_factory = parser_factory or self.default_parser_factory
+
+    @staticmethod
     async def request(
-        self,
-        req: Request,
-        host: str = "localhost",
-        port: int = 783,
-        socket_path: Optional[str] = None,
-        timeout: Optional[Timeout] = None,
-        verify: Any = None,
-        user: Optional[str] = None,
-        compress: bool = False,
+        req: Request, connection: ConnectionManager, parser: ResponseParser
     ) -> Response:
         """Sends a request and returns the parsed response.
 
         :param req: The request to send.
-        :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
-        :param port: Port number for the SPAMD service, defaults to 783.
-        :param socket_path: Path to Unix socket.
-        :param timeout: Timeout settings.
-        :param verify:
-            Enable SSL. `True` will use the root certificates from the :module:`certifi` package.
-            `False` will use SSL, but not verify the root certificates. Passing a string to a filename
-            will use the path to verify the root certificates.
-        :param user: Username to pass to the SPAMD service.
-        :param compress: Enable compress of the request body.
+        :param connection: Instance of a `ConnectionManager`.
+        :param parser: Instance of `ResponseParser`.
 
         :return: The parsed response.
 
@@ -91,22 +87,9 @@ class Client:
         """
 
         context_logger = logger.bind(
-            host=host,
-            port=port,
-            socket_path=socket_path,
-            user=user,
+            connection=connection,
             request=req,
         )
-        ssl_context = self.ssl_context_factory(verify)
-        connection = self.connection_factory(
-            host, port, socket_path, timeout, ssl_context
-        )
-        parser = self.parser_factory()
-
-        if user:
-            req.headers["User"] = UserValue(user)
-        if compress:
-            req.headers["Compress"] = CompressValue()
 
         raise_warnings(req, connection)
 
@@ -120,7 +103,7 @@ class Client:
             raise BadResponse(response) from error
         response_obj = Response(**parsed_response)
         response_obj.raise_for_status()
-        context_logger.bind(response=response_obj).info(
+        context_logger.bind(response=response_obj).success(
             "Successfully received response"
         )
 

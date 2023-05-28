@@ -28,6 +28,11 @@ keywords = ["spam", "spamc", "spamassassin"]
 python = "^3.8"
 certifi = "*"
 loguru = "^0.7.0"
+typer = "^0.9.0"
+typing-extensions = "^4.6.2"
+
+[tool.poetry.scripts]
+aiospamc = "aiospamc.cli:app"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.1"
@@ -60,10 +65,16 @@ exclude_lines = [
 ]
 fail_under = 95.0
 
+
+[tool.poetry.group.workaround.dependencies]
+urllib3 = "<2"
+
+
 [tool.poetry.group.docs.dependencies]
-sphinx = "^6.1"
+sphinx = "^6.2"
 sphinx-toolbox = "^3.4"
 reno = "^4.0"
+
 
 [tool.poetry.group.quality.dependencies]
 mypy = "^1.2"

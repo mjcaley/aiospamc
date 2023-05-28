@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Added headers class with properties for well-known headers. :github:issue:`385`

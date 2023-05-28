@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
-
 import zlib
+from base64 import b64encode
 
-from aiospamc.header_values import CompressValue, ContentLengthValue
+from aiospamc.header_values import CompressValue, ContentLengthValue, Headers
 from aiospamc.incremental_parser import RequestParser
 from aiospamc.requests import Request
 
@@ -23,6 +22,13 @@ def test_init_headers():
     r = Request(verb="TEST")
 
     assert hasattr(r, "headers")
+
+
+def test_init_headers_type():
+    headers = Headers()
+    r = Request(verb="TEST", headers=headers)
+
+    assert headers is r.headers
 
 
 def test_bytes_starts_with_verb():
@@ -76,16 +82,17 @@ def test_request_from_parser_result(request_with_body):
     assert r is not None
 
 
-def test_request_to_dict():
+def test_request_to_json():
     test_body = b"Test body\n"
-    result = Request(
+    request = Request(
         "CHECK",
         headers={"Content-length": ContentLengthValue(len(test_body))},
         body=test_body,
-    ).to_dict()
+    )
+    result = request.to_json()
 
     assert "CHECK" == result["verb"]
     assert "1.5" == result["version"]
-    assert b"Test body\n" == result["body"]
+    assert b64encode(b"Test body\n").decode() == result["body"]
     assert "Content-length" in result["headers"]
-    assert {"length": len(result["body"])} == result["headers"]["Content-length"]
+    assert len(request.body) == result["headers"]["Content-length"]
