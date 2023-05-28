@@ -52,7 +52,7 @@ Commands
 
         |ssl_description|
 
-    .. option:: --user
+    .. option:: --user USERNAME
 
         |user_description|
 
@@ -84,7 +84,7 @@ Commands
 
         |ssl_description|
 
-    .. option:: --user
+    .. option:: --user USERNAME
 
         |user_description|
 
@@ -116,7 +116,7 @@ Commands
 
         |ssl_description|
 
-    .. option:: --user
+    .. option:: --user USERNAME
 
         |user_description|
 
@@ -150,7 +150,7 @@ Commands
 
         |ssl_description|
 
-    .. option:: --user
+    .. option:: --user USERNAME
 
         |user_description|
 
@@ -184,7 +184,7 @@ Commands
 
         |ssl_description|
 
-    .. option:: --user
+    .. option:: --user USERNAME
 
         |user_description|
 
@@ -218,7 +218,7 @@ Commands
 
         |ssl_description|
 
-    .. option:: --user
+    .. option:: --user USERNAME
 
         |user_description|
 
