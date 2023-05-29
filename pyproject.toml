@@ -66,14 +66,20 @@ exclude_lines = [
 fail_under = 95.0
 
 
+
+
 [tool.poetry.group.workaround.dependencies]
 urllib3 = "<2"
+
+
 
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "^6.2"
 sphinx-toolbox = "^3.4"
 reno = "^4.0"
+
+
 
 
 [tool.poetry.group.quality.dependencies]
@@ -99,6 +105,35 @@ exclude = ["changes", "docs", "example", "test", "util"]
 [tool.isort]
 profile = "black"
 src_paths = ["aiospamc", "tests"]
+
+
+[tool.poetry.group.mgmt.dependencies]
+tbump = "^6.10"
+
+[tool.tbump]
+github_url = "https://github.com/mjcaley/aiospamc/"
+
+[tool.tbump.version]
+current = "0.9.0"
+regex = '''
+  (?P<major>\d+)
+  \.
+  (?P<minor>\d+)
+  \.
+  (?P<patch>\d+)
+  '''
+
+[tool.tbump.git]
+message_template = "Bump to {new_version}"
+tag_template = "v{new_version}"
+
+[[tool.tbump.file]]
+src = "aiospamc/__init__.py"
+
+[[tool.tbump.file]]
+src = "pyproject.toml"
+search = 'version = "{current_version}"'
+
 
 [build-system]
 requires = ["poetry-core"]
