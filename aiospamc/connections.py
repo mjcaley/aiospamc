@@ -231,6 +231,8 @@ class SSLContextBuilder:
     """SSL context builder."""
 
     def __init__(self):
+        """Builder contstructor. Sets up a default SSL context."""
+
         self._context = ssl.create_default_context()
 
     @property
@@ -249,6 +251,8 @@ class SSLContextBuilder:
 
         self._context.load_verify_locations(cafile=file)
 
+        return self._context
+
     def add_ca_dir(self, dir: Path) -> SSLContextBuilder:
         """Add certificate authority from a directory.
 
@@ -259,6 +263,8 @@ class SSLContextBuilder:
 
         self._context.load_verify_locations(capath=dir)
 
+        return self._context
+
     def add_default_ca(self) -> SSLContextBuilder:
         """Add default certificate authorities.
 
@@ -266,6 +272,8 @@ class SSLContextBuilder:
         """
 
         self._context.load_verify_locations(cafile=certifi.where())
+
+        return self._context
 
     def add_client(
         self, file: Path, key: Optional[Path] = None, password: Optional[str] = None
@@ -278,6 +286,7 @@ class SSLContextBuilder:
         """
 
         self._context.load_cert_chain(file, key, password)
+
         return self._context
 
     def dont_verify(self) -> SSLContextBuilder:
@@ -285,6 +294,7 @@ class SSLContextBuilder:
 
         self._context.check_hostname = False
         self._context.verify_mode = ssl.CERT_NONE
+
         return self._context
 
 
@@ -307,7 +317,7 @@ def new_ssl_context(
     """
 
     if verify is None:
-        return
+        return None
 
     builder = SSLContextBuilder()
 

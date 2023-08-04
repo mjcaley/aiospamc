@@ -254,8 +254,8 @@ def test_ssl_context_from_dir(tmp_path):
     assert isinstance(result, ssl.SSLContext)
 
 
-def test_ssl_context_from_file(mocker, certificate_authority):
-    result = new_ssl_context(certificate_authority)
+def test_ssl_context_from_file(ca_cert):
+    result = new_ssl_context(ca_cert)
 
     assert isinstance(result, ssl.SSLContext)
 
@@ -265,6 +265,12 @@ def test_ssl_context_file_not_found(tmp_path):
 
     with pytest.raises(FileNotFoundError):
         new_ssl_context(str(file))
+
+
+def test_ssl_context_client_cert(client_cert, client_key):
+    result = new_ssl_context(True, client_cert, client_key)
+
+    assert isinstance(result, ssl.SSLContext)
 
 
 def test_new_connection_returns_unix_manager(unix_socket):

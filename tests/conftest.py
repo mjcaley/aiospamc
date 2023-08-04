@@ -317,43 +317,85 @@ def mock_client_raises(mock_client):
 
 
 @pytest.fixture(scope="session")
-def create_certificate(tmp_path_factory, hostname, ip_address):
-    certs_tmp_path = tmp_path_factory.mktemp("localhost_certs")
-    ca_path = certs_tmp_path / "ca.pem"
-    cert_path = certs_tmp_path / "cert.pem"
-
-    ca = trustme.CA()
-    cert = ca.issue_cert(hostname, ip_address)
-
-    ca.cert_pem.write_to_path(ca_path)
-    cert.private_key_and_cert_chain_pem.write_to_path(cert_path)
-
-    yield ca_path, cert_path
+def ca():
+    yield trustme.CA()
 
 
 @pytest.fixture(scope="session")
-def certificate_authority(create_certificate):
-    yield create_certificate[0]
+def ca_cert(ca, tmp_path_factory: pytest.TempdirFactory):
+    tmp_path = tmp_path_factory.mktemp("ca_certs")
+    cert_file = tmp_path / "ca_cert.pem"
+    ca.cert_pem.write_to_path(cert_file)
+
+    yield cert_file
 
 
 @pytest.fixture(scope="session")
-def certificate(create_certificate):
-    yield create_certificate[1]
+def server_cert_and_key(
+    ca, hostname, ip_address, tmp_path_factory: pytest.TempdirFactory
+):
+    tmp_path = tmp_path_factory.mktemp("server_certs")
+    cert_file = tmp_path / "server.cert"
+    key_file = tmp_path / "server.key"
+
+    cert: trustme.LeafCert = ca.issue_cert(hostname, ip_address)
+
+    cert_file.write_bytes(b"".join([blob.bytes() for blob in cert.cert_chain_pems]))
+    cert.private_key_pem.write_to_path(key_file)
+
+    yield cert_file, key_file
 
 
 @pytest.fixture(scope="session")
-def spamd(ip_address, tcp_port, ssl_port, unix_socket, certificate, request):
+def client_cert_and_key(
+    ca, hostname, ip_address, tmp_path_factory: pytest.TempdirFactory
+):
+    tmp_path = tmp_path_factory.mktemp("client_certs")
+    cert_file = tmp_path / "client.cert"
+    key_file = tmp_path / "client.key"
+
+    cert: trustme.LeafCert = ca.issue_cert(hostname, ip_address)
+
+    cert_file.write_bytes(b"".join([blob.bytes() for blob in cert.cert_chain_pems]))
+    cert.private_key_pem.write_to_path(key_file)
+
+    yield cert_file, key_file
+
+
+@pytest.fixture(scope="session")
+def server_cert(server_cert_and_key):
+    yield server_cert_and_key[0]
+
+
+@pytest.fixture(scope="session")
+def server_key(server_cert_and_key):
+    yield server_cert_and_key[1]
+
+
+@pytest.fixture(scope="session")
+def client_cert(client_cert_and_key):
+    yield client_cert_and_key[0]
+
+
+@pytest.fixture(scope="session")
+def client_key(client_cert_and_key):
+    yield client_cert_and_key[1]
+
+
+@pytest.fixture(scope="session")
+def spamd(
+    ip_address, tcp_port, ssl_port, unix_socket, server_cert, server_key, request
+):
     # Configure options
     options = [
-        # f"--syslog={str(log_file)}",
         "--local",
         "--allow-tell",
         f"--listen={ip_address}:{tcp_port}",
         f"--listen=ssl:{ip_address}:{ssl_port}",
         "--server-key",
-        f"{certificate}",
+        f"{server_key}",
         "--server-cert",
-        f"{certificate}",
+        f"{server_cert}",
     ]
     if sys.platform != "win32":
         options += [f"--socketpath={unix_socket}"]

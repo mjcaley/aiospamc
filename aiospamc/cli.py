@@ -584,4 +584,6 @@ def main(
         ),
     ] = False,
 ):
+    """aiospamc sends messages to the SpamAssasin daemon."""
+
     pass
