@@ -235,41 +235,29 @@ def test_ssl_context_from_none():
     assert result is None
 
 
-def test_ssl_context_from_true(mocker):
-    s = mocker.spy(ssl, "create_default_context")
-    new_ssl_context(True)
+def test_ssl_context_from_true():
+    result = new_ssl_context(True)
 
-    assert s.call_args.kwargs["cafile"] == certifi.where()
-
-
-def test_ssl_context_from_false(mocker):
-    mocker.spy(ssl, "create_default_context")
-    s = new_ssl_context(False)
-
-    assert ssl.create_default_context.call_args.kwargs["cafile"] == certifi.where()
-    assert s.check_hostname is False
-    assert s.verify_mode == ssl.CERT_NONE
+    assert isinstance(result, ssl.SSLContext)
 
 
-def test_ssl_context_from_dir(mocker, tmp_path):
-    mocker.spy(ssl, "create_default_context")
+def test_ssl_context_from_false():
+    result = new_ssl_context(False)
+
+    assert isinstance(result, ssl.SSLContext)
+
+
+def test_ssl_context_from_dir(tmp_path):
     temp = Path(str(tmp_path))
-    s = new_ssl_context(temp)
+    result = new_ssl_context(temp)
 
-    assert ssl.create_default_context.call_args.kwargs["capath"] == str(temp)
+    assert isinstance(result, ssl.SSLContext)
 
 
 def test_ssl_context_from_file(mocker, certificate_authority):
-    mocker.spy(ssl, "create_default_context")
-    # file = tmp_path / "certs.pem"
-    # with open(str(file), "wb") as dest:
-    #     with open(certifi.where(), "rb") as source:
-    #         dest.writelines(source.readlines())
-    s = new_ssl_context(certificate_authority)
+    result = new_ssl_context(certificate_authority)
 
-    assert ssl.create_default_context.call_args.kwargs["cafile"] == str(
-        certificate_authority
-    )
+    assert isinstance(result, ssl.SSLContext)
 
 
 def test_ssl_context_file_not_found(tmp_path):

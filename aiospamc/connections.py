@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import ssl
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union
 
 import certifi
 import loguru
@@ -227,31 +227,108 @@ class UnixConnectionManager(ConnectionManager):
         return reader, writer
 
 
-def new_ssl_context(verify: Optional[Any]) -> Optional[ssl.SSLContext]:
+class SSLContextBuilder:
+    """SSL context builder."""
+
+    def __init__(self):
+        self._context = ssl.create_default_context()
+
+    @property
+    def context(self) -> ssl.SSLContext:
+        """The constructed SSL context."""
+
+        return self._context
+
+    def add_ca_file(self, file: Path) -> SSLContextBuilder:
+        """Add certificate authority from a file.
+
+        :param file: File of concatenated certificates.
+
+        :return: The builder instance.
+        """
+
+        self._context.load_verify_locations(cafile=file)
+
+    def add_ca_dir(self, dir: Path) -> SSLContextBuilder:
+        """Add certificate authority from a directory.
+
+        :param dir: Directory of certificates.
+
+        :return: The builder instance.
+        """
+
+        self._context.load_verify_locations(capath=dir)
+
+    def add_default_ca(self) -> SSLContextBuilder:
+        """Add default certificate authorities.
+
+        :return: The builder instance.
+        """
+
+        self._context.load_verify_locations(cafile=certifi.where())
+
+    def add_client(
+        self, file: Path, key: Optional[Path] = None, password: Optional[str] = None
+    ) -> SSLContextBuilder:
+        """Add client certificate.
+
+        :param file: Path to the client certificate.
+        :param key: Path to the key.
+        :param password: Password of the key.
+        """
+
+        self._context.load_cert_chain(file, key, password)
+        return self._context
+
+    def dont_verify(self) -> SSLContextBuilder:
+        """Set the context to not verify certificates."""
+
+        self._context.check_hostname = False
+        self._context.verify_mode = ssl.CERT_NONE
+        return self._context
+
+
+def new_ssl_context(
+    verify: Union[None, bool, str] = None,
+    client_cert: Optional[Path] = None,
+    client_key: Optional[Path] = None,
+    key_password: Optional[str] = None,
+) -> Optional[ssl.SSLContext]:
     """Creates an SSL context based on the supplied parameter.
 
     :param verify: Use SSL for the connection.  If True, will use root certificates.
         If False, will not verify the certificate.  If a string to a path or a Path
         object, the connection will use the certificates found there.
+    :param client_cert: Path to the client certificate.
+    :param client_key: Path to the client certificate private key.
+    :param client_password: Password of the private key.
+
+    :return: The SSL context if created.
     """
 
     if verify is None:
-        return None
+        return
+
+    builder = SSLContextBuilder()
+
+    if verify is False:
+        builder.add_default_ca()
+        builder.dont_verify()
     elif verify is True:
-        return ssl.create_default_context(cafile=certifi.where())
-    elif verify is False:
-        context = ssl.create_default_context(cafile=certifi.where())
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
-        return context
+        builder.add_default_ca()
     else:
-        cert_path = Path(verify).absolute()
-        if cert_path.is_dir():
-            return ssl.create_default_context(capath=str(cert_path))
-        elif cert_path.is_file():
-            return ssl.create_default_context(cafile=str(cert_path))
+        path = Path(verify).absolute()
+        if path.is_dir():
+            builder.add_ca_dir(path)
+        elif path.is_file():
+            builder.add_ca_file(path)
         else:
             raise FileNotFoundError(f"Certificate path does not exist at {verify}")
+
+    if client_cert:
+        builder.add_client(client_cert, client_key, key_password)
+
+    return builder.context
 
 
 def new_connection_manager(
