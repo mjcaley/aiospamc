@@ -1,9 +1,12 @@
 """Frontend functions for the package."""
 
 from pathlib import Path
+import ssl
 from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union
 
 from loguru import logger
+
+from aiospamc.builders import ConnectionManagerBuilder, SSLContextBuilder
 
 from .client import Client
 from .connections import Timeout
@@ -42,14 +45,10 @@ async def check(
     port: int = 783,
     socket_path: Optional[str] = None,
     timeout: Optional[Timeout] = None,
-    verify: Any = None,
+    verify: Union[bool, Path, ssl.SSLContext, None] = None,
+    cert: Union[Path, Tuple[Path, Optional[Path]], Tuple[Path, Optional[Path], Optional[Path]], None] = None,
     user: Optional[str] = None,
     compress: bool = False,
-    ca_cert: Optional[Path] = None,
-    client_cert: Optional[Path] = None,
-    client_key: Optional[Path] = None,
-    key_password: Optional[Path] = None,
-    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -104,6 +103,21 @@ async def check(
         request=req,
     )
     context_logger.info("Sending CHECK request")
+
+    connection_builder = ConnectionManagerBuilder()
+    if socket_path:
+        connection_builder = connection_builder.with_unix_socket(socket_path)
+    else:
+        connection_builder = connection_builder.with_tcp(host, port)
+
+    if verify is not None:
+        ssl_builder = SSLContextBuilder()
+        if verify is True:
+            ssl_builder.add_default_ca()
+        elif verify is False:
+            ssl_builder.add_default_ca().dont_verify()
+        elif isinstance(verify, ssl.SSLContext):
+            
 
     client = Client()
     ssl_context = client.ssl_context_factory(
