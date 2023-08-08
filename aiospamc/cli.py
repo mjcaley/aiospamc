@@ -461,9 +461,12 @@ def report(
     """Report a message to collaborative filtering databases as spam."""
 
     message_data = read_message(message)
+    headers = Headers()
+    headers.user = user
+    headers.message_class = MessageClassOption.spam
     request = Request(
         "TELL",
-        headers={"Message-class": MessageClassValue(MessageClassOption.spam)},
+        headers=headers,
         body=message_data,
     )
     runner = CommandRunner(request, out)
