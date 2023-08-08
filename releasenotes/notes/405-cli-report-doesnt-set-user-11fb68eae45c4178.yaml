@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    Fixed `report` CLI sub-command that did not set the `User` header. :github:issue:`385`
