@@ -1,18 +1,13 @@
 """Frontend functions for the package."""
 
+from pathlib import Path
 from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union
 
 from loguru import logger
 
 from .client import Client
 from .connections import Timeout
-from .header_values import (
-    ActionOption,
-    CompressValue,
-    MessageClassOption,
-    MessageClassValue,
-    UserValue,
-)
+from .header_values import ActionOption, MessageClassOption, MessageClassValue
 from .incremental_parser import parse_set_remove_value
 from .requests import Request
 from .responses import Response
@@ -50,6 +45,10 @@ async def check(
     verify: Any = None,
     user: Optional[str] = None,
     compress: bool = False,
+    ca_cert: Optional[Path] = None,
+    client_cert: Optional[Path] = None,
+    client_key: Optional[Path] = None,
+    key_password: Optional[Path] = None,
     **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
@@ -65,6 +64,9 @@ async def check(
         will use the path to verify the root certificates.
     :param user: Username to pass to the SPAMD service.
     :param compress: Enable compress of the request body.
+    :param client_cert: Client certificate file to use.
+    :param client_key: Key file to use for the client certificate.
+    :param key_password: Password to use for the client key if needed.
 
     :return:
         A successful response with a "Spam" header showing if the message is
@@ -104,7 +106,9 @@ async def check(
     context_logger.info("Sending CHECK request")
 
     client = Client()
-    ssl_context = client.ssl_context_factory(verify)
+    ssl_context = client.ssl_context_factory(
+        verify, client_cert, client_key, key_password
+    )
     connection = client.connection_factory(
         host, port, socket_path, timeout, ssl_context
     )

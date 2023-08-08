@@ -229,42 +229,36 @@ def test_unix_connection_manager_connection_string(unix_socket):
     assert unix_socket == u.connection_string
 
 
-def test_ssl_context_from_none():
-    result = new_ssl_context(None)
-
-    assert result is None
-
-
-def test_ssl_context_from_true():
-    result = new_ssl_context(True)
+def test_ssl_context_default():
+    result = new_ssl_context()
 
     assert isinstance(result, ssl.SSLContext)
 
 
-def test_ssl_context_from_false():
+def test_ssl_context_verify_false():
     result = new_ssl_context(False)
 
     assert isinstance(result, ssl.SSLContext)
 
 
-def test_ssl_context_from_dir(tmp_path):
+def test_ssl_context_ca_cert_dir(tmp_path):
     temp = Path(str(tmp_path))
-    result = new_ssl_context(temp)
+    result = new_ssl_context(ca_cert=temp)
 
     assert isinstance(result, ssl.SSLContext)
 
 
-def test_ssl_context_from_file(ca_cert):
-    result = new_ssl_context(ca_cert)
+def test_ssl_context_ca_cert_file(ca_cert):
+    result = new_ssl_context(ca_cert=ca_cert)
 
     assert isinstance(result, ssl.SSLContext)
 
 
-def test_ssl_context_file_not_found(tmp_path):
+def test_ssl_context_ca_cert_file_not_found(tmp_path):
     file = tmp_path / "nonexistent.pem"
 
     with pytest.raises(FileNotFoundError):
-        new_ssl_context(str(file))
+        new_ssl_context(ca_cert=file)
 
 
 def test_ssl_context_client_cert(client_cert, client_key):

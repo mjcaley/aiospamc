@@ -1,7 +1,8 @@
 """Module implementing client objects that all requests go through."""
 
+from pathlib import Path
 from ssl import SSLContext
-from typing import Any, Callable, Optional, Type
+from typing import Any, Callable, Optional, Type, Union
 
 from loguru import logger
 
@@ -27,7 +28,10 @@ ConnectionFactory = Callable[
     ],
     ConnectionManager,
 ]
-SSLFactory = Callable[[Any], Optional[SSLContext]]
+SSLFactory = Callable[
+    [Union[None, bool, str], Optional[Path], Optional[Path], Optional[str]],
+    Optional[SSLContext],
+]
 
 
 class Client:

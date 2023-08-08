@@ -251,7 +251,7 @@ class SSLContextBuilder:
 
         self._context.load_verify_locations(cafile=file)
 
-        return self._context
+        return self
 
     def add_ca_dir(self, dir: Path) -> SSLContextBuilder:
         """Add certificate authority from a directory.
@@ -263,7 +263,7 @@ class SSLContextBuilder:
 
         self._context.load_verify_locations(capath=dir)
 
-        return self._context
+        return self
 
     def add_default_ca(self) -> SSLContextBuilder:
         """Add default certificate authorities.
@@ -273,7 +273,7 @@ class SSLContextBuilder:
 
         self._context.load_verify_locations(cafile=certifi.where())
 
-        return self._context
+        return self
 
     def add_client(
         self, file: Path, key: Optional[Path] = None, password: Optional[str] = None
@@ -287,7 +287,7 @@ class SSLContextBuilder:
 
         self._context.load_cert_chain(file, key, password)
 
-        return self._context
+        return self
 
     def dont_verify(self) -> SSLContextBuilder:
         """Set the context to not verify certificates."""
@@ -295,20 +295,20 @@ class SSLContextBuilder:
         self._context.check_hostname = False
         self._context.verify_mode = ssl.CERT_NONE
 
-        return self._context
+        return self
 
 
 def new_ssl_context(
-    verify: Union[None, bool, str] = None,
+    verify: bool = True,
+    ca_cert: Optional[Path] = None,
     client_cert: Optional[Path] = None,
     client_key: Optional[Path] = None,
     key_password: Optional[str] = None,
-) -> Optional[ssl.SSLContext]:
+) -> ssl.SSLContext:
     """Creates an SSL context based on the supplied parameter.
 
-    :param verify: Use SSL for the connection.  If True, will use root certificates.
-        If False, will not verify the certificate.  If a string to a path or a Path
-        object, the connection will use the certificates found there.
+    :param verify: Whether to verify the server certficiate.
+    :param ca_cert: Path to the certificate authority file if being overridden.
     :param client_cert: Path to the client certificate.
     :param client_key: Path to the client certificate private key.
     :param client_password: Password of the private key.
@@ -316,24 +316,21 @@ def new_ssl_context(
     :return: The SSL context if created.
     """
 
-    if verify is None:
-        return None
-
     builder = SSLContextBuilder()
 
-    if verify is False:
-        builder.add_default_ca()
-        builder.dont_verify()
-    elif verify is True:
+    if verify:
         builder.add_default_ca()
     else:
-        path = Path(verify).absolute()
+        builder.add_default_ca().dont_verify()
+
+    if ca_cert is not None:
+        path = Path(ca_cert).absolute()
         if path.is_dir():
             builder.add_ca_dir(path)
         elif path.is_file():
             builder.add_ca_file(path)
         else:
-            raise FileNotFoundError(f"Certificate path does not exist at {verify}")
+            raise FileNotFoundError(f"CA certificate path does not exist at {ca_cert}")
 
     if client_cert:
         builder.add_client(client_cert, client_key, key_password)
