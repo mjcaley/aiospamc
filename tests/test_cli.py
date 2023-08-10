@@ -24,7 +24,7 @@ from aiospamc.cli import (
     app,
     read_message,
 )
-from aiospamc.client import Client
+from aiospamc.client import Client2
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request

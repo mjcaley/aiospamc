@@ -11,8 +11,6 @@ from aiospamc.connections import (
     TcpConnectionManager,
     Timeout,
     UnixConnectionManager,
-    new_connection_manager,
-    new_ssl_context,
 )
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
 
