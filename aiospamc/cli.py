@@ -14,6 +14,7 @@ import typer
 from loguru import logger
 from typing_extensions import Annotated
 
+from aiospamc.builders import ConnectionManagerBuilder, SSLContextBuilder
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
 from aiospamc.header_values import (
     ActionOption,
@@ -25,7 +26,7 @@ from aiospamc.header_values import (
 
 from . import __version__
 from .client import Client, Client2, Request
-from .connections import ConnectionManagerBuilder, SSLContextBuilder, Timeout
+from .connections import Timeout
 from .responses import Response, ResponseException
 
 app = typer.Typer(no_args_is_help=True)
@@ -52,26 +53,28 @@ FILE_NOT_FOUND_ERROR = 7
 
 
 # Monolithic, no different
-def build_client(host: Optional[str] = None,
-        port: Optional[int] = None,
-        socket_path: Optional[str] = None,
-        timeout: Optional[Timeout] = None,
-        ssl: bool = False,
-        verify: bool = True,
-        ca_cert: Optional[Path] = None,
-        client_cert: Optional[Path] = None,
-        client_key: Optional[Path] = None,
-        key_password: Optional[Path] = None,) -> Client2:
+def build_client(
+    host: Optional[str] = None,
+    port: Optional[int] = None,
+    socket_path: Optional[str] = None,
+    timeout: Optional[Timeout] = None,
+    ssl: bool = False,
+    verify: bool = True,
+    ca_cert: Optional[Path] = None,
+    client_cert: Optional[Path] = None,
+    client_key: Optional[Path] = None,
+    key_password: Optional[Path] = None,
+) -> Client2:
     """Builds the client."""
 
     connection_builder = ConnectionManagerBuilder()
-    
+
     if socket_path:
         connection_builder = connection_builder.with_unix_socket(socket_path)
         return Client2(connection_builder.build())
-    
+
     connection_builder = connection_builder.with_tcp(host, port)
-    
+
     if ssl:
         ssl_builder = SSLContextBuilder()
         if verify:
@@ -84,11 +87,13 @@ def build_client(host: Optional[str] = None,
             elif ca_cert.is_file():
                 ssl_builder.add_ca_file(ca_cert)
             else:
-                raise FileNotFoundError(f"Unable to find CA certificate file/directory {ca_cert}")
-            
+                raise FileNotFoundError(
+                    f"Unable to find CA certificate file/directory {ca_cert}"
+                )
+
             if client_cert:
                 ssl_builder.add_client(client_cert, client_key, key_password)
-        
+
         connection_builder.set_ssl_context(ssl_builder.build())
 
     return connection_builder.build()

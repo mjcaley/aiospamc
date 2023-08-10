@@ -1,6 +1,7 @@
 import pytest
 
 from aiospamc.client import Client
+from aiospamc.connections import ConnectionManager
 from aiospamc.exceptions import BadResponse
 from aiospamc.frontend import (
     check,
@@ -94,11 +95,10 @@ async def test_functions_with_optional_parameters(
         symbols,
     ],
 )
-async def test_functions_returns_response(func, mock_client, spam, mocker):
-    req_spy = mocker.spy(Client, "request")
+async def test_functions_returns_response(func, mock_client, spam):
     result = await func(spam)
 
-    assert req_spy.spy_return is result
+    assert response_ok == result
 
 
 async def test_ping_request_with_parameters(mock_client, mocker):

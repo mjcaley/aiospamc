@@ -112,7 +112,7 @@ class Client:
         )
 
         return response_obj
-    
+
 
 class Client2:
     def __init__(self, connection_manager: ConnectionManager):

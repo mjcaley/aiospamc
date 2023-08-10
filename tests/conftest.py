@@ -9,7 +9,8 @@ import pytest
 import trustme
 from pytest_mock import MockerFixture
 
-from aiospamc.client import Client
+from aiospamc.client import Client, Client2
+from aiospamc.connections import ConnectionManager
 from aiospamc.header_values import ContentLengthValue
 from aiospamc.requests import Request
 
@@ -292,7 +293,11 @@ def mock_client(mocker: MockerFixture, response_ok):
         Client, "default_connection_factory", connection_factory
     )
 
-    return mock_connection_factory
+    mock_connection_manager = mocker.patch.object(
+        ConnectionManager, "request", mocker.AsyncMock(return_value=response_ok)
+    )
+
+    yield mock_connection_factory
 
 
 @pytest.fixture

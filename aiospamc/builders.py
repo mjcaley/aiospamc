@@ -1,81 +1,58 @@
 from __future__ import annotations
-from pathlib import Path
+
 import ssl
+from enum import Enum, auto
+from pathlib import Path
 from typing import Optional, Union
 
 import certifi
 
-from aiospamc.connections import TcpConnectionManager, Timeout, UnixConnectionManager
-
+from aiospamc.connections import (
+    ConnectionManager,
+    TcpConnectionManager,
+    Timeout,
+    UnixConnectionManager,
+)
 
 
 class UnixConnectionManagerBuilder:
-    def __init__(self, connection_manager: UnixConnectionManager):
-        self._connection_manager = connection_manager
+    def __init__(self):
+        self._args = {}
 
     def build(self) -> UnixConnectionManager:
-        return self._connection_manager
-    
+        return UnixConnectionManager(**self._args)
+
     def set_path(self, path: Path) -> UnixConnectionManagerBuilder:
-        self._connection_manager.path = path
+        self._args["path"] = path
         return self
-    
+
     def set_timeout(self, timeout: Timeout) -> UnixConnectionManagerBuilder:
-        self._connection_manager.timeout = timeout
+        self._args["timeout"] = timeout
         return self
 
 
 class TcpConnectionManagerBuilder:
-    def __init__(self, connection_manager: TcpConnectionManager):
-        self._connection_manager = connection_manager
+    def __init__(self):
+        self._args = {}
 
     def build(self) -> TcpConnectionManager:
-        return self._connection_manager
-    
+        return TcpConnectionManager(**self._args)
+
     def set_host(self, host: str) -> TcpConnectionManagerBuilder:
-        self._connection_manager.host = host
+        self._args["host"] = host
         return self
-    
+
     def set_port(self, port: int) -> TcpConnectionManagerBuilder:
-        self._connection_manager.port = port
+        self._args["port"] = port
         return self
-    
+
     def set_ssl_context(self, context: ssl.SSLContext) -> TcpConnectionManagerBuilder:
-        self._connection_manager.ssl_context = context
+        self._args["ssl_context"] = context
         return self
-    
+
     def set_timeout(self, timeout: Timeout) -> TcpConnectionManagerBuilder:
-        self._connection_manager.timeout = timeout
+        self._args["timeout"] = timeout
         return self
-
-
-class ConnectionManagerBuilder:
-    def __init__(self):
-        self._builder: Union[UnixConnectionManagerBuilder, TcpConnectionManagerBuilder] = None
-    
-    def build(self):
-        if not self._builder:
-            raise ValueError("Connection information was not provided")
-        return self._builder.build()
-
-    def with_unix_socket(self, path: Path) -> UnixConnectionManagerBuilder:
-        connection_manager = UnixConnectionManager(path)
-        self._builder = UnixConnectionManagerBuilder(connection_manager)
-    
-        return self._builder
-
-    def with_tcp(self, host: str, port: int = 783) -> TcpConnectionManagerBuilder:
-        self._connection_manager = TcpConnectionManager(host, port)
-
-        return self
-    
-
-class MonolithicConnectionManagerBuilder:
-    def __init__(self):
-        pass
-
-    def build(self):
-        pass
 
 
 class SSLContextBuilder:
@@ -86,11 +63,20 @@ class SSLContextBuilder:
 
         self._context = ssl.create_default_context()
 
-    @property
-    def context(self) -> ssl.SSLContext:
-        """The constructed SSL context."""
-
+    def build(self) -> ssl.SSLContext:
         return self._context
+
+    def with_context(self, context: ssl.SSLContext) -> SSLContextBuilder:
+        """Use the SSL context.
+
+        :param context: Provided SSL context.
+
+        :return: The builder instance.
+        """
+
+        self._context = context
+
+        return self
 
     def add_ca_file(self, file: Path) -> SSLContextBuilder:
         """Add certificate authority from a file.
@@ -115,6 +101,21 @@ class SSLContextBuilder:
         self._context.load_verify_locations(capath=dir)
 
         return self
+
+    def add_ca(self, path: Path) -> SSLContextBuilder:
+        """Add a certificate authority.
+
+        :param path: Directory or file of certificates.
+
+        :return: The builder instance.
+        """
+
+        if path.is_dir():
+            return self.add_ca_dir(path)
+        elif path.is_file():
+            return self.add_ca_file(path)
+        else:
+            raise FileNotFoundError(path)
 
     def add_default_ca(self) -> SSLContextBuilder:
         """Add default certificate authorities.
@@ -145,6 +146,58 @@ class SSLContextBuilder:
 
         self._context.check_hostname = False
         self._context.verify_mode = ssl.CERT_NONE
+
+        return self
+
+
+class ConnectionManagerBuilder:
+    class ManagerType(Enum):
+        Undefined = auto()
+        Tcp = auto()
+        Unix = auto()
+
+    def __init__(self):
+        self._manager_type = self.ManagerType.Undefined
+        self._tcp_builder = TcpConnectionManagerBuilder()
+        self._unix_builder = UnixConnectionManagerBuilder()
+        self._ssl_builder = SSLContextBuilder()
+        self._ssl = False
+        self._timeout = None
+
+    def build(self) -> Union[UnixConnectionManager, TcpConnectionManager]:
+        if self._manager_type is self.ManagerType.Undefined:
+            raise ValueError(
+                "Connection type is undefined, builder must be called with 'with_unix_socket' or 'with_tcp'"
+            )
+        elif self._manager_type is self.ManagerType.Tcp:
+            ssl_context = None if not self._ssl else self._ssl_builder.build()
+            self._tcp_builder.set_ssl_context(ssl_context)
+            return self._tcp_builder.set_timeout(self._timeout).build()
+        else:
+            return self._unix_builder.set_timeout(self._timeout).build()
+
+    def with_unix_socket(self, path: Path) -> ConnectionManagerBuilder:
+        self._manager_type = self.ManagerType.Unix
+        self._unix_builder.set_path(path)
+        self._tcp_host = self._tcp_port = None
+
+        return self
+
+    def with_tcp(self, host: str, port: int = 783) -> ConnectionManagerBuilder:
+        self._manager_type = self.ManagerType.Tcp
+        self._tcp_builder.set_host(host).set_port(port)
+        self._unix_path = None
+
+        return self
+
+    def add_ssl_context(self, context: ssl.SSLContext) -> ConnectionManagerBuilder:
+        self._ssl_context = context
+        self._ssl = True
+
+        return self
+
+    def set_timeout(self, timeout: Timeout) -> ConnectionManagerBuilder:
+        self._timeout = timeout
 
         return self
 

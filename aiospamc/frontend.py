@@ -1,14 +1,14 @@
 """Frontend functions for the package."""
 
-from pathlib import Path
 import ssl
+from pathlib import Path
 from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union
 
 from loguru import logger
 
 from aiospamc.builders import ConnectionManagerBuilder, SSLContextBuilder
 
-from .client import Client
+from .client import Client, Client2
 from .connections import Timeout
 from .header_values import ActionOption, MessageClassOption, MessageClassValue
 from .incremental_parser import parse_set_remove_value
@@ -46,7 +46,12 @@ async def check(
     socket_path: Optional[str] = None,
     timeout: Optional[Timeout] = None,
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
-    cert: Union[Path, Tuple[Path, Optional[Path]], Tuple[Path, Optional[Path], Optional[Path]], None] = None,
+    cert: Union[
+        Path,
+        Tuple[Path, Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[Path]],
+        None,
+    ] = None,
     user: Optional[str] = None,
     compress: bool = False,
 ) -> Response:
@@ -117,18 +122,28 @@ async def check(
         elif verify is False:
             ssl_builder.add_default_ca().dont_verify()
         elif isinstance(verify, ssl.SSLContext):
-            
+            ssl_builder.with_context(verify)
+        else:
+            ssl_builder.add_ca(verify)
 
-    client = Client()
-    ssl_context = client.ssl_context_factory(
-        verify, client_cert, client_key, key_password
-    )
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
-    )
-    parser = client.parser_factory()
+        if cert:
+            if isinstance(cert, Path):
+                ssl_builder.add_client(cert)
+            elif isinstance(cert, tuple) and len(cert) == 2:
+                client, key = cert
+                ssl_builder.add_client(cert, key)
+            elif isinstance(cert, tuple) and len(cert) == 3:
+                client, key, password = cert
+                ssl_builder.add_client(cert, key, password)
+
+        ssl_context = ssl_builder.build()
+        connection_builder.add_ssl_context(ssl_context)
+
+    connection_manager = connection_builder.build()
+
+    client = Client2(connection_manager)
     try:
-        response = await client.request(req, connection, parser)
+        response = await client.request(req)
     except Exception:
         context_logger.exception("Exception when calling check function")
         raise
