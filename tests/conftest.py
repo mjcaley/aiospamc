@@ -9,7 +9,7 @@ import pytest
 import trustme
 from pytest_mock import MockerFixture
 
-from aiospamc.client import Client, Client2
+from aiospamc.client import Client2
 from aiospamc.connections import ConnectionManager
 from aiospamc.header_values import ContentLengthValue
 from aiospamc.requests import Request

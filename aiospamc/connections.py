@@ -53,8 +53,8 @@ class ConnectionManagerBuilder:
 
     def __init__(self):
         self._manager_type = self.ManagerType.Undefined
-        self._tcp_builder = TcpConnectionManagerBuilder()
-        self._unix_builder = UnixConnectionManagerBuilder()
+        self._tcp_builder = TcpConnectionManager.builder()
+        self._unix_builder = UnixConnectionManager.builder()
         self._ssl_builder = SSLContextBuilder()
         self._ssl = False
         self._timeout = None
@@ -86,7 +86,7 @@ class ConnectionManagerBuilder:
         return self
 
     def add_ssl_context(self, context: ssl.SSLContext) -> ConnectionManagerBuilder:
-        self._ssl_context = context
+        self._ssl_builder.with_context(context)
         self._ssl = True
 
         return self
