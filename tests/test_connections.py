@@ -292,3 +292,67 @@ def test_ssl_context_builder_default(mocker: MockerFixture):
 
     assert isinstance(s, ssl.SSLContext)
     assert True is default_spy.called
+
+
+def test_ssl_context_builder_existing_context():
+    context = ssl.create_default_context()
+    s = SSLContextBuilder().with_context(context).build()
+
+    assert context is s
+
+
+def test_ssl_context_builder_dont_verify():
+    s = SSLContextBuilder().dont_verify().build()
+
+    assert False is s.check_hostname
+    assert ssl.CERT_NONE is s.verify_mode
+
+
+def test_ssl_context_builder_add_certifi(mocker: MockerFixture):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_default_ca().build()
+
+    assert {"cafile": certifi.where()} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_cafile(mocker: MockerFixture, server_cert):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_ca_file(server_cert).build()
+
+    assert {"cafile": server_cert} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_cadir(mocker: MockerFixture, server_cert):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_ca_dir(server_cert.parent).build()
+
+    assert {"capath": server_cert.parent} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_ca_path_of_file(mocker: MockerFixture, server_cert):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_ca(server_cert).build()
+
+    assert {"cafile": server_cert} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_ca_path_of_dir(mocker: MockerFixture, server_cert):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_ca(server_cert.parent).build()
+
+    assert {"capath": server_cert.parent} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_ca_path_not_found():
+    with pytest.raises(FileNotFoundError):
+        SSLContextBuilder().add_ca(Path("fake")).build()
+
+
+def test_ssl_context_builder_add_client_cert(mocker: MockerFixture):
+    s = SSLContextBuilder()
+    
