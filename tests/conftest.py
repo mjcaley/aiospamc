@@ -9,7 +9,6 @@ import pytest
 import trustme
 from pytest_mock import MockerFixture
 
-from aiospamc.client import Client2
 from aiospamc.connections import ConnectionManager
 from aiospamc.header_values import ContentLengthValue
 from aiospamc.requests import Request
@@ -286,33 +285,26 @@ def unix_socket(tmp_path_factory):
 
 @pytest.fixture
 def mock_client(mocker: MockerFixture, response_ok):
-    connection_factory = mocker.Mock()
-    connection_factory.return_value.request = mocker.AsyncMock(return_value=response_ok)
-
-    mock_connection_factory = mocker.patch.object(
-        Client, "default_connection_factory", connection_factory
-    )
-
     mock_connection_manager = mocker.patch.object(
         ConnectionManager, "request", mocker.AsyncMock(return_value=response_ok)
     )
 
-    yield mock_connection_factory
+    yield mock_connection_manager
 
 
 @pytest.fixture
 def mock_client_response(mock_client):
     def inner(response):
-        mock_client.return_value.request.return_value = response
+        mock_client.return_value = response
         return mock_client
 
-    return inner
+    yield inner
 
 
 @pytest.fixture
 def mock_client_raises(mock_client):
     def inner(side_effect):
-        mock_client.return_value.request.side_effect = side_effect
+        mock_client.request.side_effect = side_effect
         return mock_client
 
     return inner
