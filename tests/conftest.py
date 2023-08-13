@@ -293,18 +293,23 @@ def mock_client(mocker: MockerFixture, response_ok):
 
 
 @pytest.fixture
+def mock_connection_manager(mock_client):
+    yield ConnectionManager("mocked connection")
+
+
+@pytest.fixture
 def mock_client_response(mock_client):
     def inner(response):
         mock_client.return_value = response
         return mock_client
 
-    yield inner
+    return inner
 
 
 @pytest.fixture
 def mock_client_raises(mock_client):
     def inner(side_effect):
-        mock_client.request.side_effect = side_effect
+        mock_client.side_effect = side_effect
         return mock_client
 
     return inner

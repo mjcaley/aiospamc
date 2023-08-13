@@ -1,7 +1,5 @@
 """CLI commands."""
 
-from __future__ import annotations
-
 import asyncio
 import json
 import ssl
@@ -72,7 +70,7 @@ class CliClientBuilder:
         host: str = "localhost",
         port: int = 783,
         socket_path: Optional[Path] = None,
-    ) -> CliClientBuilder:
+    ) -> "CliClientBuilder":
         if socket_path:
             self._connection_builder = self._connection_builder.with_unix_socket(
                 socket_path
@@ -82,12 +80,12 @@ class CliClientBuilder:
 
         return self
 
-    def set_timeout(self, timeout: Timeout) -> CliClientBuilder:
+    def set_timeout(self, timeout: Timeout) -> "CliClientBuilder":
         self._connection_builder.set_timeout(timeout)
 
         return self
 
-    def add_verify(self, verify: bool) -> CliClientBuilder:
+    def add_verify(self, verify: bool) -> "CliClientBuilder":
         self._ssl = True
         self._ssl_builder.add_default_ca()
         if not verify:
@@ -95,7 +93,7 @@ class CliClientBuilder:
 
         return self
 
-    def add_ca_cert(self, ca_cert: Path) -> CliClientBuilder:
+    def add_ca_cert(self, ca_cert: Path) -> "CliClientBuilder":
         self._ssl = True
         if ca_cert.is_dir():
             self._ssl_builder.add_ca_dir(ca_cert)
@@ -110,7 +108,7 @@ class CliClientBuilder:
 
     def add_client_cert(
         self, cert: Path, key: Optional[Path] = None, password: Optional[str] = None
-    ) -> CliClientBuilder:
+    ) -> "CliClientBuilder":
         if self._ssl is False:
             self._ssl = True
             self.add_verify(True)
@@ -296,7 +294,7 @@ def check(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(show_default=False, help="Filename of message"),
-    ] = None,
+    ],
     host: Annotated[
         str,
         typer.Option(
@@ -323,7 +321,7 @@ def check(
     ] = "",
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
-    ] = True,
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
@@ -380,7 +378,7 @@ def learn(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(help="Filename of message"),
-    ] = None,
+    ],
     message_class: Annotated[
         MessageClassOption, typer.Option(help="Message class to classify the message")
     ] = MessageClassOption.spam,
@@ -410,7 +408,7 @@ def learn(
     ] = "",
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
-    ] = True,
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
@@ -470,7 +468,7 @@ def forget(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(help="Filename of message"),
-    ] = None,
+    ],
     host: Annotated[
         str,
         typer.Option(
@@ -497,7 +495,7 @@ def forget(
     ] = "",
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
-    ] = True,
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
@@ -556,7 +554,7 @@ def report(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(help="Filename of message"),
-    ] = None,
+    ],
     host: Annotated[
         str,
         typer.Option(
@@ -583,7 +581,7 @@ def report(
     ] = "",
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
-    ] = True,
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
@@ -643,7 +641,7 @@ def revoke(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(help="Filename of message"),
-    ] = None,
+    ],
     host: Annotated[
         str,
         typer.Option(
@@ -670,7 +668,7 @@ def revoke(
     ] = "",
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
-    ] = True,
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
@@ -755,11 +753,11 @@ def main(
         bool,
         typer.Option(
             "--version",
-            is_flag=True,
             callback=version_callback,
+            is_eager=True,
             help="Output format for stdout",
         ),
-    ] = False,
+    ] = None,
     debug: Annotated[
         bool,
         typer.Option(

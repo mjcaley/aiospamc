@@ -39,9 +39,9 @@ def gtube(spam, tmp_path):
     return message
 
 
-def test_cli_runner_init_defaults():
+def test_cli_runner_init_defaults(mock_connection_manager):
     request = Request("PING")
-    c = CommandRunner(request)
+    c = CommandRunner(Client2(mock_connection_manager), request)
 
     assert request == c.request
     assert None is c.response
@@ -50,19 +50,21 @@ def test_cli_runner_init_defaults():
     assert SUCCESS == c.exit_code
 
 
-async def test_cli_runner_run_success(mock_client_response, response_pong, ip_address):
+async def test_cli_runner_run_success(
+    mock_connection_manager, mock_client_response, response_pong
+):
     mock_client_response(response_pong)
     expected = Response(**ResponseParser().parse(response_pong))
 
     request = Request("PING")
-    c = CommandRunner(request)
-    result = await c.run(ip_address)
+    c = CommandRunner(Client2(mock_connection_manager), request)
+    result = await c.run()
 
     assert expected == result
     assert expected == c.response
 
 
-def test_cli_runner_to_json():
+def test_cli_runner_to_json(mock_connection_manager):
     request = Request("PING")
     expected = {
         "request": request.to_json(),
@@ -70,18 +72,18 @@ def test_cli_runner_to_json():
         "exit_code": SUCCESS,
     }
 
-    c = CommandRunner(request)
+    c = CommandRunner(Client2(mock_connection_manager), request)
     result = c.to_json()
 
     assert json.dumps(expected, indent=4) == result
 
 
 def test_ping_json(mocker, mock_client):
-    request_spy = mocker.spy(Client, "request")
+    request_spy = mocker.spy(Client2, "request")
     runner = CliRunner()
     result = runner.invoke(app, ["ping", "--out", "json"])
     expected = {
-        "request": request_spy.call_args.args[0].to_json(),
+        "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
         "exit_code": 0,
     }
@@ -97,11 +99,11 @@ def test_ping_json(mocker, mock_client):
     ],
 )
 def test_command_with_message_json(mocker, mock_client, gtube, args):
-    request_spy = mocker.spy(Client, "request")
+    request_spy = mocker.spy(Client2, "request")
     runner = CliRunner()
     result = runner.invoke(app, args + [str(gtube), "--out", "json"])
     expected = {
-        "request": request_spy.call_args.args[0].to_json(),
+        "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
         "exit_code": 0,
     }
@@ -112,12 +114,12 @@ def test_command_with_message_json(mocker, mock_client, gtube, args):
 def test_check_json(
     mocker: MockerFixture, mock_client_response, response_not_spam, gtube
 ):
-    request_spy = mocker.spy(Client, "request")
+    request_spy = mocker.spy(Client2, "request")
     mock_client_response(response_not_spam)
     runner = CliRunner()
     result = runner.invoke(app, ["check", str(gtube), "--out", "json"])
     expected = {
-        "request": request_spy.call_args.args[0].to_json(),
+        "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
         "exit_code": 0,
     }
@@ -127,11 +129,11 @@ def test_check_json(
 
 def test_report_json(mocker, mock_client_response, response_reported, gtube):
     mock_client_response(response_reported)
-    request_spy = mocker.spy(Client, "request")
+    request_spy = mocker.spy(Client2, "request")
     runner = CliRunner()
     result = runner.invoke(app, ["report", str(gtube), "--out", "json"])
     expected = {
-        "request": request_spy.call_args.args[0].to_json(),
+        "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
         "exit_code": 0,
     }
@@ -141,11 +143,11 @@ def test_report_json(mocker, mock_client_response, response_reported, gtube):
 
 def test_revoke_json(mocker, mock_client_response, response_revoked, gtube):
     mock_client_response(response_revoked)
-    request_spy = mocker.spy(Client, "request")
+    request_spy = mocker.spy(Client2, "request")
     runner = CliRunner()
     result = runner.invoke(app, ["revoke", str(gtube), "--out", "json"])
     expected = {
-        "request": request_spy.call_args.args[0].to_json(),
+        "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
         "exit_code": 0,
     }
