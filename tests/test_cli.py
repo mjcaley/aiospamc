@@ -24,7 +24,7 @@ from aiospamc.cli import (
     app,
     read_message,
 )
-from aiospamc.client import Client2
+from aiospamc.client import Client
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request
@@ -41,7 +41,7 @@ def gtube(spam, tmp_path):
 
 def test_cli_runner_init_defaults(mock_connection_manager):
     request = Request("PING")
-    c = CommandRunner(Client2(mock_connection_manager), request)
+    c = CommandRunner(Client(mock_connection_manager), request)
 
     assert request == c.request
     assert None is c.response
@@ -57,7 +57,7 @@ async def test_cli_runner_run_success(
     expected = Response(**ResponseParser().parse(response_pong))
 
     request = Request("PING")
-    c = CommandRunner(Client2(mock_connection_manager), request)
+    c = CommandRunner(Client(mock_connection_manager), request)
     result = await c.run()
 
     assert expected == result
@@ -72,14 +72,14 @@ def test_cli_runner_to_json(mock_connection_manager):
         "exit_code": SUCCESS,
     }
 
-    c = CommandRunner(Client2(mock_connection_manager), request)
+    c = CommandRunner(Client(mock_connection_manager), request)
     result = c.to_json()
 
     assert json.dumps(expected, indent=4) == result
 
 
 def test_ping_json(mocker, mock_client):
-    request_spy = mocker.spy(Client2, "request")
+    request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
     result = runner.invoke(app, ["ping", "--out", "json"])
     expected = {
@@ -99,7 +99,7 @@ def test_ping_json(mocker, mock_client):
     ],
 )
 def test_command_with_message_json(mocker, mock_client, gtube, args):
-    request_spy = mocker.spy(Client2, "request")
+    request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
     result = runner.invoke(app, args + [str(gtube), "--out", "json"])
     expected = {
@@ -114,7 +114,7 @@ def test_command_with_message_json(mocker, mock_client, gtube, args):
 def test_check_json(
     mocker: MockerFixture, mock_client_response, response_not_spam, gtube
 ):
-    request_spy = mocker.spy(Client2, "request")
+    request_spy = mocker.spy(Client, "request")
     mock_client_response(response_not_spam)
     runner = CliRunner()
     result = runner.invoke(app, ["check", str(gtube), "--out", "json"])
@@ -129,7 +129,7 @@ def test_check_json(
 
 def test_report_json(mocker, mock_client_response, response_reported, gtube):
     mock_client_response(response_reported)
-    request_spy = mocker.spy(Client2, "request")
+    request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
     result = runner.invoke(app, ["report", str(gtube), "--out", "json"])
     expected = {
@@ -143,7 +143,7 @@ def test_report_json(mocker, mock_client_response, response_reported, gtube):
 
 def test_revoke_json(mocker, mock_client_response, response_revoked, gtube):
     mock_client_response(response_revoked)
-    request_spy = mocker.spy(Client2, "request")
+    request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
     result = runner.invoke(app, ["revoke", str(gtube), "--out", "json"])
     expected = {

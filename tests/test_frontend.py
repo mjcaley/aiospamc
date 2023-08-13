@@ -1,6 +1,6 @@
 import pytest
 
-from aiospamc.client import Client2
+from aiospamc.client import Client
 from aiospamc.connections import ConnectionManager
 from aiospamc.exceptions import BadResponse
 from aiospamc.frontend import (
@@ -50,7 +50,7 @@ from aiospamc.responses import (
 async def test_functions_with_default_parameters(
     func, expected_verb, mock_client, spam, mocker
 ):
-    req_spy = mocker.spy(Client2, "request")
+    req_spy = mocker.spy(Client, "request")
     await func(spam)
     req = req_spy.await_args[0][1]
 
@@ -74,7 +74,7 @@ async def test_functions_with_default_parameters(
 async def test_functions_with_optional_parameters(
     func, expected_verb, mock_client, spam, mocker
 ):
-    req_spy = mocker.spy(Client2, "request")
+    req_spy = mocker.spy(Client, "request")
     await func(spam, user="testuser", compress=True)
     req = req_spy.await_args[0][1]
 
@@ -102,7 +102,7 @@ async def test_functions_returns_response(func, mock_client, spam):
 
 
 async def test_ping_request_with_parameters(mock_client, mocker):
-    req_spy = mocker.spy(Client2, "request")
+    req_spy = mocker.spy(Client, "request")
     await ping()
     req = req_spy.await_args[0][1]
 
@@ -111,14 +111,14 @@ async def test_ping_request_with_parameters(mock_client, mocker):
 
 
 async def test_ping_returns_response(mock_client, mocker):
-    req_spy = mocker.spy(Client2, "request")
+    req_spy = mocker.spy(Client, "request")
     result = await ping()
 
     assert req_spy.spy_return is result
 
 
 async def test_tell_request_with_default_parameters(mock_client, spam, mocker):
-    req_spy = mocker.spy(Client2, "request")
+    req_spy = mocker.spy(Client, "request")
     await tell(spam, MessageClassOption.spam)
     req = req_spy.await_args[0][1]
 
@@ -130,7 +130,7 @@ async def test_tell_request_with_default_parameters(mock_client, spam, mocker):
 
 
 async def test_tell_request_with_optional_parameters(mock_client, spam, mocker):
-    req_spy = mocker.spy(Client2, "request")
+    req_spy = mocker.spy(Client, "request")
     await tell(
         spam,
         MessageClassOption.spam,
@@ -151,7 +151,7 @@ async def test_tell_request_with_optional_parameters(mock_client, spam, mocker):
 
 
 async def test_tell_returns_response(mock_client, spam, mocker):
-    req_spy = mocker.spy(Client2, "request")
+    req_spy = mocker.spy(Client, "request")
     result = await tell(spam, MessageClassOption.spam)
 
     assert req_spy.spy_return is result

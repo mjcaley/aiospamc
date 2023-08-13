@@ -24,7 +24,7 @@ from aiospamc.header_values import (
 )
 
 from . import __version__
-from .client import Client2, Request
+from .client import Client, Request
 from .connections import ConnectionManager, SSLContextBuilder, Timeout
 from .responses import Response, ResponseException
 
@@ -57,13 +57,13 @@ class CliClientBuilder:
         self._ssl = False
         self._ssl_builder = SSLContextBuilder()
 
-    def build(self) -> Client2:
+    def build(self) -> Client:
         if self._ssl:
             ssl_context = self._ssl_builder.build()
             self._connection_builder.add_ssl_context(ssl_context)
         connection_manager = self._connection_builder.build()
 
-        return Client2(connection_manager)
+        return Client(connection_manager)
 
     def with_connection(
         self,
@@ -122,7 +122,7 @@ class CommandRunner:
 
     def __init__(
         self,
-        client: Client2,
+        client: Client,
         request: Request,
         output: Output = Output.Text,
     ):

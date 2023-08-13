@@ -10,7 +10,7 @@ from .responses import Response
 from .user_warnings import raise_warnings
 
 
-class Client2:
+class Client:
     def __init__(self, connection_manager: ConnectionManager):
         self.connection_manager = connection_manager
 

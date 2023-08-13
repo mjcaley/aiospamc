@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union
 
 from loguru import logger
 
-from .client import Client2
+from .client import Client
 from .connections import ConnectionManager, SSLContextBuilder, Timeout
 from .header_values import ActionOption, MessageClassOption, MessageClassValue
 from .incremental_parser import parse_set_remove_value
@@ -22,12 +22,12 @@ class FrontendClientBuilder:
         self._ssl = False
         self._ssl_builder = SSLContextBuilder()
 
-    def build(self) -> Client2:
+    def build(self) -> Client:
         if self._ssl:
             self._connection_builder.add_ssl_context(self._ssl_builder.build())
         connection_manager = self._connection_builder.build()
 
-        return Client2(connection_manager)
+        return Client(connection_manager)
 
     def with_connection(
         self,

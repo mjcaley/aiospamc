@@ -1,6 +1,6 @@
 import pytest
 
-from aiospamc.client import Client2
+from aiospamc.client import Client
 from aiospamc.responses import (
     CantCreateException,
     ConfigException,
