@@ -1,11 +1,17 @@
+import asyncio
 import datetime
+import ssl
 import sys
+from asyncio import StreamReader, StreamWriter
+from dataclasses import dataclass, field
 from pathlib import Path
 from shutil import which
 from socket import gethostbyname
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+from typing import Any, Optional
 
 import pytest
+import pytest_asyncio
 import trustme
 from pytest_mock import MockerFixture
 
@@ -283,6 +289,53 @@ def unix_socket(tmp_path_factory):
     return str(tmp_path_factory.mktemp("sockets") / "spamd.sock")
 
 
+@dataclass
+class ServerResponse:
+    response: bytes = b""
+    sleep: float = 0.0
+
+
+def fake_server(resp: ServerResponse):
+    async def inner(reader: StreamReader, writer: StreamWriter):
+        await asyncio.sleep(resp.sleep)
+
+        data = b""
+        chunk = await reader.read(1024)
+        while chunk:
+            data += chunk
+            chunk = await reader.read(1024)
+        writer.write(resp.response)
+        if writer.can_write_eof():
+            writer.write_eof()
+        await writer.drain()
+        writer.close()
+        await writer.wait_closed()
+
+    return inner
+
+
+@pytest.fixture
+async def fake_tcp_server(unused_tcp_port, response_ok):
+    response = ServerResponse(response_ok)
+    server = await asyncio.start_server(
+        fake_server(response), "localhost", unused_tcp_port
+    )
+    yield response, "localhost", unused_tcp_port
+    server.close()
+
+
+@pytest.fixture
+async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
+    response = ServerResponse(response_ok)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    server_cert.configure_cert(context)
+    server = await asyncio.start_server(
+        fake_server(response), "localhost", unused_tcp_port, ssl=context
+    )
+    yield response, "localhost", unused_tcp_port
+    server.close()
+
+
 @pytest.fixture
 def mock_client(mocker: MockerFixture, response_ok):
     mock_connection_manager = mocker.patch.object(
@@ -324,6 +377,11 @@ def ca():
 
 
 @pytest.fixture(scope="session")
+def server_cert(ca, hostname, ip_address):
+    yield ca.issue_cert(hostname, ip_address)
+
+
+@pytest.fixture(scope="session")
 def ca_cert(ca, tmp_path_factory: pytest.TempdirFactory):
     tmp_path = tmp_path_factory.mktemp("ca_certs")
     cert_file = tmp_path / "ca_cert.pem"
@@ -333,17 +391,15 @@ def ca_cert(ca, tmp_path_factory: pytest.TempdirFactory):
 
 
 @pytest.fixture(scope="session")
-def server_cert_and_key(
-    ca, hostname, ip_address, tmp_path_factory: pytest.TempdirFactory
-):
+def server_cert_and_key(server_cert, tmp_path_factory: pytest.TempdirFactory):
     tmp_path = tmp_path_factory.mktemp("server_certs")
     cert_file = tmp_path / "server.cert"
     key_file = tmp_path / "server.key"
 
-    cert: trustme.LeafCert = ca.issue_cert(hostname, ip_address)
-
-    cert_file.write_bytes(b"".join([blob.bytes() for blob in cert.cert_chain_pems]))
-    cert.private_key_pem.write_to_path(key_file)
+    cert_file.write_bytes(
+        b"".join([blob.bytes() for blob in server_cert.cert_chain_pems])
+    )
+    server_cert.private_key_pem.write_to_path(key_file)
 
     yield cert_file, key_file
 
@@ -365,12 +421,12 @@ def client_cert_and_key(
 
 
 @pytest.fixture(scope="session")
-def server_cert(server_cert_and_key):
+def server_cert_path(server_cert_and_key):
     yield server_cert_and_key[0]
 
 
 @pytest.fixture(scope="session")
-def server_key(server_cert_and_key):
+def server_key_path(server_cert_and_key):
     yield server_cert_and_key[1]
 
 
@@ -386,7 +442,13 @@ def client_key(client_cert_and_key):
 
 @pytest.fixture(scope="session")
 def spamd(
-    ip_address, tcp_port, ssl_port, unix_socket, server_cert, server_key, request
+    ip_address,
+    tcp_port,
+    ssl_port,
+    unix_socket,
+    server_cert_path,
+    server_key_path,
+    request,
 ):
     # Configure options
     options = [
@@ -395,9 +457,9 @@ def spamd(
         f"--listen={ip_address}:{tcp_port}",
         f"--listen=ssl:{ip_address}:{ssl_port}",
         "--server-key",
-        f"{server_key}",
+        f"{server_key_path}",
         "--server-cert",
-        f"{server_cert}",
+        f"{server_cert_path}",
     ]
     if sys.platform != "win32":
         options += [f"--socketpath={unix_socket}"]

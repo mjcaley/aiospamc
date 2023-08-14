@@ -9,10 +9,10 @@ from typer.testing import CliRunner
 
 import aiospamc
 from aiospamc.cli import (
+    BAD_RESPONSE,
     CONNECTION_ERROR,
     IS_SPAM,
     NOT_SPAM,
-    PARSE_ERROR,
     PING_SUCCESS,
     REPORT_FAILED,
     REVOKE_FAILED,
@@ -25,6 +25,7 @@ from aiospamc.cli import (
     read_message,
 )
 from aiospamc.client import Client
+from aiospamc.connections import ConnectionManager
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request
@@ -39,9 +40,12 @@ def gtube(spam, tmp_path):
     return message
 
 
-def test_cli_runner_init_defaults(mock_connection_manager):
+def test_cli_runner_init_defaults(fake_tcp_server):
+    _, host, port = fake_tcp_server
     request = Request("PING")
-    c = CommandRunner(Client(mock_connection_manager), request)
+    c = CommandRunner(
+        Client(ConnectionManager.builder().with_tcp(host, port).build()), request
+    )
 
     assert request == c.request
     assert None is c.response
@@ -50,21 +54,23 @@ def test_cli_runner_init_defaults(mock_connection_manager):
     assert SUCCESS == c.exit_code
 
 
-async def test_cli_runner_run_success(
-    mock_connection_manager, mock_client_response, response_pong
-):
-    mock_client_response(response_pong)
+async def test_cli_runner_run_success(fake_tcp_server, response_pong):
+    resp, host, port = fake_tcp_server
+    resp.response = response_pong
     expected = Response(**ResponseParser().parse(response_pong))
 
     request = Request("PING")
-    c = CommandRunner(Client(mock_connection_manager), request)
+    c = CommandRunner(
+        Client(ConnectionManager.builder().with_tcp(host, port).build()), request
+    )
     result = await c.run()
 
     assert expected == result
     assert expected == c.response
 
 
-def test_cli_runner_to_json(mock_connection_manager):
+def test_cli_runner_to_json(fake_tcp_server):
+    _, host, port = fake_tcp_server
     request = Request("PING")
     expected = {
         "request": request.to_json(),
@@ -72,16 +78,22 @@ def test_cli_runner_to_json(mock_connection_manager):
         "exit_code": SUCCESS,
     }
 
-    c = CommandRunner(Client(mock_connection_manager), request)
+    c = CommandRunner(
+        Client(ConnectionManager.builder().with_tcp(host, port).build()), request
+    )
     result = c.to_json()
 
     assert json.dumps(expected, indent=4) == result
 
 
-def test_ping_json(mocker, mock_client):
+def test_ping_json(mocker, fake_tcp_server, response_pong):
+    resp, host, port = fake_tcp_server
+    resp.response = response_pong
     request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
-    result = runner.invoke(app, ["ping", "--out", "json"])
+    result = runner.invoke(
+        app, ["ping", "--host", host, "--port", port, "--out", "json"]
+    )
     expected = {
         "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
@@ -98,10 +110,13 @@ def test_ping_json(mocker, mock_client):
         ["learn", "--message-class", "spam"],
     ],
 )
-def test_command_with_message_json(mocker, mock_client, gtube, args):
+def test_command_with_message_json(mocker, fake_tcp_server, gtube, args):
+    _, host, port = fake_tcp_server
     request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
-    result = runner.invoke(app, args + [str(gtube), "--out", "json"])
+    result = runner.invoke(
+        app, args + [str(gtube), "--host", host, "--port", port, "--out", "json"]
+    )
     expected = {
         "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
@@ -111,13 +126,14 @@ def test_command_with_message_json(mocker, mock_client, gtube, args):
     assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
 
 
-def test_check_json(
-    mocker: MockerFixture, mock_client_response, response_not_spam, gtube
-):
+def test_check_json(mocker: MockerFixture, fake_tcp_server, response_not_spam, gtube):
+    resp, host, port = fake_tcp_server
     request_spy = mocker.spy(Client, "request")
-    mock_client_response(response_not_spam)
+    resp.response = response_not_spam
     runner = CliRunner()
-    result = runner.invoke(app, ["check", str(gtube), "--out", "json"])
+    result = runner.invoke(
+        app, ["check", str(gtube), "--host", host, "--port", port, "--out", "json"]
+    )
     expected = {
         "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
@@ -127,11 +143,14 @@ def test_check_json(
     assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
 
 
-def test_report_json(mocker, mock_client_response, response_reported, gtube):
-    mock_client_response(response_reported)
+def test_report_json(mocker, fake_tcp_server, response_reported, gtube):
+    resp, host, port = fake_tcp_server
+    resp.response = response_reported
     request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
-    result = runner.invoke(app, ["report", str(gtube), "--out", "json"])
+    result = runner.invoke(
+        app, ["report", str(gtube), "--host", host, "--port", port, "--out", "json"]
+    )
     expected = {
         "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
@@ -141,11 +160,14 @@ def test_report_json(mocker, mock_client_response, response_reported, gtube):
     assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
 
 
-def test_revoke_json(mocker, mock_client_response, response_revoked, gtube):
-    mock_client_response(response_revoked)
+def test_revoke_json(mocker, fake_tcp_server, response_revoked, gtube):
+    resp, host, port = fake_tcp_server
+    resp.response = response_revoked
     request_spy = mocker.spy(Client, "request")
     runner = CliRunner()
-    result = runner.invoke(app, ["revoke", str(gtube), "--out", "json"])
+    result = runner.invoke(
+        app, ["revoke", str(gtube), "--host", host, "--port", port, "--out", "json"]
+    )
     expected = {
         "request": request_spy.call_args.args[1].to_json(),
         "response": request_spy.spy_return.to_json(),
@@ -155,10 +177,11 @@ def test_revoke_json(mocker, mock_client_response, response_revoked, gtube):
     assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
 
 
-def test_command_without_message_response_exception(mock_client_response, ex_usage):
+def test_command_without_message_response_exception(fake_tcp_server, ex_usage):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(ex_usage)
-    result = runner.invoke(app, ["ping"])
+    resp.response = ex_usage
+    result = runner.invoke(app, ["ping", "--host", host, "--port", port])
 
     assert 64 == result.exit_code
     assert "Response error from server: EX_USAGE\n" == result.stdout
@@ -175,22 +198,24 @@ def test_command_without_message_response_exception(mock_client_response, ex_usa
     ],
 )
 def test_command_with_message_response_exception(
-    mock_client_response, ex_usage, gtube, args
+    fake_tcp_server, ex_usage, gtube, args
 ):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(ex_usage)
-    result = runner.invoke(app, args + [str(gtube)])
+    resp.response = ex_usage
+    result = runner.invoke(app, args + [str(gtube), "--host", host, "--port", port])
 
     assert 64 == result.exit_code
     assert "Response error from server: EX_USAGE\n" == result.stdout
 
 
-def test_command_without_message_parser_exception(mock_client_raises):
+def test_command_without_message_parser_exception(fake_tcp_server, response_invalid):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_raises(ParseError())
-    result = runner.invoke(app, ["ping"])
+    resp.response = response_invalid
+    result = runner.invoke(app, ["ping", "--host", host, "--port", port])
 
-    assert PARSE_ERROR == result.exit_code
+    assert BAD_RESPONSE == result.exit_code
     assert "Error parsing response\n" == result.stdout
 
 
@@ -204,19 +229,25 @@ def test_command_without_message_parser_exception(mock_client_raises):
         ["revoke"],
     ],
 )
-def test_command_with_message_parser_exception(mock_client_raises, gtube, args):
+def test_command_with_message_parser_exception(
+    fake_tcp_server, gtube, args, response_invalid
+):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_raises(ParseError())
-    result = runner.invoke(app, args + [str(gtube)])
+    resp.response = response_invalid
+    result = runner.invoke(app, args + [str(gtube), "--host", host, "--port", port])
 
-    assert PARSE_ERROR == result.exit_code
+    assert BAD_RESPONSE == result.exit_code
     assert "Error parsing response\n" == result.stdout
 
 
-def test_command_without_message_timeout_exception(mock_client_raises):
+def test_command_without_message_timeout_exception(fake_tcp_server):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_raises(asyncio.TimeoutError())
-    result = runner.invoke(app, ["ping"])
+    resp.sleep = 10
+    result = runner.invoke(
+        app, ["ping", "--timeout", 0.1, "--host", host, "--port", port]
+    )
 
     assert TIMEOUT_ERROR == result.exit_code
     assert "Error: timeout\n" == result.stdout
@@ -281,109 +312,131 @@ def test_command_with_message_connection_exception(
     assert "Error: Connection error\n" == result.stdout
 
 
-def test_ping(mock_client_response, response_pong):
+def test_ping(fake_tcp_server, response_pong):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_pong)
-    result = runner.invoke(app, ["ping"])
+    resp.response = response_pong
+    result = runner.invoke(app, ["ping", "--host", host, "--port", port])
 
     assert PING_SUCCESS == result.exit_code
     assert "PONG\n" == result.stdout
 
 
-def test_check_spam(mock_client_response, response_spam_header, gtube):
+def test_check_spam(fake_tcp_server, response_spam_header, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_spam_header)
-    result = runner.invoke(app, ["check", str(gtube)])
+    resp.response = response_spam_header
+    result = runner.invoke(app, ["check", str(gtube), "--host", host, "--port", port])
 
     assert IS_SPAM == result.exit_code
     assert "1000.0/1.0\n" == result.stdout
 
 
-def test_check_ham(mock_client_response, response_not_spam, gtube):
+def test_check_ham(fake_tcp_server, response_not_spam, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_not_spam)
-    result = runner.invoke(app, ["check", str(gtube)])
+    resp.response = response_not_spam
+    result = runner.invoke(app, ["check", str(gtube), "--host", host, "--port", port])
 
     assert NOT_SPAM == result.exit_code
     assert "0.0/1.0\n" == result.stdout
 
 
-def test_check_no_spam_header(mock_client_response, response_with_body, gtube):
+def test_check_no_spam_header(fake_tcp_server, response_with_body, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_with_body)
-    result = runner.invoke(app, ["check", str(gtube)])
+    resp.response = response_with_body
+    result = runner.invoke(
+        app,
+        [
+            "check",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+        ],
+    )
 
     assert UNEXPECTED_ERROR == result.exit_code
     assert "Could not find 'Spam' header\n" == result.stdout
 
 
-def test_learn_success(mock_client_response, response_learned, gtube):
+def test_learn_success(fake_tcp_server, response_learned, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_learned)
-    result = runner.invoke(app, ["learn", str(gtube)])
+    resp.response = response_learned
+    result = runner.invoke(app, ["learn", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
     assert "Message successfully learned\n" == result.stdout
 
 
-def test_learn_already_learned(mock_client_response, response_tell, gtube):
+def test_learn_already_learned(fake_tcp_server, response_tell, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_tell)
-    result = runner.invoke(app, ["learn", str(gtube)])
+    resp.response = response_tell
+    result = runner.invoke(app, ["learn", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
     assert "Message was already learned\n" == result.stdout
 
 
-def test_forget_success(mock_client_response, response_forgotten, gtube):
+def test_forget_success(fake_tcp_server, response_forgotten, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_forgotten)
-    result = runner.invoke(app, ["forget", str(gtube)])
+    resp.response = response_forgotten
+    result = runner.invoke(app, ["forget", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
     assert "Message successfully forgotten\n" == result.stdout
 
 
-def test_learn_already_forgotten(mock_client_response, response_tell, gtube):
+def test_learn_already_forgotten(fake_tcp_server, response_tell, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_tell)
-    result = runner.invoke(app, ["forget", str(gtube)])
+    resp.response = response_tell
+    result = runner.invoke(app, ["forget", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
     assert "Message was already forgotten\n" == result.stdout
 
 
-def test_report_success(mock_client_response, response_reported, gtube):
+def test_report_success(fake_tcp_server, response_reported, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_reported)
-    result = runner.invoke(app, ["report", str(gtube)])
+    resp.response = response_reported
+    result = runner.invoke(app, ["report", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
     assert "Message successfully reported\n" == result.stdout
 
 
-def test_report_failed(mock_client_response, response_tell, gtube):
+def test_report_failed(fake_tcp_server, response_tell, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_tell)
-    result = runner.invoke(app, ["report", str(gtube)])
+    resp.response = response_tell
+    result = runner.invoke(app, ["report", str(gtube), "--host", host, "--port", port])
 
     assert REPORT_FAILED == result.exit_code
     assert "Unable to report message\n" == result.stdout
 
 
-def test_revoke_success(mock_client_response, response_revoked, gtube):
+def test_revoke_success(fake_tcp_server, response_revoked, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_revoked)
-    result = runner.invoke(app, ["revoke", str(gtube)])
+    resp.response = response_revoked
+    result = runner.invoke(app, ["revoke", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
     assert "Message successfully revoked\n" == result.stdout
 
 
-def test_revoke_failed(mock_client_response, response_tell, gtube):
+def test_revoke_failed(fake_tcp_server, response_tell, gtube):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_response(response_tell)
-    result = runner.invoke(app, ["revoke", str(gtube)])
+    resp.response = response_tell
+    result = runner.invoke(app, ["revoke", str(gtube), "--host", host, "--port", port])
 
     assert REVOKE_FAILED == result.exit_code
     assert "Unable to revoke message\n" == result.stdout

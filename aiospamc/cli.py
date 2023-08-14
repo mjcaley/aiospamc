@@ -14,7 +14,7 @@ import typer
 from loguru import logger
 from typing_extensions import Annotated
 
-from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
+from aiospamc.exceptions import AIOSpamcConnectionFailed, BadResponse, ParseError
 from aiospamc.header_values import (
     ActionOption,
     Headers,
@@ -44,7 +44,7 @@ class Output(str, Enum):
 # Exit codes
 SUCCESS = NOT_SPAM = PING_SUCCESS = 0
 IS_SPAM = REPORT_FAILED = REVOKE_FAILED = 1
-PARSE_ERROR = 3
+BAD_RESPONSE = 3
 TIMEOUT_ERROR = 4
 CONNECTION_ERROR = 5
 UNEXPECTED_ERROR = 6
@@ -152,6 +152,11 @@ class CommandRunner:
 
         try:
             response = await self.client.request(self.request)
+        except BadResponse as e:
+            self._logger.exception(e)
+            self.exit_code = BAD_RESPONSE
+            self.exception = e
+            self.exit("Error parsing response", True)
         except ResponseException as e:
             self._logger = self._logger.bind(response=e.response)
             self._logger.exception(e)
@@ -159,11 +164,6 @@ class CommandRunner:
             self.exit_code = int(self.response.status_code)
             self.exception = e
             self.exit(f"Response error from server: {self.response.message}", True)
-        except ParseError as e:
-            self._logger.exception(e)
-            self.exit_code = PARSE_ERROR
-            self.exception = e
-            self.exit("Error parsing response", True)
         except asyncio.TimeoutError as e:
             self._logger.exception(e)
             self.exit_code = TIMEOUT_ERROR
@@ -274,7 +274,7 @@ def ping(
 
     request = Request("PING")
     runner = CommandRunner(client, request, out)
-    response = asyncio.run(runner.run())
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
     runner.exit(response.message)
 
 
@@ -362,7 +362,7 @@ def check(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.run(runner.run())
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
 
     if spam_header := response.headers.spam:
         if spam_header.value:
@@ -455,7 +455,7 @@ def learn(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.run(runner.run())
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
 
     if response.headers.did_set:
         runner.exit("Message successfully learned")
@@ -541,7 +541,7 @@ def forget(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.run(runner.run())
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
 
     if response.headers.did_remove:
         runner.exit("Message successfully forgotten")
@@ -627,7 +627,7 @@ def report(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.run(runner.run())
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
 
     if response.headers.did_set and response.headers.did_set.remote is True:
         runner.exit("Message successfully reported")
@@ -717,7 +717,7 @@ def revoke(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.run(runner.run())
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
 
     if response.headers.did_remove and response.headers.did_remove.remote:
         runner.exit("Message successfully revoked")

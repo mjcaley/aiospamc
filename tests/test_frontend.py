@@ -48,10 +48,11 @@ from aiospamc.responses import (
     ],
 )
 async def test_functions_with_default_parameters(
-    func, expected_verb, mock_client, spam, mocker
+    func, expected_verb, fake_tcp_server, spam, mocker
 ):
+    _, host, port = fake_tcp_server
     req_spy = mocker.spy(Client, "request")
-    await func(spam)
+    await func(spam, host=host, port=port)
     req = req_spy.await_args[0][1]
 
     assert expected_verb == req.verb
