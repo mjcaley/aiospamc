@@ -132,9 +132,9 @@ class ConnectionManager:
 
         try:
             response = await asyncio.wait_for(self._send(data), self.timeout.total)
-        except asyncio.TimeoutError as error:
+        except asyncio.TimeoutError:
             self.logger.exception("Total timeout reached")
-            raise ClientTimeoutException from error
+            raise
 
         return response
 

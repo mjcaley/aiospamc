@@ -246,7 +246,7 @@ def test_command_without_message_timeout_exception(fake_tcp_server):
     runner = CliRunner()
     resp.sleep = 10
     result = runner.invoke(
-        app, ["ping", "--timeout", 0.1, "--host", host, "--port", port]
+        app, ["ping", "--timeout", 0, "--host", host, "--port", port]
     )
 
     assert TIMEOUT_ERROR == result.exit_code
@@ -263,10 +263,11 @@ def test_command_without_message_timeout_exception(fake_tcp_server):
         ["revoke"],
     ],
 )
-def test_command_with_message_timeout_exception(mock_client_raises, gtube, args):
+def test_command_with_message_timeout_exception(fake_tcp_server, gtube, args):
+    resp, host, port = fake_tcp_server
     runner = CliRunner()
-    mock_client_raises(asyncio.TimeoutError())
-    result = runner.invoke(app, args + [str(gtube)])
+    # mock_client_raises(asyncio.TimeoutError())
+    result = runner.invoke(app, args + [str(gtube), "--host", host, "--port", port])
 
     assert TIMEOUT_ERROR == result.exit_code
     assert "Error: timeout\n" == result.stdout

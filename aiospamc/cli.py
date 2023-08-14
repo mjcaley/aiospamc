@@ -14,7 +14,7 @@ import typer
 from loguru import logger
 from typing_extensions import Annotated
 
-from aiospamc.exceptions import AIOSpamcConnectionFailed, BadResponse, ParseError
+from aiospamc.exceptions import AIOSpamcConnectionFailed, BadResponse, ClientTimeoutException, ParseError
 from aiospamc.header_values import (
     ActionOption,
     Headers,
@@ -164,7 +164,7 @@ class CommandRunner:
             self.exit_code = int(self.response.status_code)
             self.exception = e
             self.exit(f"Response error from server: {self.response.message}", True)
-        except asyncio.TimeoutError as e:
+        except (asyncio.TimeoutError, ClientTimeoutException) as e:
             self._logger.exception(e)
             self.exit_code = TIMEOUT_ERROR
             self.exception = e
@@ -294,7 +294,7 @@ def check(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(show_default=False, help="Filename of message"),
-    ],
+    ] = None,
     host: Annotated[
         str,
         typer.Option(
@@ -378,7 +378,7 @@ def learn(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(help="Filename of message"),
-    ],
+    ] = None,
     message_class: Annotated[
         MessageClassOption, typer.Option(help="Message class to classify the message")
     ] = MessageClassOption.spam,
@@ -468,7 +468,7 @@ def forget(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(help="Filename of message"),
-    ],
+    ] = None,
     host: Annotated[
         str,
         typer.Option(
@@ -554,7 +554,7 @@ def report(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(help="Filename of message"),
-    ],
+    ] = None,
     host: Annotated[
         str,
         typer.Option(
@@ -641,7 +641,7 @@ def revoke(
     message: Annotated[
         Optional[typer.FileBinaryRead],
         typer.Argument(help="Filename of message"),
-    ],
+    ] = None,
     host: Annotated[
         str,
         typer.Option(

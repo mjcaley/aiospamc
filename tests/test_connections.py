@@ -120,7 +120,7 @@ async def test_connection_manager_timeout_total(mocker):
     c = ConnectionManager("connection", timeout=Timeout(total=0))
     c.open = mocker.AsyncMock(side_effect=sleep)
 
-    with pytest.raises(ClientTimeoutException):
+    with pytest.raises(asyncio.TimeoutError):
         await c.request(b"data")
 
 
@@ -316,36 +316,36 @@ def test_ssl_context_builder_add_certifi(mocker: MockerFixture):
     assert {"cafile": certifi.where()} == certs_spy.call_args.kwargs
 
 
-def test_ssl_context_builder_add_cafile(mocker: MockerFixture, server_cert):
+def test_ssl_context_builder_add_cafile(mocker: MockerFixture, server_cert_path):
     s = SSLContextBuilder()
     certs_spy = mocker.spy(s._context, "load_verify_locations")
-    s.add_ca_file(server_cert).build()
+    s.add_ca_file(server_cert_path).build()
 
-    assert {"cafile": server_cert} == certs_spy.call_args.kwargs
+    assert {"cafile": server_cert_path} == certs_spy.call_args.kwargs
 
 
-def test_ssl_context_builder_add_cadir(mocker: MockerFixture, server_cert):
+def test_ssl_context_builder_add_cadir(mocker: MockerFixture, server_cert_path):
     s = SSLContextBuilder()
     certs_spy = mocker.spy(s._context, "load_verify_locations")
-    s.add_ca_dir(server_cert.parent).build()
+    s.add_ca_dir(server_cert_path.parent).build()
 
-    assert {"capath": server_cert.parent} == certs_spy.call_args.kwargs
+    assert {"capath": server_cert_path.parent} == certs_spy.call_args.kwargs
 
 
-def test_ssl_context_builder_add_ca_path_of_file(mocker: MockerFixture, server_cert):
+def test_ssl_context_builder_add_ca_path_of_file(mocker: MockerFixture, server_cert_path):
     s = SSLContextBuilder()
     certs_spy = mocker.spy(s._context, "load_verify_locations")
-    s.add_ca(server_cert).build()
+    s.add_ca(server_cert_path).build()
 
-    assert {"cafile": server_cert} == certs_spy.call_args.kwargs
+    assert {"cafile": server_cert_path} == certs_spy.call_args.kwargs
 
 
-def test_ssl_context_builder_add_ca_path_of_dir(mocker: MockerFixture, server_cert):
+def test_ssl_context_builder_add_ca_path_of_dir(mocker: MockerFixture, server_cert_path):
     s = SSLContextBuilder()
     certs_spy = mocker.spy(s._context, "load_verify_locations")
-    s.add_ca(server_cert.parent).build()
+    s.add_ca(server_cert_path.parent).build()
 
-    assert {"capath": server_cert.parent} == certs_spy.call_args.kwargs
+    assert {"capath": server_cert_path.parent} == certs_spy.call_args.kwargs
 
 
 def test_ssl_context_builder_add_ca_path_not_found():
@@ -354,10 +354,10 @@ def test_ssl_context_builder_add_ca_path_not_found():
 
 
 def test_ssl_context_builder_add_client_cert(
-    mocker: MockerFixture, client_cert, client_key
+    mocker: MockerFixture, client_cert_path, client_key_path
 ):
     builder = SSLContextBuilder()
     certs_spy = mocker.spy(builder._context, "load_cert_chain")
-    s = builder.add_client(client_cert, client_key, "password").build()
+    s = builder.add_client(client_cert_path, client_key_path, "password").build()
 
-    assert (client_cert, client_key, "password") == certs_spy.call_args.args
+    assert (client_cert_path, client_key_path, "password") == certs_spy.call_args.args

@@ -337,6 +337,18 @@ async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
 
 
 @pytest.fixture
+async def fake_tcp_ssl_server(unused_tcp_port, response_ok, ca_cert_path, server_cert):
+    response = ServerResponse(response_ok)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ca_cert_path.configure_cert(context)
+    server = await asyncio.start_server(
+        fake_server(response), "localhost", unused_tcp_port, ssl=context
+    )
+    yield response, "localhost", unused_tcp_port
+    server.close()
+
+
+@pytest.fixture
 def mock_client(mocker: MockerFixture, response_ok):
     mock_connection_manager = mocker.patch.object(
         ConnectionManager, "request", mocker.AsyncMock(return_value=response_ok)
@@ -382,7 +394,7 @@ def server_cert(ca, hostname, ip_address):
 
 
 @pytest.fixture(scope="session")
-def ca_cert(ca, tmp_path_factory: pytest.TempdirFactory):
+def ca_cert_path(ca, tmp_path_factory: pytest.TempdirFactory):
     tmp_path = tmp_path_factory.mktemp("ca_certs")
     cert_file = tmp_path / "ca_cert.pem"
     ca.cert_pem.write_to_path(cert_file)
@@ -431,12 +443,12 @@ def server_key_path(server_cert_and_key):
 
 
 @pytest.fixture(scope="session")
-def client_cert(client_cert_and_key):
+def client_cert_path(client_cert_and_key):
     yield client_cert_and_key[0]
 
 
 @pytest.fixture(scope="session")
-def client_key(client_cert_and_key):
+def client_key_path(client_cert_and_key):
     yield client_cert_and_key[1]
 
 
