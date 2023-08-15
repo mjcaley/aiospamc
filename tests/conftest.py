@@ -358,42 +358,13 @@ def mock_reader_writer(mocker: MockerFixture):
     mock_reader.read = mocker.AsyncMock()
     mock_writer = mocker.MagicMock()
     mock_writer.drain = mocker.AsyncMock()
+    mock_writer.write = mocker.MagicMock()
 
-    mocker.patch("asyncio.open_tcp_connection", return_value=(mock_reader, mock_writer))
+    mocker.patch("asyncio.open_connection", return_value=(mock_reader, mock_writer))
+    if sys.platform != "win32":
+        mocker.patch("asyncio.open_unix_connection", return_value=(mock_reader, mock_writer))
 
     yield mock_reader, mock_writer
-
-
-@pytest.fixture
-def mock_client(mocker: MockerFixture, response_ok):
-    mock_connection_manager = mocker.patch.object(
-        ConnectionManager, "request", mocker.AsyncMock(return_value=response_ok)
-    )
-
-    yield mock_connection_manager
-
-
-@pytest.fixture
-def mock_connection_manager(mock_client):
-    yield ConnectionManager("mocked connection")
-
-
-@pytest.fixture
-def mock_client_response(mock_client):
-    def inner(response):
-        mock_client.return_value = response
-        return mock_client
-
-    return inner
-
-
-@pytest.fixture
-def mock_client_raises(mock_client):
-    def inner(side_effect):
-        mock_client.side_effect = side_effect
-        return mock_client
-
-    return inner
 
 
 # Integration fixtures

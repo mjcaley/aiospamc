@@ -264,9 +264,10 @@ def test_command_without_message_timeout_exception(fake_tcp_server):
     ],
 )
 def test_command_with_message_timeout_exception(
-    mock_reader_writer, mocker, gtube, args
+    mock_reader_writer, gtube, args
 ):
-    reader, writer = mock_reader_writer
+    reader, _ = mock_reader_writer
+    reader.read.side_effect = asyncio.TimeoutError()
 
     runner = CliRunner()
     result = runner.invoke(app, args + [str(gtube)])
@@ -278,9 +279,11 @@ def test_command_with_message_timeout_exception(
 @pytest.mark.parametrize(
     "raises", [AIOSpamcConnectionFailed(), OSError(), ConnectionError(), SSLError()]
 )
-def test_command_without_message_connection_exception(mock_client_raises, raises):
+def test_command_without_message_connection_exception(mock_reader_writer, raises):
+    reader, _ = mock_reader_writer
+    reader.read.side_effect = raises
+    
     runner = CliRunner()
-    mock_client_raises(raises)
     result = runner.invoke(app, ["ping"])
 
     assert CONNECTION_ERROR == result.exit_code
@@ -305,10 +308,12 @@ def test_command_without_message_connection_exception(mock_client_raises, raises
     ],
 )
 def test_command_with_message_connection_exception(
-    mock_client_raises, raises, gtube, args
+    mock_reader_writer, raises, gtube, args
 ):
+    reader, _ = mock_reader_writer
+    reader.read.side_effect = raises
+    
     runner = CliRunner()
-    mock_client_raises(raises)
     result = runner.invoke(app, args + [str(gtube)])
 
     assert CONNECTION_ERROR == result.exit_code
