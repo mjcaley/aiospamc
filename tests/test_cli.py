@@ -26,7 +26,7 @@ from aiospamc.cli import (
 )
 from aiospamc.client import Client
 from aiospamc.connections import ConnectionManager
-from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
+from aiospamc.exceptions import AIOSpamcConnectionFailed
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request
 from aiospamc.responses import Response
@@ -330,6 +330,26 @@ def test_ping(fake_tcp_server, response_pong):
     assert "PONG\n" == result.stdout
 
 
+def test_ping_server_ssl_ca(fake_tcp_ssl_server, response_pong, ca_cert_path):
+    resp, host, port = fake_tcp_ssl_server
+    resp.response = response_pong
+    runner = CliRunner()
+    result = runner.invoke(app, ["ping", "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path])
+
+    assert PING_SUCCESS == result.exit_code
+    assert "PONG\n" == result.stdout
+
+
+def test_ping_server_ssl_client(fake_tcp_ssl_server, response_pong, ca_cert_path, client_cert_path, client_key_path):
+    resp, host, port = fake_tcp_ssl_server
+    resp.response = response_pong
+    runner = CliRunner()
+    result = runner.invoke(app, ["ping", "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path, "--client-cert", client_cert_path, "--client-key", client_key_path])
+
+    assert PING_SUCCESS == result.exit_code
+    assert "PONG\n" == result.stdout
+
+
 def test_check_spam(fake_tcp_server, response_spam_header, gtube):
     resp, host, port = fake_tcp_server
     runner = CliRunner()
@@ -348,6 +368,26 @@ def test_check_ham(fake_tcp_server, response_not_spam, gtube):
 
     assert NOT_SPAM == result.exit_code
     assert "0.0/1.0\n" == result.stdout
+
+
+def test_check_server_ssl_ca(gtube, response_spam_header, fake_tcp_ssl_server, ca_cert_path):
+    resp, host, port = fake_tcp_ssl_server
+    resp.response = response_spam_header
+    runner = CliRunner()
+    result = runner.invoke(app, ["check", str(gtube), "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path])
+
+    assert IS_SPAM == result.exit_code
+    assert "1000.0/1.0\n" == result.stdout
+
+
+def test_check_server_ssl_client(gtube, response_spam_header, fake_tcp_ssl_client, ca_cert_path, client_cert_path, client_key_path):
+    resp, host, port = fake_tcp_ssl_client
+    resp.response = response_spam_header
+    runner = CliRunner()
+    result = runner.invoke(app, ["check", str(gtube), "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path, "--client-cert", client_cert_path, "--client-key", client_key_path])
+
+    assert IS_SPAM == result.exit_code
+    assert "1000.0/1.0\n" == result.stdout
 
 
 def test_check_no_spam_header(fake_tcp_server, response_with_body, gtube):
@@ -388,6 +428,26 @@ def test_learn_already_learned(fake_tcp_server, response_tell, gtube):
 
     assert SUCCESS == result.exit_code
     assert "Message was already learned\n" == result.stdout
+
+
+def test_learn_ssl_ca(fake_tcp_ssl_server, response_learned, gtube, ca_cert_path):
+    resp, host, port = fake_tcp_ssl_server
+    resp.response = response_learned
+    runner = CliRunner()
+    result = runner.invoke(app, ["learn", str(gtube), "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path])
+
+    assert SUCCESS == result.exit_code
+    assert "Message successfully learned\n" == result.stdout
+
+
+def test_learn_ssl_client(fake_tcp_ssl_client, response_learned, gtube, ca_cert_path, client_cert_path, client_key_path):
+    resp, host, port = fake_tcp_ssl_client
+    resp.response = response_learned
+    runner = CliRunner()
+    result = runner.invoke(app, ["learn", str(gtube), "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path, "--client-cert", client_cert_path, "--client-key", client_key_path, "--timeout", 30000])
+
+    assert SUCCESS == result.exit_code
+    assert "Message successfully learned\n" == result.stdout
 
 
 def test_forget_success(fake_tcp_server, response_forgotten, gtube):

@@ -93,7 +93,10 @@ class CliClientBuilder:
 
         return self
 
-    def add_ca_cert(self, ca_cert: Path) -> "CliClientBuilder":
+    def add_ca_cert(self, ca_cert: Optional[Path]) -> "CliClientBuilder":
+        if ca_cert is None:
+            return self
+        
         self._ssl = True
         if ca_cert.is_dir():
             self._ssl_builder.add_ca_dir(ca_cert)
@@ -109,6 +112,9 @@ class CliClientBuilder:
     def add_client_cert(
         self, cert: Path, key: Optional[Path] = None, password: Optional[str] = None
     ) -> "CliClientBuilder":
+        if cert is None:
+            return self
+
         if self._ssl is False:
             self._ssl = True
             self.add_verify(True)

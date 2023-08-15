@@ -296,18 +296,15 @@ def unix_socket(tmp_path_factory):
 @dataclass
 class ServerResponse:
     response: bytes = b""
-    sleep: float = 0.0
 
 
 def fake_server(resp: ServerResponse):
-    async def inner(reader: StreamReader, writer: StreamWriter):
-        await asyncio.sleep(resp.sleep)
+    buffer_size = 1024
 
+    async def inner(reader: StreamReader, writer: StreamWriter):
         data = b""
-        chunk = await reader.read(1024)
-        while chunk:
+        while len(chunk := await reader.read(buffer_size)) == buffer_size:
             data += chunk
-            chunk = await reader.read(1024)
         writer.write(resp.response)
         if writer.can_write_eof():
             writer.write_eof()
@@ -331,7 +328,7 @@ async def fake_tcp_server(unused_tcp_port, response_ok):
 @pytest.fixture
 async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
     response = ServerResponse(response_ok)
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     server_cert.configure_cert(context)
     server = await asyncio.start_server(
         fake_server(response), "localhost", unused_tcp_port, ssl=context
@@ -341,10 +338,12 @@ async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
 
 
 @pytest.fixture
-async def fake_tcp_ssl_server(unused_tcp_port, response_ok, ca_cert_path, server_cert):
+async def fake_tcp_ssl_client(unused_tcp_port, response_ok, ca, server_cert):
     response = ServerResponse(response_ok)
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    ca_cert_path.configure_cert(context)
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    context.verify_mode = ssl.CERT_REQUIRED
+    server_cert.configure_cert(context)
+    ca.configure_trust(context)
     server = await asyncio.start_server(
         fake_server(response), "localhost", unused_tcp_port, ssl=context
     )
