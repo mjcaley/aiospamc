@@ -15,7 +15,11 @@ import pytest_asyncio
 import trustme
 from pytest_mock import MockerFixture
 
-from aiospamc.connections import ConnectionManager
+from aiospamc.connections import (
+    ConnectionManager,
+    TcpConnectionManager,
+    UnixConnectionManager,
+)
 from aiospamc.header_values import ContentLengthValue
 from aiospamc.requests import Request
 
@@ -346,6 +350,18 @@ async def fake_tcp_ssl_server(unused_tcp_port, response_ok, ca_cert_path, server
     )
     yield response, "localhost", unused_tcp_port
     server.close()
+
+
+@pytest.fixture
+def mock_reader_writer(mocker: MockerFixture):
+    mock_reader = mocker.MagicMock()
+    mock_reader.read = mocker.AsyncMock()
+    mock_writer = mocker.MagicMock()
+    mock_writer.drain = mocker.AsyncMock()
+
+    mocker.patch("asyncio.open_tcp_connection", return_value=(mock_reader, mock_writer))
+
+    yield mock_reader, mock_writer
 
 
 @pytest.fixture

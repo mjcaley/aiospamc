@@ -263,11 +263,13 @@ def test_command_without_message_timeout_exception(fake_tcp_server):
         ["revoke"],
     ],
 )
-def test_command_with_message_timeout_exception(fake_tcp_server, gtube, args):
-    resp, host, port = fake_tcp_server
+def test_command_with_message_timeout_exception(
+    mock_reader_writer, mocker, gtube, args
+):
+    reader, writer = mock_reader_writer
+
     runner = CliRunner()
-    # mock_client_raises(asyncio.TimeoutError())
-    result = runner.invoke(app, args + [str(gtube), "--host", host, "--port", port])
+    result = runner.invoke(app, args + [str(gtube)])
 
     assert TIMEOUT_ERROR == result.exit_code
     assert "Error: timeout\n" == result.stdout
