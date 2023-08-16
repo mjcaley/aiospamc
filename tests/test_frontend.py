@@ -195,6 +195,40 @@ async def test_functions_returns_response(func, fake_tcp_server, spam):
 
     assert isinstance(result, Response)
 
+@pytest.mark.parametrize(
+    "func",
+    [
+        check,
+        headers,
+        process,
+        report,
+        report_if_spam,
+        symbols,
+    ],
+)
+async def test_functions_returns_response_ssl(func, fake_tcp_ssl_server, spam, ca_cert_path):
+    _, host, port = fake_tcp_ssl_server
+    result = await func(spam, host=host, port=port, verify=ca_cert_path)
+
+    assert isinstance(result, Response)
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        check,
+        headers,
+        process,
+        report,
+        report_if_spam,
+        symbols,
+    ],
+)
+async def test_functions_returns_response_ssl_client(func, fake_tcp_ssl_client, spam, ca_cert_path, client_cert_and_key_path):
+    _, host, port = fake_tcp_ssl_client
+    result = await func(spam, host=host, port=port, verify=ca_cert_path, cert=client_cert_and_key_path)
+
+    assert isinstance(result, Response)
+
 
 async def test_ping_request_with_parameters(fake_tcp_server, mocker):
     _, host, port = fake_tcp_server
@@ -212,6 +246,19 @@ async def test_ping_returns_response(fake_tcp_server, mocker):
     result = await ping(host=host, port=port)
 
     assert req_spy.spy_return is result
+
+
+async def test_ping_returns_response_ssl(fake_tcp_ssl_server, spam, ca_cert_path):
+    _, host, port = fake_tcp_ssl_server
+    result = await ping(host=host, port=port, verify=ca_cert_path)
+
+    assert isinstance(result, Response)
+
+async def test_ping_returns_response_ssl_client(fake_tcp_ssl_client, spam, ca_cert_path, client_cert_and_key_path):
+    _, host, port = fake_tcp_ssl_client
+    result = await ping(host=host, port=port, verify=ca_cert_path, cert=client_cert_and_key_path)
+
+    assert isinstance(result, Response)
 
 
 async def test_tell_request_with_default_parameters(fake_tcp_server, spam, mocker):
@@ -327,7 +374,7 @@ async def test_raises_no_host(func, fake_tcp_server, ex_no_host):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_unavailable(func, fake_tcp_server, mocker, ex_unavailable):
+async def test_raises_unavailable(func, fake_tcp_server, ex_unavailable):
     resp, host, port = fake_tcp_server
     resp.response = ex_unavailable
 
@@ -338,7 +385,7 @@ async def test_raises_unavailable(func, fake_tcp_server, mocker, ex_unavailable)
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_software(func, fake_tcp_server, mocker, ex_software):
+async def test_raises_software(func, fake_tcp_server, ex_software):
     resp, host, port = fake_tcp_server
     resp.response = ex_software
 
@@ -349,7 +396,7 @@ async def test_raises_software(func, fake_tcp_server, mocker, ex_software):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_os_error(func, fake_tcp_server, mocker, ex_os_err):
+async def test_raises_os_error(func, fake_tcp_server, ex_os_err):
     resp, host, port = fake_tcp_server
     resp.response = ex_os_err
 
@@ -360,7 +407,7 @@ async def test_raises_os_error(func, fake_tcp_server, mocker, ex_os_err):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_os_file(func, fake_tcp_server, mocker, ex_os_file):
+async def test_raises_os_file(func, fake_tcp_server, ex_os_file):
     resp, host, port = fake_tcp_server
     resp.response = ex_os_file
 
@@ -371,7 +418,7 @@ async def test_raises_os_file(func, fake_tcp_server, mocker, ex_os_file):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_cant_create(func, fake_tcp_server, mocker, ex_cant_create):
+async def test_raises_cant_create(func, fake_tcp_server, ex_cant_create):
     resp, host, port = fake_tcp_server
     resp.response = ex_cant_create
 
@@ -382,7 +429,7 @@ async def test_raises_cant_create(func, fake_tcp_server, mocker, ex_cant_create)
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_io_error(func, fake_tcp_server, mocker, ex_io_err):
+async def test_raises_io_error(func, fake_tcp_server, ex_io_err):
     resp, host, port = fake_tcp_server
     resp.response = ex_io_err
 
@@ -394,7 +441,7 @@ async def test_raises_io_error(func, fake_tcp_server, mocker, ex_io_err):
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
 async def test_raises_temporary_failure(
-    func, fake_tcp_server, mocker, ex_temp_fail
+    func, fake_tcp_server, ex_temp_fail
 ):
     resp, host, port = fake_tcp_server
     resp.response = ex_temp_fail
@@ -406,7 +453,7 @@ async def test_raises_temporary_failure(
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_protocol(func, fake_tcp_server, mocker, ex_protocol):
+async def test_raises_protocol(func, fake_tcp_server, ex_protocol):
     resp, host, port = fake_tcp_server
     resp.response = ex_protocol
 
@@ -417,7 +464,7 @@ async def test_raises_protocol(func, fake_tcp_server, mocker, ex_protocol):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_no_permission(func, fake_tcp_server, mocker, ex_no_perm):
+async def test_raises_no_permission(func, fake_tcp_server, ex_no_perm):
     resp, host, port = fake_tcp_server
     resp.response = ex_no_perm
 
@@ -428,7 +475,7 @@ async def test_raises_no_permission(func, fake_tcp_server, mocker, ex_no_perm):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_config(func, fake_tcp_server, mocker, ex_config):
+async def test_raises_config(func, fake_tcp_server, ex_config):
     resp, host, port = fake_tcp_server
     resp.response = ex_config
 
@@ -439,7 +486,7 @@ async def test_raises_config(func, fake_tcp_server, mocker, ex_config):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_timeout(func, fake_tcp_server, mocker, ex_timeout):
+async def test_raises_timeout(func, fake_tcp_server, ex_timeout):
     resp, host, port = fake_tcp_server
     resp.response = ex_timeout
 
@@ -450,7 +497,7 @@ async def test_raises_timeout(func, fake_tcp_server, mocker, ex_timeout):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_undefined(func, fake_tcp_server, mocker, ex_undefined):
+async def test_raises_undefined(func, fake_tcp_server, ex_undefined):
     resp, host, port = fake_tcp_server
     resp.response = ex_undefined
 
@@ -594,7 +641,7 @@ async def test_ping_raises_undefined(fake_tcp_server, ex_undefined):
         await ping(host=host, port=port)
 
 
-async def test_tell_raises_usage(fake_tcp_server, mocker, ex_usage):
+async def test_tell_raises_usage(fake_tcp_server, ex_usage):
     resp, host, port = fake_tcp_server
     resp.response = ex_usage
 
@@ -603,7 +650,7 @@ async def test_tell_raises_usage(fake_tcp_server, mocker, ex_usage):
         )
 
 
-async def test_tell_raises_data_err(fake_tcp_server, mocker, ex_data_err):
+async def test_tell_raises_data_err(fake_tcp_server, ex_data_err):
     resp, host, port = fake_tcp_server
     resp.response = ex_data_err
 
@@ -612,7 +659,7 @@ async def test_tell_raises_data_err(fake_tcp_server, mocker, ex_data_err):
         )
 
 
-async def test_tell_raises_no_input(fake_tcp_server, mocker, ex_no_input):
+async def test_tell_raises_no_input(fake_tcp_server, ex_no_input):
     resp, host, port = fake_tcp_server
     resp.response = ex_no_input
 
@@ -621,7 +668,7 @@ async def test_tell_raises_no_input(fake_tcp_server, mocker, ex_no_input):
         )
 
 
-async def test_tell_raises_no_user(fake_tcp_server, mocker, ex_no_user):
+async def test_tell_raises_no_user(fake_tcp_server, ex_no_user):
     resp, host, port = fake_tcp_server
     resp.response = ex_no_user
 
@@ -630,7 +677,7 @@ async def test_tell_raises_no_user(fake_tcp_server, mocker, ex_no_user):
         )
 
 
-async def test_tell_raises_no_host(fake_tcp_server, mocker, ex_no_host):
+async def test_tell_raises_no_host(fake_tcp_server, ex_no_host):
     resp, host, port = fake_tcp_server
     resp.response = ex_no_host
 
@@ -639,7 +686,7 @@ async def test_tell_raises_no_host(fake_tcp_server, mocker, ex_no_host):
         )
 
 
-async def test_tell_raises_unavailable(fake_tcp_server, mocker, ex_unavailable):
+async def test_tell_raises_unavailable(fake_tcp_server, ex_unavailable):
     resp, host, port = fake_tcp_server
     resp.response = ex_unavailable
 
@@ -648,7 +695,7 @@ async def test_tell_raises_unavailable(fake_tcp_server, mocker, ex_unavailable):
         )
 
 
-async def test_tell_raises_software(fake_tcp_server, mocker, ex_software):
+async def test_tell_raises_software(fake_tcp_server, ex_software):
     resp, host, port = fake_tcp_server
     resp.response = ex_software
 
@@ -657,7 +704,7 @@ async def test_tell_raises_software(fake_tcp_server, mocker, ex_software):
         )
 
 
-async def test_tell_raises_os_error(fake_tcp_server, mocker, ex_os_err):
+async def test_tell_raises_os_error(fake_tcp_server, ex_os_err):
     resp, host, port = fake_tcp_server
     resp.response = ex_os_err
 
@@ -666,7 +713,7 @@ async def test_tell_raises_os_error(fake_tcp_server, mocker, ex_os_err):
         )
 
 
-async def test_tell_raises_os_file(fake_tcp_server, mocker, ex_os_file):
+async def test_tell_raises_os_file(fake_tcp_server, ex_os_file):
     resp, host, port = fake_tcp_server
     resp.response = ex_os_file
 
@@ -675,7 +722,7 @@ async def test_tell_raises_os_file(fake_tcp_server, mocker, ex_os_file):
         )
 
 
-async def test_tell_raises_cant_create(fake_tcp_server, mocker, ex_cant_create):
+async def test_tell_raises_cant_create(fake_tcp_server, ex_cant_create):
     resp, host, port = fake_tcp_server
     resp.response = ex_cant_create
 
@@ -684,7 +731,7 @@ async def test_tell_raises_cant_create(fake_tcp_server, mocker, ex_cant_create):
         )
 
 
-async def test_tell_raises_io_error(fake_tcp_server, mocker, ex_io_err):
+async def test_tell_raises_io_error(fake_tcp_server, ex_io_err):
     resp, host, port = fake_tcp_server
     resp.response = ex_io_err
 
@@ -693,9 +740,7 @@ async def test_tell_raises_io_error(fake_tcp_server, mocker, ex_io_err):
         )
 
 
-async def test_tell_raises_temporary_failure(
-    fake_tcp_server, mocker, ex_temp_fail
-):
+async def test_tell_raises_temporary_failure(fake_tcp_server, ex_temp_fail):
     resp, host, port = fake_tcp_server
     resp.response = ex_temp_fail
 
@@ -704,7 +749,7 @@ async def test_tell_raises_temporary_failure(
         )
 
 
-async def test_tell_raises_protocol(fake_tcp_server, mocker, ex_protocol):
+async def test_tell_raises_protocol(fake_tcp_server, ex_protocol):
     resp, host, port = fake_tcp_server
     resp.response = ex_protocol
 
@@ -713,7 +758,7 @@ async def test_tell_raises_protocol(fake_tcp_server, mocker, ex_protocol):
         )
 
 
-async def test_tell_raises_no_permission(fake_tcp_server, mocker, ex_no_perm):
+async def test_tell_raises_no_permission(fake_tcp_server, ex_no_perm):
     resp, host, port = fake_tcp_server
     resp.response = ex_no_perm
 
@@ -722,7 +767,7 @@ async def test_tell_raises_no_permission(fake_tcp_server, mocker, ex_no_perm):
         )
 
 
-async def test_tell_raises_config(fake_tcp_server, mocker, ex_config):
+async def test_tell_raises_config(fake_tcp_server, ex_config):
     resp, host, port = fake_tcp_server
     resp.response = ex_config
 
@@ -731,7 +776,7 @@ async def test_tell_raises_config(fake_tcp_server, mocker, ex_config):
         )
 
 
-async def test_tell_raises_timeout(fake_tcp_server, mocker, ex_timeout):
+async def test_tell_raises_timeout(fake_tcp_server, ex_timeout):
     resp, host, port = fake_tcp_server
     resp.response = ex_timeout
 
@@ -740,7 +785,7 @@ async def test_tell_raises_timeout(fake_tcp_server, mocker, ex_timeout):
         )
 
 
-async def test_tell_raises_undefined(fake_tcp_server, mocker, ex_undefined):
+async def test_tell_raises_undefined(fake_tcp_server, ex_undefined):
     resp, host, port = fake_tcp_server
     resp.response = ex_undefined
 
