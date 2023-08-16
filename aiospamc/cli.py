@@ -14,7 +14,11 @@ import typer
 from loguru import logger
 from typing_extensions import Annotated
 
-from aiospamc.exceptions import AIOSpamcConnectionFailed, BadResponse, ClientTimeoutException, ParseError
+from aiospamc.exceptions import (
+    AIOSpamcConnectionFailed,
+    BadResponse,
+    ClientTimeoutException,
+)
 from aiospamc.header_values import (
     ActionOption,
     Headers,
@@ -25,7 +29,7 @@ from aiospamc.header_values import (
 
 from . import __version__
 from .client import Client, Request
-from .connections import ConnectionManager, SSLContextBuilder, Timeout
+from .connections import ConnectionManagerBuilder, SSLContextBuilder, Timeout
 from .responses import Response, ResponseException
 
 app = typer.Typer(no_args_is_help=True)
@@ -53,7 +57,7 @@ FILE_NOT_FOUND_ERROR = 7
 
 class CliClientBuilder:
     def __init__(self):
-        self._connection_builder = ConnectionManager.builder()
+        self._connection_builder = ConnectionManagerBuilder()
         self._ssl = False
         self._ssl_builder = SSLContextBuilder()
 
@@ -96,7 +100,7 @@ class CliClientBuilder:
     def add_ca_cert(self, ca_cert: Optional[Path]) -> "CliClientBuilder":
         if ca_cert is None:
             return self
-        
+
         self._ssl = True
         if ca_cert.is_dir():
             self._ssl_builder.add_ca_dir(ca_cert)
@@ -110,7 +114,7 @@ class CliClientBuilder:
         return self
 
     def add_client_cert(
-        self, cert: Path, key: Optional[Path] = None, password: Optional[str] = None
+        self, cert: Optional[Path], key: Optional[Path] = None, password: Optional[str] = None
     ) -> "CliClientBuilder":
         if cert is None:
             return self
@@ -234,11 +238,11 @@ def ping(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
+    ] = None,
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
@@ -320,11 +324,11 @@ def check(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
+    ] = None,
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
@@ -407,11 +411,11 @@ def learn(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
+    ] = None,
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
@@ -494,11 +498,11 @@ def forget(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
+    ] = None,
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
@@ -580,11 +584,11 @@ def report(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
+    ] = None,
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
@@ -667,11 +671,11 @@ def revoke(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
+    ] = None,
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
@@ -761,9 +765,9 @@ def main(
             "--version",
             callback=version_callback,
             is_eager=True,
-            help="Output format for stdout",
+            help="Print version of aiospamc",
         ),
-    ] = None,
+    ] = False,
     debug: Annotated[
         bool,
         typer.Option(

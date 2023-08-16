@@ -27,7 +27,7 @@ from aiospamc.cli import (
     read_message,
 )
 from aiospamc.client import Client
-from aiospamc.connections import ConnectionManager, Timeout
+from aiospamc.connections import ConnectionManagerBuilder, Timeout
 from aiospamc.exceptions import AIOSpamcConnectionFailed
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request
@@ -112,7 +112,7 @@ def test_cli_runner_init_defaults(fake_tcp_server):
     _, host, port = fake_tcp_server
     request = Request("PING")
     c = CommandRunner(
-        Client(ConnectionManager.builder().with_tcp(host, port).build()), request
+        Client(ConnectionManagerBuilder().with_tcp(host, port).build()), request
     )
 
     assert request == c.request
@@ -129,7 +129,7 @@ async def test_cli_runner_run_success(fake_tcp_server, response_pong):
 
     request = Request("PING")
     c = CommandRunner(
-        Client(ConnectionManager.builder().with_tcp(host, port).build()), request
+        Client(ConnectionManagerBuilder().with_tcp(host, port).build()), request
     )
     result = await c.run()
 
@@ -147,7 +147,7 @@ def test_cli_runner_to_json(fake_tcp_server):
     }
 
     c = CommandRunner(
-        Client(ConnectionManager.builder().with_tcp(host, port).build()), request
+        Client(ConnectionManagerBuilder().with_tcp(host, port).build()), request
     )
     result = c.to_json()
 

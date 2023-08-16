@@ -437,7 +437,9 @@ def mock_reader_writer(mocker: MockerFixture):
 
     mocker.patch("asyncio.open_connection", return_value=(mock_reader, mock_writer))
     if sys.platform != "win32":
-        mocker.patch("asyncio.open_unix_connection", return_value=(mock_reader, mock_writer))
+        mocker.patch(
+            "asyncio.open_unix_connection", return_value=(mock_reader, mock_writer)
+        )
 
     yield mock_reader, mock_writer
 
@@ -455,7 +457,6 @@ def spawn_spamd(options, timeout):
         universal_newlines=True,
     )
 
-    # Check the log to see if spamd is running
     timeout = datetime.datetime.utcnow() + datetime.timedelta(seconds=timeout)
 
     running = False
@@ -471,7 +472,7 @@ def spawn_spamd(options, timeout):
 
     if not running:
         raise ChildProcessError
-    
+
     return process
 
 
@@ -497,23 +498,61 @@ def spamd_common_options():
 @pytest.fixture(scope="session")
 def spamd_tcp(spamd_common_options, unused_tcp_port_factory, spamd_timeout):
     port = unused_tcp_port_factory()
-    process = spawn_spamd(spamd_common_options + [f"--listen=localhost:{port}"], spamd_timeout)
+    process = spawn_spamd(
+        spamd_common_options + [f"--listen=localhost:{port}"], spamd_timeout
+    )
     yield "localhost", port
     shutdown_spamd(process)
 
 
 @pytest.fixture(scope="session")
-def spamd_ssl(spamd_common_options, unused_tcp_port_factory, server_cert_path, server_key_path, spamd_timeout):
+def spamd_ssl(
+    spamd_common_options,
+    unused_tcp_port_factory,
+    server_cert_path,
+    server_key_path,
+    spamd_timeout,
+):
     port = unused_tcp_port_factory()
-    process = spawn_spamd(spamd_common_options + [f"--listen=ssl:localhost:{port}", "--server-cert", f"{server_cert_path}", "--server-key", f"{server_key_path}"], spamd_timeout)
+    process = spawn_spamd(
+        spamd_common_options
+        + [
+            f"--listen=ssl:localhost:{port}",
+            "--server-cert",
+            f"{server_cert_path}",
+            "--server-key",
+            f"{server_key_path}",
+        ],
+        spamd_timeout,
+    )
     yield "localhost", port
     shutdown_spamd(process)
 
 
 @pytest.fixture(scope="session")
-def spamd_ssl_client(spamd_common_options, unused_tcp_port_factory, server_cert_path, server_key_path, ca_cert_path, spamd_timeout):
+def spamd_ssl_client(
+    spamd_common_options,
+    unused_tcp_port_factory,
+    server_cert_path,
+    server_key_path,
+    ca_cert_path,
+    spamd_timeout,
+):
     port = unused_tcp_port_factory()
-    process = spawn_spamd(spamd_common_options + [f"--listen=ssl:localhost:{port}", "--server-cert", f"{server_cert_path}", "--server-key", f"{server_key_path}", "--ssl-ca-file", f"{ca_cert_path}", "--ssl-verify"], spamd_timeout)
+    process = spawn_spamd(
+        spamd_common_options
+        + [
+            f"--listen=ssl:localhost:{port}",
+            "--server-cert",
+            f"{server_cert_path}",
+            "--server-key",
+            f"{server_key_path}",
+            "--ssl-ca-file",
+            f"{ca_cert_path}",
+            "--ssl-verify",
+        ],
+        spamd_timeout,
+    )
     yield "localhost", port
     shutdown_spamd(process)
 
@@ -521,6 +560,8 @@ def spamd_ssl_client(spamd_common_options, unused_tcp_port_factory, server_cert_
 @pytest.fixture(scope="session")
 def spamd_unix(spamd_common_options, tmp_path_factory, spamd_timeout):
     unix_socket = tmp_path_factory.mktemp("spamd") / "spamd.sock"
-    process = spawn_spamd(spamd_common_options + [f"--socketpath={unix_socket}"], spamd_timeout)
+    process = spawn_spamd(
+        spamd_common_options + [f"--socketpath={unix_socket}"], spamd_timeout
+    )
     yield unix_socket
     shutdown_spamd(process)

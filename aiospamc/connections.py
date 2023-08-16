@@ -53,8 +53,8 @@ class ConnectionManagerBuilder:
 
     def __init__(self):
         self._manager_type = self.ManagerType.Undefined
-        self._tcp_builder = TcpConnectionManager.builder()
-        self._unix_builder = UnixConnectionManager.builder()
+        self._tcp_builder = TcpConnectionManagerBuilder()
+        self._unix_builder = UnixConnectionManagerBuilder()
         self._ssl_builder = SSLContextBuilder()
         self._ssl = False
         self._timeout = None
@@ -207,10 +207,6 @@ class ConnectionManager:
 
         return self._connection_string
 
-    @staticmethod
-    def builder() -> ConnectionManagerBuilder:
-        return ConnectionManagerBuilder()
-
 
 class TcpConnectionManagerBuilder:
     def __init__(self):
@@ -277,10 +273,6 @@ class TcpConnectionManager(ConnectionManager):
 
         return reader, writer
 
-    @staticmethod
-    def builder() -> TcpConnectionManagerBuilder:
-        return TcpConnectionManagerBuilder()
-
 
 class UnixConnectionManagerBuilder:
     def __init__(self):
@@ -301,14 +293,14 @@ class UnixConnectionManagerBuilder:
 class UnixConnectionManager(ConnectionManager):
     """Connection manager for Unix pipes."""
 
-    def __init__(self, path: str, timeout: Optional[Timeout] = None):
+    def __init__(self, path: Path, timeout: Optional[Timeout] = None):
         """UnixConnectionManager constructor.
 
         :param path: Unix socket path.
         :param timeout: Timeout configuration
         """
 
-        super().__init__(path, timeout)
+        super().__init__(str(path), timeout)
         self.path = path
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
@@ -326,10 +318,6 @@ class UnixConnectionManager(ConnectionManager):
             raise AIOSpamcConnectionFailed from error
 
         return reader, writer
-
-    @staticmethod
-    def builder() -> UnixConnectionManagerBuilder:
-        return UnixConnectionManagerBuilder()
 
 
 class SSLContextBuilder:

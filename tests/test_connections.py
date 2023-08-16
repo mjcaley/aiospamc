@@ -220,23 +220,10 @@ def test_unix_connection_manager_connection_string(unix_socket):
     assert unix_socket == u.connection_string
 
 
-def test_connection_manager_creates_builder():
-    result = ConnectionManager.builder()
-
-    assert isinstance(result, ConnectionManagerBuilder)
-
-
-def test_connection_manager_builder_raises_when_not_configured():
-    b = ConnectionManager.builder()
-
-    with pytest.raises(ValueError):
-        b.build()
-
-
 def test_connection_manager_builder_builds_unix(unix_socket):
     timeout = Timeout()
     b = (
-        ConnectionManager.builder()
+        ConnectionManagerBuilder()
         .with_unix_socket(unix_socket)
         .set_timeout(timeout)
         .build()
@@ -250,7 +237,7 @@ def test_connection_manager_builder_builds_unix(unix_socket):
 def test_connection_manager_builder_builds_tcp(hostname, tcp_port):
     timeout = Timeout()
     b = (
-        ConnectionManager.builder()
+        ConnectionManagerBuilder()
         .with_tcp(hostname, tcp_port)
         .set_timeout(timeout)
         .build()
@@ -266,7 +253,7 @@ def test_connection_manager_builder_builds_tcp(hostname, tcp_port):
 def test_connection_manager_builder_builds_tcp_with_ssl(hostname, tcp_port, mocker):
     ssl_context = mocker.Mock()
     b = (
-        ConnectionManager.builder()
+        ConnectionManagerBuilder()
         .with_tcp(hostname, tcp_port)
         .add_ssl_context(ssl_context)
         .build()

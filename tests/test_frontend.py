@@ -3,7 +3,12 @@ import ssl
 import pytest
 
 from aiospamc.client import Client
-from aiospamc.connections import ConnectionManager, TcpConnectionManager, UnixConnectionManager
+from aiospamc.connections import (
+    ConnectionManager,
+    TcpConnectionManager,
+    Timeout,
+    UnixConnectionManager,
+)
 from aiospamc.exceptions import BadResponse
 from aiospamc.frontend import (
     FrontendClientBuilder,
@@ -96,28 +101,53 @@ def test_frontend_builder_add_client_cert_none():
 
 
 def test_frontend_builder_add_client_cert_cert_arg(client_cert_and_key_path):
-    f = FrontendClientBuilder().with_connection().add_client_cert(client_cert_and_key_path).build()
+    f = (
+        FrontendClientBuilder()
+        .with_connection()
+        .add_client_cert(client_cert_and_key_path)
+        .build()
+    )
 
     assert isinstance(f, Client)
     assert None is not f.connection_manager.ssl_context
 
 
-def test_frontend_builder_add_client_cert_cert_arg_verify_added(client_cert_and_key_path):
-    f = FrontendClientBuilder().with_connection().add_verify(True).add_client_cert(client_cert_and_key_path).build()
+def test_frontend_builder_add_client_cert_cert_arg_verify_added(
+    client_cert_and_key_path,
+):
+    f = (
+        FrontendClientBuilder()
+        .with_connection()
+        .add_verify(True)
+        .add_client_cert(client_cert_and_key_path)
+        .build()
+    )
 
     assert isinstance(f, Client)
     assert None is not f.connection_manager.ssl_context
 
 
 def test_frontend_builder_add_client_cert_and_key(client_cert_path, client_key_path):
-    f = FrontendClientBuilder().with_connection().add_client_cert((client_cert_path, client_key_path)).build()
+    f = (
+        FrontendClientBuilder()
+        .with_connection()
+        .add_client_cert((client_cert_path, client_key_path))
+        .build()
+    )
 
     assert isinstance(f, Client)
     assert None is not f.connection_manager.ssl_context
 
 
-def test_frontend_builder_add_client_cert_key_and_password(client_cert_path, client_key_path):
-    f = FrontendClientBuilder().with_connection().add_client_cert((client_cert_path, client_key_path, "password")).build()
+def test_frontend_builder_add_client_cert_key_and_password(
+    client_cert_path, client_key_path
+):
+    f = (
+        FrontendClientBuilder()
+        .with_connection()
+        .add_client_cert((client_cert_path, client_key_path, "password"))
+        .build()
+    )
 
     assert isinstance(f, Client)
     assert None is not f.connection_manager.ssl_context
@@ -126,6 +156,19 @@ def test_frontend_builder_add_client_cert_key_and_password(client_cert_path, cli
 def test_frontend_builder_add_client_cert_typeerror(mocker):
     with pytest.raises(TypeError):
         FrontendClientBuilder().with_connection().add_client_cert(mocker.Mock()).build()
+
+
+def test_frontend_build_set_timeout_none():
+    f = FrontendClientBuilder().with_connection().set_timeout().build()
+
+    assert isinstance(f, Client)
+
+
+def test_frontend_build_set_timeout():
+    timeout = Timeout()
+    f = FrontendClientBuilder().with_connection().set_timeout(timeout).build()
+
+    assert timeout == f.connection_manager.timeout
 
 
 @pytest.mark.parametrize(
@@ -195,6 +238,7 @@ async def test_functions_returns_response(func, fake_tcp_server, spam):
 
     assert isinstance(result, Response)
 
+
 @pytest.mark.parametrize(
     "func",
     [
@@ -206,12 +250,15 @@ async def test_functions_returns_response(func, fake_tcp_server, spam):
         symbols,
     ],
 )
-async def test_functions_returns_response_ssl(func, fake_tcp_ssl_server, spam, ca_cert_path):
+async def test_functions_returns_response_ssl(
+    func, fake_tcp_ssl_server, spam, ca_cert_path
+):
     _, host, port = fake_tcp_ssl_server
     result = await func(spam, host=host, port=port, verify=ca_cert_path)
 
     assert isinstance(result, Response)
 
+
 @pytest.mark.parametrize(
     "func",
     [
@@ -223,9 +270,13 @@ async def test_functions_returns_response_ssl(func, fake_tcp_ssl_server, spam, c
         symbols,
     ],
 )
-async def test_functions_returns_response_ssl_client(func, fake_tcp_ssl_client, spam, ca_cert_path, client_cert_and_key_path):
+async def test_functions_returns_response_ssl_client(
+    func, fake_tcp_ssl_client, spam, ca_cert_path, client_cert_and_key_path
+):
     _, host, port = fake_tcp_ssl_client
-    result = await func(spam, host=host, port=port, verify=ca_cert_path, cert=client_cert_and_key_path)
+    result = await func(
+        spam, host=host, port=port, verify=ca_cert_path, cert=client_cert_and_key_path
+    )
 
     assert isinstance(result, Response)
 
@@ -254,9 +305,14 @@ async def test_ping_returns_response_ssl(fake_tcp_ssl_server, spam, ca_cert_path
 
     assert isinstance(result, Response)
 
-async def test_ping_returns_response_ssl_client(fake_tcp_ssl_client, spam, ca_cert_path, client_cert_and_key_path):
+
+async def test_ping_returns_response_ssl_client(
+    fake_tcp_ssl_client, spam, ca_cert_path, client_cert_and_key_path
+):
     _, host, port = fake_tcp_ssl_client
-    result = await ping(host=host, port=port, verify=ca_cert_path, cert=client_cert_and_key_path)
+    result = await ping(
+        host=host, port=port, verify=ca_cert_path, cert=client_cert_and_key_path
+    )
 
     assert isinstance(result, Response)
 
@@ -284,7 +340,8 @@ async def test_tell_request_with_optional_parameters(fake_tcp_server, spam, mock
         remove_action=ActionOption(local=True, remote=True),
         user="testuser",
         compress=True,
-        host=host, port=port
+        host=host,
+        port=port,
     )
     req = req_spy.await_args[0][1]
 
@@ -440,9 +497,7 @@ async def test_raises_io_error(func, fake_tcp_server, ex_io_err):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_temporary_failure(
-    func, fake_tcp_server, ex_temp_fail
-):
+async def test_raises_temporary_failure(func, fake_tcp_server, ex_temp_fail):
     resp, host, port = fake_tcp_server
     resp.response = ex_temp_fail
 
@@ -646,7 +701,11 @@ async def test_tell_raises_usage(fake_tcp_server, ex_usage):
     resp.response = ex_usage
 
     with pytest.raises(UsageException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -655,7 +714,11 @@ async def test_tell_raises_data_err(fake_tcp_server, ex_data_err):
     resp.response = ex_data_err
 
     with pytest.raises(DataErrorException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -664,7 +727,11 @@ async def test_tell_raises_no_input(fake_tcp_server, ex_no_input):
     resp.response = ex_no_input
 
     with pytest.raises(NoInputException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -673,7 +740,11 @@ async def test_tell_raises_no_user(fake_tcp_server, ex_no_user):
     resp.response = ex_no_user
 
     with pytest.raises(NoUserException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -682,7 +753,11 @@ async def test_tell_raises_no_host(fake_tcp_server, ex_no_host):
     resp.response = ex_no_host
 
     with pytest.raises(NoHostException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -691,7 +766,11 @@ async def test_tell_raises_unavailable(fake_tcp_server, ex_unavailable):
     resp.response = ex_unavailable
 
     with pytest.raises(UnavailableException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -700,7 +779,11 @@ async def test_tell_raises_software(fake_tcp_server, ex_software):
     resp.response = ex_software
 
     with pytest.raises(InternalSoftwareException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -709,7 +792,11 @@ async def test_tell_raises_os_error(fake_tcp_server, ex_os_err):
     resp.response = ex_os_err
 
     with pytest.raises(OSErrorException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -718,7 +805,11 @@ async def test_tell_raises_os_file(fake_tcp_server, ex_os_file):
     resp.response = ex_os_file
 
     with pytest.raises(OSFileException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -727,7 +818,11 @@ async def test_tell_raises_cant_create(fake_tcp_server, ex_cant_create):
     resp.response = ex_cant_create
 
     with pytest.raises(CantCreateException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -736,7 +831,11 @@ async def test_tell_raises_io_error(fake_tcp_server, ex_io_err):
     resp.response = ex_io_err
 
     with pytest.raises(IOErrorException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -745,7 +844,11 @@ async def test_tell_raises_temporary_failure(fake_tcp_server, ex_temp_fail):
     resp.response = ex_temp_fail
 
     with pytest.raises(TemporaryFailureException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -754,7 +857,11 @@ async def test_tell_raises_protocol(fake_tcp_server, ex_protocol):
     resp.response = ex_protocol
 
     with pytest.raises(ProtocolException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -763,7 +870,11 @@ async def test_tell_raises_no_permission(fake_tcp_server, ex_no_perm):
     resp.response = ex_no_perm
 
     with pytest.raises(NoPermissionException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -772,7 +883,11 @@ async def test_tell_raises_config(fake_tcp_server, ex_config):
     resp.response = ex_config
 
     with pytest.raises(ConfigException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -781,7 +896,11 @@ async def test_tell_raises_timeout(fake_tcp_server, ex_timeout):
     resp.response = ex_timeout
 
     with pytest.raises(ServerTimeoutException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
@@ -790,5 +909,9 @@ async def test_tell_raises_undefined(fake_tcp_server, ex_undefined):
     resp.response = ex_undefined
 
     with pytest.raises(ResponseException):
-        await tell(b"test", host=host, port=port, message_class=MessageClassOption.spam,
+        await tell(
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )

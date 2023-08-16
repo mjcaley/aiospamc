@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import ssl
 from pathlib import Path
-from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union
+from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union, cast
 
 from loguru import logger
 
 from .client import Client
-from .connections import ConnectionManager, SSLContextBuilder, Timeout
+from .connections import ConnectionManagerBuilder, SSLContextBuilder, Timeout
 from .header_values import ActionOption, MessageClassOption, MessageClassValue
 from .incremental_parser import parse_set_remove_value
 from .requests import Request
@@ -18,7 +18,7 @@ from .responses import Response
 
 class FrontendClientBuilder:
     def __init__(self):
-        self._connection_builder = ConnectionManager.builder()
+        self._connection_builder = ConnectionManagerBuilder()
         self._ssl = False
         self._ssl_builder = SSLContextBuilder()
 
@@ -65,11 +65,12 @@ class FrontendClientBuilder:
 
     def add_client_cert(
         self,
-        cert: Union[
-            Path,
-            Tuple[Path, Optional[Path]],
-            Tuple[Path, Optional[Path], Optional[str]],
-            None,
+        cert: Optional[
+            Union[
+                Path,
+                Tuple[Path, Optional[Path]],
+                Tuple[Path, Optional[Path], Optional[Path]],
+            ]
         ],
     ) -> FrontendClientBuilder:
         if cert is None:
@@ -81,18 +82,19 @@ class FrontendClientBuilder:
         if isinstance(cert, Path):
             self._ssl_builder.add_client(cert)
         elif isinstance(cert, tuple) and len(cert) == 2:
-            client, key = cert
+            client, key = cast(Tuple[Path, Optional[Path]], cert)
             self._ssl_builder.add_client(client, key)
         elif isinstance(cert, tuple) and len(cert) == 3:
-            client, key, password = cert
+            client, key, password = cast(Tuple[Path, Optional[Path], Optional[Path]], cert)
             self._ssl_builder.add_client(client, key, password)
         else:
             raise TypeError("Unexepected value")
 
         return self
 
-    def set_timeout(self, timeout: Timeout) -> FrontendClientBuilder:
-        self._connection_builder.set_timeout(timeout)
+    def set_timeout(self, timeout: Optional[Timeout] = None) -> FrontendClientBuilder:
+        if timeout:
+            self._connection_builder.set_timeout(timeout)
 
         return self
 
@@ -124,14 +126,15 @@ async def check(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
-    cert: Union[
-        Path,
-        Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[Path]],
-        None,
+    cert: Optional[
+        Union[
+            Path,
+            Tuple[Path, Optional[Path]],
+            Tuple[Path, Optional[Path], Optional[Path]],
+        ]
     ] = None,
     user: Optional[str] = None,
     compress: bool = False,
@@ -216,7 +219,7 @@ async def headers(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
@@ -306,7 +309,7 @@ async def ping(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
@@ -386,7 +389,7 @@ async def process(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
@@ -477,7 +480,7 @@ async def report(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
@@ -567,7 +570,7 @@ async def report_if_spam(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
@@ -658,7 +661,7 @@ async def symbols(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
@@ -752,9 +755,9 @@ async def tell(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
-    verify: Union[bool, Path, ssl.SSLContext, None] = None,
+    verify: Optional[Union[bool, Path, ssl.SSLContext]] = None,
     cert: Union[
         Path,
         Tuple[Path, Optional[Path]],
