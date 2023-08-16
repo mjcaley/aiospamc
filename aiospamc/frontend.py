@@ -17,12 +17,21 @@ from .responses import Response
 
 
 class FrontendClientBuilder:
+    """Builds the :class:`aiospamc.client.Client` based off of frontend arguments."""
+
     def __init__(self):
+        """Constructor for FrontendClientBuilder."""
+
         self._connection_builder = ConnectionManagerBuilder()
         self._ssl = False
         self._ssl_builder = SSLContextBuilder()
 
     def build(self) -> Client:
+        """Builds an instance of :class:`aiospamc.client.Client`.
+        
+        :return: `Client` instance.
+        """
+
         if self._ssl:
             self._connection_builder.add_ssl_context(self._ssl_builder.build())
         connection_manager = self._connection_builder.build()
