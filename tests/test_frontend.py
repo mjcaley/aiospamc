@@ -1,9 +1,12 @@
+from pathlib import Path
+import ssl
 import pytest
 
 from aiospamc.client import Client
-from aiospamc.connections import ConnectionManager
+from aiospamc.connections import ConnectionManager, TcpConnectionManager, UnixConnectionManager
 from aiospamc.exceptions import BadResponse
 from aiospamc.frontend import (
+    FrontendClientBuilder,
     check,
     headers,
     ping,
@@ -34,6 +37,95 @@ from aiospamc.responses import (
     UnavailableException,
     UsageException,
 )
+
+
+def test_frontend_builder_raises_without_connection():
+    with pytest.raises(ValueError):
+        FrontendClientBuilder().build()
+
+
+def test_frontend_builder_with_tcp_connection():
+    f = FrontendClientBuilder().with_connection().build()
+
+    assert isinstance(f, Client)
+    assert isinstance(f.connection_manager, TcpConnectionManager)
+
+
+def test_frontend_builder_with_unix_connection():
+    f = FrontendClientBuilder().with_connection(socket_path=Path("test")).build()
+
+    assert isinstance(f, Client)
+    assert isinstance(f.connection_manager, UnixConnectionManager)
+
+
+def test_frontend_builder_add_verify_none():
+    f = FrontendClientBuilder().with_connection().add_verify().build()
+
+    assert isinstance(f, Client)
+    assert None is f.connection_manager.ssl_context
+
+
+@pytest.mark.parametrize("test_input", [True, False])
+def test_frontend_builder_add_verify_bool(test_input):
+    f = FrontendClientBuilder().with_connection().add_verify(test_input).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_verify_context():
+    context = ssl.create_default_context()
+    f = FrontendClientBuilder().with_connection().add_verify(context).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_verify_path(ca_cert_path):
+    f = FrontendClientBuilder().with_connection().add_verify(ca_cert_path).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_none():
+    f = FrontendClientBuilder().with_connection().add_client_cert(None).build()
+
+    assert isinstance(f, Client)
+    assert None is f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_cert_arg(client_cert_and_key_path):
+    f = FrontendClientBuilder().with_connection().add_client_cert(client_cert_and_key_path).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_cert_arg_verify_added(client_cert_and_key_path):
+    f = FrontendClientBuilder().with_connection().add_verify(True).add_client_cert(client_cert_and_key_path).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_and_key(client_cert_path, client_key_path):
+    f = FrontendClientBuilder().with_connection().add_client_cert((client_cert_path, client_key_path)).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_key_and_password(client_cert_path, client_key_path):
+    f = FrontendClientBuilder().with_connection().add_client_cert((client_cert_path, client_key_path, "password")).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_typeerror(mocker):
+    with pytest.raises(TypeError):
+        FrontendClientBuilder().with_connection().add_client_cert(mocker.Mock()).build()
 
 
 @pytest.mark.parametrize(

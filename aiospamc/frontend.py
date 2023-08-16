@@ -68,7 +68,7 @@ class FrontendClientBuilder:
         cert: Union[
             Path,
             Tuple[Path, Optional[Path]],
-            Tuple[Path, Optional[Path], Optional[Path]],
+            Tuple[Path, Optional[Path], Optional[str]],
             None,
         ],
     ) -> FrontendClientBuilder:
@@ -86,6 +86,8 @@ class FrontendClientBuilder:
         elif isinstance(cert, tuple) and len(cert) == 3:
             client, key, password = cert
             self._ssl_builder.add_client(client, key, password)
+        else:
+            raise TypeError("Unexepected value")
 
         return self
 

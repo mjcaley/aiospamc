@@ -409,13 +409,15 @@ def client_cert_and_key(
     tmp_path = tmp_path_factory.mktemp("client_certs")
     cert_file = tmp_path / "client.cert"
     key_file = tmp_path / "client.key"
+    cert_key_file = tmp_path / "client_cert_key.pem"
 
     cert: trustme.LeafCert = ca.issue_cert(hostname, ip_address)
 
+    cert.private_key_and_cert_chain_pem.write_to_path(cert_key_file)
     cert_file.write_bytes(b"".join([blob.bytes() for blob in cert.cert_chain_pems]))
     cert.private_key_pem.write_to_path(key_file)
 
-    yield cert_file, key_file
+    yield cert_file, key_file, cert_key_file
 
 
 @pytest.fixture(scope="session")
@@ -426,6 +428,11 @@ def server_cert_path(server_cert_and_key):
 @pytest.fixture(scope="session")
 def server_key_path(server_cert_and_key):
     yield server_cert_and_key[1]
+
+
+@pytest.fixture(scope="session")
+def client_cert_and_key_path(client_cert_and_key):
+    yield client_cert_and_key[2]
 
 
 @pytest.fixture(scope="session")
