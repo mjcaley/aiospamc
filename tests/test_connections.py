@@ -19,16 +19,6 @@ from aiospamc.exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
 
 
 @pytest.fixture
-def mock_open_connection(mocker):
-    reader, writer = mocker.AsyncMock(), mocker.AsyncMock()
-    mocker.patch(
-        "asyncio.open_connection", mocker.AsyncMock(return_value=(reader, writer))
-    )
-
-    yield reader, writer
-
-
-@pytest.fixture
 def mock_open_connection_refused(mocker):
     mocker.patch("asyncio.open_connection", side_effect=ConnectionRefusedError())
 
@@ -172,12 +162,12 @@ def test_tcp_connection_manager_init(mocker, hostname, tcp_port):
     assert mock_ssl_context is t.ssl_context
 
 
-async def test_tcp_connection_manager_open(mock_open_connection, hostname, tcp_port):
+async def test_tcp_connection_manager_open(mock_reader_writer, hostname, tcp_port):
     t = TcpConnectionManager(hostname, tcp_port)
     reader, writer = await t.open()
 
-    assert mock_open_connection[0] is reader
-    assert mock_open_connection[1] is writer
+    assert mock_reader_writer[0] is reader
+    assert mock_reader_writer[1] is writer
 
 
 async def test_tcp_connection_manager_open_refused(
@@ -332,7 +322,9 @@ def test_ssl_context_builder_add_cadir(mocker: MockerFixture, server_cert_path):
     assert {"capath": server_cert_path.parent} == certs_spy.call_args.kwargs
 
 
-def test_ssl_context_builder_add_ca_path_of_file(mocker: MockerFixture, server_cert_path):
+def test_ssl_context_builder_add_ca_path_of_file(
+    mocker: MockerFixture, server_cert_path
+):
     s = SSLContextBuilder()
     certs_spy = mocker.spy(s._context, "load_verify_locations")
     s.add_ca(server_cert_path).build()
@@ -340,7 +332,9 @@ def test_ssl_context_builder_add_ca_path_of_file(mocker: MockerFixture, server_c
     assert {"cafile": server_cert_path} == certs_spy.call_args.kwargs
 
 
-def test_ssl_context_builder_add_ca_path_of_dir(mocker: MockerFixture, server_cert_path):
+def test_ssl_context_builder_add_ca_path_of_dir(
+    mocker: MockerFixture, server_cert_path
+):
     s = SSLContextBuilder()
     certs_spy = mocker.spy(s._context, "load_verify_locations")
     s.add_ca(server_cert_path.parent).build()

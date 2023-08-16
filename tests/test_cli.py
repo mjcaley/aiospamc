@@ -1,5 +1,6 @@
 import asyncio
 import json
+from pathlib import Path
 from ssl import SSLError
 
 import pytest
@@ -19,13 +20,14 @@ from aiospamc.cli import (
     SUCCESS,
     TIMEOUT_ERROR,
     UNEXPECTED_ERROR,
+    CliClientBuilder,
     CommandRunner,
     Output,
     app,
     read_message,
 )
 from aiospamc.client import Client
-from aiospamc.connections import ConnectionManager
+from aiospamc.connections import ConnectionManager, Timeout
 from aiospamc.exceptions import AIOSpamcConnectionFailed
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request
@@ -38,6 +40,72 @@ def gtube(spam, tmp_path):
     message.write_bytes(spam)
 
     return message
+
+
+def test_cli_builder_exception_when_not_defined():
+    with pytest.raises(ValueError):
+        CliClientBuilder().build()
+
+
+def test_cli_builder_with_tcp_connection():
+    c = CliClientBuilder().with_connection("localhost", 1783).build()
+
+    assert "localhost" == c.connection_manager.host
+    assert 1783 == c.connection_manager.port
+
+
+def test_cli_builder_with_unix_connection():
+    c = CliClientBuilder().with_connection(socket_path="test").build()
+
+    assert "test" == c.connection_manager.path
+
+
+def test_cli_builder_sets_timeout():
+    t = Timeout()
+    c = CliClientBuilder().with_connection().set_timeout(t).build()
+
+    assert t is c.connection_manager.timeout
+
+
+@pytest.mark.parametrize("test_input", [True, False])
+def test_cli_builder_add_verify(test_input):
+    c = CliClientBuilder().with_connection().add_verify(test_input).build()
+
+    assert hasattr(c.connection_manager, "ssl_context")
+
+
+def test_cli_builder_add_ca_cert_none():
+    c = CliClientBuilder().with_connection().add_ca_cert(None).build()
+
+    assert hasattr(c.connection_manager, "ssl_context")
+
+
+def test_cli_builder_add_ca_cert_file(server_cert_path):
+    c = CliClientBuilder().with_connection().add_ca_cert(server_cert_path).build()
+
+    assert hasattr(c.connection_manager, "ssl_context")
+
+
+def test_cli_builder_add_ca_cert_dir(tmp_path):
+    c = CliClientBuilder().with_connection().add_ca_cert(tmp_path).build()
+
+    assert hasattr(c.connection_manager, "ssl_context")
+
+
+def test_cli_builder_add_ca_cert_not_found():
+    with pytest.raises(FileNotFoundError):
+        CliClientBuilder().with_connection().add_ca_cert(Path("doesnt_exist")).build()
+
+
+def test_cli_builder_add_ca_client(client_cert_path, client_key_path):
+    c = (
+        CliClientBuilder()
+        .with_connection()
+        .add_client_cert(client_cert_path, client_key_path, "password")
+        .build()
+    )
+
+    assert hasattr(c.connection_manager, "ssl_context")
 
 
 def test_cli_runner_init_defaults(fake_tcp_server):
@@ -263,9 +331,7 @@ def test_command_without_message_timeout_exception(fake_tcp_server):
         ["revoke"],
     ],
 )
-def test_command_with_message_timeout_exception(
-    mock_reader_writer, gtube, args
-):
+def test_command_with_message_timeout_exception(mock_reader_writer, gtube, args):
     reader, _ = mock_reader_writer
     reader.read.side_effect = asyncio.TimeoutError()
 
@@ -282,7 +348,7 @@ def test_command_with_message_timeout_exception(
 def test_command_without_message_connection_exception(mock_reader_writer, raises):
     reader, _ = mock_reader_writer
     reader.read.side_effect = raises
-    
+
     runner = CliRunner()
     result = runner.invoke(app, ["ping"])
 
@@ -312,7 +378,7 @@ def test_command_with_message_connection_exception(
 ):
     reader, _ = mock_reader_writer
     reader.read.side_effect = raises
-    
+
     runner = CliRunner()
     result = runner.invoke(app, args + [str(gtube)])
 
@@ -334,17 +400,38 @@ def test_ping_server_ssl_ca(fake_tcp_ssl_server, response_pong, ca_cert_path):
     resp, host, port = fake_tcp_ssl_server
     resp.response = response_pong
     runner = CliRunner()
-    result = runner.invoke(app, ["ping", "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path])
+    result = runner.invoke(
+        app,
+        ["ping", "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path],
+    )
 
     assert PING_SUCCESS == result.exit_code
     assert "PONG\n" == result.stdout
 
 
-def test_ping_server_ssl_client(fake_tcp_ssl_server, response_pong, ca_cert_path, client_cert_path, client_key_path):
+def test_ping_server_ssl_client(
+    fake_tcp_ssl_server, response_pong, ca_cert_path, client_cert_path, client_key_path
+):
     resp, host, port = fake_tcp_ssl_server
     resp.response = response_pong
     runner = CliRunner()
-    result = runner.invoke(app, ["ping", "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path, "--client-cert", client_cert_path, "--client-key", client_key_path])
+    result = runner.invoke(
+        app,
+        [
+            "ping",
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+            "--client-cert",
+            client_cert_path,
+            "--client-key",
+            client_key_path,
+        ],
+    )
 
     assert PING_SUCCESS == result.exit_code
     assert "PONG\n" == result.stdout
@@ -370,21 +457,60 @@ def test_check_ham(fake_tcp_server, response_not_spam, gtube):
     assert "0.0/1.0\n" == result.stdout
 
 
-def test_check_server_ssl_ca(gtube, response_spam_header, fake_tcp_ssl_server, ca_cert_path):
+def test_check_server_ssl_ca(
+    gtube, response_spam_header, fake_tcp_ssl_server, ca_cert_path
+):
     resp, host, port = fake_tcp_ssl_server
     resp.response = response_spam_header
     runner = CliRunner()
-    result = runner.invoke(app, ["check", str(gtube), "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path])
+    result = runner.invoke(
+        app,
+        [
+            "check",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+        ],
+    )
 
     assert IS_SPAM == result.exit_code
     assert "1000.0/1.0\n" == result.stdout
 
 
-def test_check_server_ssl_client(gtube, response_spam_header, fake_tcp_ssl_client, ca_cert_path, client_cert_path, client_key_path):
+def test_check_server_ssl_client(
+    gtube,
+    response_spam_header,
+    fake_tcp_ssl_client,
+    ca_cert_path,
+    client_cert_path,
+    client_key_path,
+):
     resp, host, port = fake_tcp_ssl_client
     resp.response = response_spam_header
     runner = CliRunner()
-    result = runner.invoke(app, ["check", str(gtube), "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path, "--client-cert", client_cert_path, "--client-key", client_key_path])
+    result = runner.invoke(
+        app,
+        [
+            "check",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+            "--client-cert",
+            client_cert_path,
+            "--client-key",
+            client_key_path,
+        ],
+    )
 
     assert IS_SPAM == result.exit_code
     assert "1000.0/1.0\n" == result.stdout
@@ -434,17 +560,56 @@ def test_learn_ssl_ca(fake_tcp_ssl_server, response_learned, gtube, ca_cert_path
     resp, host, port = fake_tcp_ssl_server
     resp.response = response_learned
     runner = CliRunner()
-    result = runner.invoke(app, ["learn", str(gtube), "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path])
+    result = runner.invoke(
+        app,
+        [
+            "learn",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+        ],
+    )
 
     assert SUCCESS == result.exit_code
     assert "Message successfully learned\n" == result.stdout
 
 
-def test_learn_ssl_client(fake_tcp_ssl_client, response_learned, gtube, ca_cert_path, client_cert_path, client_key_path):
+def test_learn_ssl_client(
+    fake_tcp_ssl_client,
+    response_learned,
+    gtube,
+    ca_cert_path,
+    client_cert_path,
+    client_key_path,
+):
     resp, host, port = fake_tcp_ssl_client
     resp.response = response_learned
     runner = CliRunner()
-    result = runner.invoke(app, ["learn", str(gtube), "--host", host, "--port", port, "--ssl", "--ca-cert", ca_cert_path, "--client-cert", client_cert_path, "--client-key", client_key_path, "--timeout", 30000])
+    result = runner.invoke(
+        app,
+        [
+            "learn",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+            "--client-cert",
+            client_cert_path,
+            "--client-key",
+            client_key_path,
+            "--timeout",
+            30000,
+        ],
+    )
 
     assert SUCCESS == result.exit_code
     assert "Message successfully learned\n" == result.stdout
@@ -455,6 +620,65 @@ def test_forget_success(fake_tcp_server, response_forgotten, gtube):
     runner = CliRunner()
     resp.response = response_forgotten
     result = runner.invoke(app, ["forget", str(gtube), "--host", host, "--port", port])
+
+    assert SUCCESS == result.exit_code
+    assert "Message successfully forgotten\n" == result.stdout
+
+
+def test_forget_ssl_ca(fake_tcp_ssl_server, response_forgotten, gtube, ca_cert_path):
+    resp, host, port = fake_tcp_ssl_server
+    resp.response = response_forgotten
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "forget",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+        ],
+    )
+
+    assert SUCCESS == result.exit_code
+    assert "Message successfully forgotten\n" == result.stdout
+
+
+def test_forget_ssl_client(
+    fake_tcp_ssl_client,
+    response_forgotten,
+    gtube,
+    ca_cert_path,
+    client_cert_path,
+    client_key_path,
+):
+    resp, host, port = fake_tcp_ssl_client
+    resp.response = response_forgotten
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "forget",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+            "--client-cert",
+            client_cert_path,
+            "--client-key",
+            client_key_path,
+            "--timeout",
+            30000,
+        ],
+    )
 
     assert SUCCESS == result.exit_code
     assert "Message successfully forgotten\n" == result.stdout
@@ -490,6 +714,65 @@ def test_report_failed(fake_tcp_server, response_tell, gtube):
     assert "Unable to report message\n" == result.stdout
 
 
+def test_report_ssl_ca(fake_tcp_ssl_server, response_reported, gtube, ca_cert_path):
+    resp, host, port = fake_tcp_ssl_server
+    resp.response = response_reported
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "report",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+        ],
+    )
+
+    assert SUCCESS == result.exit_code
+    assert "Message successfully reported\n" == result.stdout
+
+
+def test_report_ssl_client(
+    fake_tcp_ssl_client,
+    response_reported,
+    gtube,
+    ca_cert_path,
+    client_cert_path,
+    client_key_path,
+):
+    resp, host, port = fake_tcp_ssl_client
+    resp.response = response_reported
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "report",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+            "--client-cert",
+            client_cert_path,
+            "--client-key",
+            client_key_path,
+            "--timeout",
+            30000,
+        ],
+    )
+
+    assert SUCCESS == result.exit_code
+    assert "Message successfully reported\n" == result.stdout
+
+
 def test_revoke_success(fake_tcp_server, response_revoked, gtube):
     resp, host, port = fake_tcp_server
     runner = CliRunner()
@@ -508,6 +791,65 @@ def test_revoke_failed(fake_tcp_server, response_tell, gtube):
 
     assert REVOKE_FAILED == result.exit_code
     assert "Unable to revoke message\n" == result.stdout
+
+
+def test_revoke_ssl_ca(fake_tcp_ssl_server, response_revoked, gtube, ca_cert_path):
+    resp, host, port = fake_tcp_ssl_server
+    resp.response = response_revoked
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "revoke",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+        ],
+    )
+
+    assert SUCCESS == result.exit_code
+    assert "Message successfully revoked\n" == result.stdout
+
+
+def test_revoke_ssl_client(
+    fake_tcp_ssl_client,
+    response_revoked,
+    gtube,
+    ca_cert_path,
+    client_cert_path,
+    client_key_path,
+):
+    resp, host, port = fake_tcp_ssl_client
+    resp.response = response_revoked
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "revoke",
+            str(gtube),
+            "--host",
+            host,
+            "--port",
+            port,
+            "--ssl",
+            "--ca-cert",
+            ca_cert_path,
+            "--client-cert",
+            client_cert_path,
+            "--client-key",
+            client_key_path,
+            "--timeout",
+            30000,
+        ],
+    )
+
+    assert SUCCESS == result.exit_code
+    assert "Message successfully revoked\n" == result.stdout
 
 
 def test_version():
