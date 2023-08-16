@@ -1,5 +1,6 @@
-from pathlib import Path
 import ssl
+from pathlib import Path
+
 import pytest
 
 from aiospamc.client import Client

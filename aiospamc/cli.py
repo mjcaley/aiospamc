@@ -114,7 +114,10 @@ class CliClientBuilder:
         return self
 
     def add_client_cert(
-        self, cert: Optional[Path], key: Optional[Path] = None, password: Optional[str] = None
+        self,
+        cert: Optional[Path],
+        key: Optional[Path] = None,
+        password: Optional[str] = None,
     ) -> "CliClientBuilder":
         if cert is None:
             return self

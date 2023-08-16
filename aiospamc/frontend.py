@@ -85,7 +85,9 @@ class FrontendClientBuilder:
             client, key = cast(Tuple[Path, Optional[Path]], cert)
             self._ssl_builder.add_client(client, key)
         elif isinstance(cert, tuple) and len(cert) == 3:
-            client, key, password = cast(Tuple[Path, Optional[Path], Optional[Path]], cert)
+            client, key, password = cast(
+                Tuple[Path, Optional[Path], Optional[Path]], cert
+            )
             self._ssl_builder.add_client(client, key, password)
         else:
             raise TypeError("Unexepected value")
