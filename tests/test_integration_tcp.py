@@ -4,61 +4,61 @@ import aiospamc
 
 
 @pytest.mark.integration
-async def test_check(spamd, hostname, tcp_port, spam):
-    result = await aiospamc.check(spam, host=hostname, port=tcp_port)
+async def test_check(spamd_tcp, spam):
+    result = await aiospamc.check(spam, host=spamd_tcp[0], port=spamd_tcp[1])
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_headers(spamd, hostname, tcp_port, spam):
-    result = await aiospamc.headers(spam, host=hostname, port=tcp_port)
+async def test_headers(spamd_tcp, spam):
+    result = await aiospamc.headers(spam, host=spamd_tcp[0], port=spamd_tcp[1])
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_ping(spamd, hostname, tcp_port):
-    result = await aiospamc.ping(host=hostname, port=tcp_port)
+async def test_ping(spamd_tcp):
+    result = await aiospamc.ping(host=spamd_tcp[0], port=spamd_tcp[1])
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_process(spamd, hostname, tcp_port, spam):
-    result = await aiospamc.process(spam, host=hostname, port=tcp_port)
+async def test_process(spamd_tcp, spam):
+    result = await aiospamc.process(spam, host=spamd_tcp[0], port=spamd_tcp[1])
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_report(spamd, hostname, tcp_port, spam):
-    result = await aiospamc.report(spam, host=hostname, port=tcp_port)
+async def test_report(spamd_tcp, spam):
+    result = await aiospamc.report(spam, host=spamd_tcp[0], port=spamd_tcp[1])
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_report_if_spam(spamd, hostname, tcp_port, spam):
-    result = await aiospamc.report_if_spam(spam, host=hostname, port=tcp_port)
+async def test_report_if_spam(spamd_tcp, spam):
+    result = await aiospamc.report_if_spam(spam, host=spamd_tcp[0], port=spamd_tcp[1])
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_symbols(spamd, hostname, tcp_port, spam):
-    result = await aiospamc.symbols(spam, host=hostname, port=tcp_port)
+async def test_symbols(spamd_tcp, spam):
+    result = await aiospamc.symbols(spam, host=spamd_tcp[0], port=spamd_tcp[1])
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_tell(spamd, hostname, tcp_port, spam):
+async def test_tell(spamd_tcp, spam):
     result = await aiospamc.tell(
         message=spam,
         message_class="spam",
-        host=hostname,
-        port=tcp_port,
+        host=spamd_tcp[0],
+        port=spamd_tcp[1],
     )
 
     assert 0 == result.status_code
