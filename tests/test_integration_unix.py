@@ -4,8 +4,9 @@ import pytest
 
 import aiospamc
 
-
-pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets not supported on Windows")
+pytestmark = pytest.mark.skipif(
+    sys.platform == "win32", reason="Unix sockets not supported on Windows"
+)
 
 
 @pytest.mark.integration
