@@ -5,26 +5,17 @@ from pathlib import Path
 
 import certifi
 import pytest
+from pytest_mock import MockerFixture
 
 from aiospamc.connections import (
     ConnectionManager,
+    ConnectionManagerBuilder,
+    SSLContextBuilder,
     TcpConnectionManager,
     Timeout,
     UnixConnectionManager,
-    new_connection_manager,
-    new_ssl_context,
 )
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
-
-
-@pytest.fixture
-def mock_open_connection(mocker):
-    reader, writer = mocker.AsyncMock(), mocker.AsyncMock()
-    mocker.patch(
-        "asyncio.open_connection", mocker.AsyncMock(return_value=(reader, writer))
-    )
-
-    yield reader, writer
 
 
 @pytest.fixture
@@ -119,7 +110,7 @@ async def test_connection_manager_timeout_total(mocker):
     c = ConnectionManager("connection", timeout=Timeout(total=0))
     c.open = mocker.AsyncMock(side_effect=sleep)
 
-    with pytest.raises(ClientTimeoutException):
+    with pytest.raises(asyncio.TimeoutError):
         await c.request(b"data")
 
 
@@ -171,12 +162,12 @@ def test_tcp_connection_manager_init(mocker, hostname, tcp_port):
     assert mock_ssl_context is t.ssl_context
 
 
-async def test_tcp_connection_manager_open(mock_open_connection, hostname, tcp_port):
+async def test_tcp_connection_manager_open(mock_reader_writer, hostname, tcp_port):
     t = TcpConnectionManager(hostname, tcp_port)
     reader, writer = await t.open()
 
-    assert mock_open_connection[0] is reader
-    assert mock_open_connection[1] is writer
+    assert mock_reader_writer[0] is reader
+    assert mock_reader_writer[1] is writer
 
 
 async def test_tcp_connection_manager_open_refused(
@@ -229,74 +220,125 @@ def test_unix_connection_manager_connection_string(unix_socket):
     assert unix_socket == u.connection_string
 
 
-def test_ssl_context_from_none():
-    result = new_ssl_context(None)
-
-    assert result is None
-
-
-def test_ssl_context_from_true(mocker):
-    s = mocker.spy(ssl, "create_default_context")
-    new_ssl_context(True)
-
-    assert s.call_args.kwargs["cafile"] == certifi.where()
-
-
-def test_ssl_context_from_false(mocker):
-    mocker.spy(ssl, "create_default_context")
-    s = new_ssl_context(False)
-
-    assert ssl.create_default_context.call_args.kwargs["cafile"] == certifi.where()
-    assert s.check_hostname is False
-    assert s.verify_mode == ssl.CERT_NONE
-
-
-def test_ssl_context_from_dir(mocker, tmp_path):
-    mocker.spy(ssl, "create_default_context")
-    temp = Path(str(tmp_path))
-    s = new_ssl_context(temp)
-
-    assert ssl.create_default_context.call_args.kwargs["capath"] == str(temp)
-
-
-def test_ssl_context_from_file(mocker, certificate_authority):
-    mocker.spy(ssl, "create_default_context")
-    # file = tmp_path / "certs.pem"
-    # with open(str(file), "wb") as dest:
-    #     with open(certifi.where(), "rb") as source:
-    #         dest.writelines(source.readlines())
-    s = new_ssl_context(certificate_authority)
-
-    assert ssl.create_default_context.call_args.kwargs["cafile"] == str(
-        certificate_authority
+def test_connection_manager_builder_builds_unix(unix_socket):
+    timeout = Timeout()
+    b = (
+        ConnectionManagerBuilder()
+        .with_unix_socket(unix_socket)
+        .set_timeout(timeout)
+        .build()
     )
 
+    assert isinstance(b, UnixConnectionManager)
+    assert unix_socket == b.path
+    assert timeout == b.timeout
 
-def test_ssl_context_file_not_found(tmp_path):
-    file = tmp_path / "nonexistent.pem"
 
+def test_connection_manager_builder_builds_tcp(hostname, tcp_port):
+    timeout = Timeout()
+    b = (
+        ConnectionManagerBuilder()
+        .with_tcp(hostname, tcp_port)
+        .set_timeout(timeout)
+        .build()
+    )
+
+    assert isinstance(b, TcpConnectionManager)
+    assert hostname == b.host
+    assert tcp_port == b.port
+    assert timeout == b.timeout
+    assert None is b.ssl_context
+
+
+def test_connection_manager_builder_builds_tcp_with_ssl(hostname, tcp_port, mocker):
+    ssl_context = mocker.Mock()
+    b = (
+        ConnectionManagerBuilder()
+        .with_tcp(hostname, tcp_port)
+        .add_ssl_context(ssl_context)
+        .build()
+    )
+
+    assert isinstance(b, TcpConnectionManager)
+    assert ssl_context == b.ssl_context
+
+
+def test_ssl_context_builder_default(mocker: MockerFixture):
+    default_spy = mocker.spy(ssl, "create_default_context")
+    s = SSLContextBuilder().build()
+
+    assert isinstance(s, ssl.SSLContext)
+    assert True is default_spy.called
+
+
+def test_ssl_context_builder_existing_context():
+    context = ssl.create_default_context()
+    s = SSLContextBuilder().with_context(context).build()
+
+    assert context is s
+
+
+def test_ssl_context_builder_dont_verify():
+    s = SSLContextBuilder().dont_verify().build()
+
+    assert False is s.check_hostname
+    assert ssl.CERT_NONE is s.verify_mode
+
+
+def test_ssl_context_builder_add_certifi(mocker: MockerFixture):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_default_ca().build()
+
+    assert {"cafile": certifi.where()} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_cafile(mocker: MockerFixture, server_cert_path):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_ca_file(server_cert_path).build()
+
+    assert {"cafile": server_cert_path} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_cadir(mocker: MockerFixture, server_cert_path):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_ca_dir(server_cert_path.parent).build()
+
+    assert {"capath": server_cert_path.parent} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_ca_path_of_file(
+    mocker: MockerFixture, server_cert_path
+):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_ca(server_cert_path).build()
+
+    assert {"cafile": server_cert_path} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_ca_path_of_dir(
+    mocker: MockerFixture, server_cert_path
+):
+    s = SSLContextBuilder()
+    certs_spy = mocker.spy(s._context, "load_verify_locations")
+    s.add_ca(server_cert_path.parent).build()
+
+    assert {"capath": server_cert_path.parent} == certs_spy.call_args.kwargs
+
+
+def test_ssl_context_builder_add_ca_path_not_found():
     with pytest.raises(FileNotFoundError):
-        new_ssl_context(str(file))
+        SSLContextBuilder().add_ca(Path("fake")).build()
 
 
-def test_new_connection_returns_unix_manager(unix_socket):
-    result = new_connection_manager(socket_path=unix_socket)
+def test_ssl_context_builder_add_client_cert(
+    mocker: MockerFixture, client_cert_path, client_key_path
+):
+    builder = SSLContextBuilder()
+    certs_spy = mocker.spy(builder._context, "load_cert_chain")
+    s = builder.add_client(client_cert_path, client_key_path, "password").build()
 
-    assert isinstance(result, UnixConnectionManager)
-
-
-def test_new_connection_returns_tcp_manager(hostname, tcp_port):
-    result = new_connection_manager(host=hostname, port=tcp_port)
-
-    assert isinstance(result, TcpConnectionManager)
-
-
-def test_new_connection_returns_tcp_manager_with_ssl(mocker, hostname, tcp_port):
-    result = new_connection_manager(host=hostname, port=tcp_port, context=mocker.Mock())
-
-    assert isinstance(result, TcpConnectionManager)
-
-
-def test_new_connection_raises_on_missing_parameters():
-    with pytest.raises(ValueError):
-        new_connection_manager()
+    assert (client_cert_path, client_key_path, "password") == certs_spy.call_args.args

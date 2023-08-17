@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import ssl
+from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union
 
 import certifi
 import loguru
@@ -30,7 +31,7 @@ class Timeout:
         :param response: The length of time in seconds to allow for a response from the server before timing out.
         """
 
-        self.total = total
+        self.total = float(total)
         self.connection = connection
         self.response = response
 
@@ -42,6 +43,99 @@ class Timeout:
             f"response={self.response}"
             ")"
         )
+
+
+class ConnectionManagerBuilder:
+    """Builder for connection managers."""
+
+    class ManagerType(Enum):
+        """Define connection manager type during build."""
+
+        Undefined = auto()
+        Tcp = auto()
+        Unix = auto()
+
+    def __init__(self):
+        """ConnectionManagerBuilder constructor."""
+
+        self._manager_type = self.ManagerType.Undefined
+        self._tcp_builder = TcpConnectionManagerBuilder()
+        self._unix_builder = UnixConnectionManagerBuilder()
+        self._ssl_builder = SSLContextBuilder()
+        self._ssl = False
+        self._timeout = None
+
+    def build(self) -> Union[UnixConnectionManager, TcpConnectionManager]:
+        """Builds the `ConnectionManager`.
+
+        :return: An instance of :class:`aiospamc.connections.TcpConnectionManager`
+        or :class:`aiospamc.connections.UnixConnectionManager`
+        """
+
+        if self._manager_type is self.ManagerType.Undefined:
+            raise ValueError(
+                "Connection type is undefined, builder must be called with 'with_unix_socket' or 'with_tcp'"
+            )
+        elif self._manager_type is self.ManagerType.Tcp:
+            ssl_context = None if not self._ssl else self._ssl_builder.build()
+            self._tcp_builder.set_ssl_context(ssl_context)
+            return self._tcp_builder.set_timeout(self._timeout).build()
+        else:
+            return self._unix_builder.set_timeout(self._timeout).build()
+
+    def with_unix_socket(self, path: Path) -> ConnectionManagerBuilder:
+        """Configures the builder to use a Unix socket connection.
+
+        :param path: Path to the Unix socket.
+
+        :return: This builder instance.
+        """
+
+        self._manager_type = self.ManagerType.Unix
+        self._unix_builder.set_path(path)
+        self._tcp_host = self._tcp_port = None
+
+        return self
+
+    def with_tcp(self, host: str, port: int = 783) -> ConnectionManagerBuilder:
+        """Configures the builder to use a TCP connection.
+
+        :param host: Hostname to use.
+        :param port: Port to use.
+
+        :return: This builder instance.
+        """
+
+        self._manager_type = self.ManagerType.Tcp
+        self._tcp_builder.set_host(host).set_port(port)
+        self._unix_path = None
+
+        return self
+
+    def add_ssl_context(self, context: ssl.SSLContext) -> ConnectionManagerBuilder:
+        """Adds an SSL context when a TCP connection is being used.
+
+        :param context: `ssl.SSLContext` instance.
+
+        :return: This builder instance.
+        """
+
+        self._ssl_builder.with_context(context)
+        self._ssl = True
+
+        return self
+
+    def set_timeout(self, timeout: Timeout) -> ConnectionManagerBuilder:
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
+        self._timeout = timeout
+
+        return self
 
 
 class ConnectionManager:
@@ -79,9 +173,9 @@ class ConnectionManager:
 
         try:
             response = await asyncio.wait_for(self._send(data), self.timeout.total)
-        except asyncio.TimeoutError as error:
+        except asyncio.TimeoutError:
             self.logger.exception("Total timeout reached")
-            raise ClientTimeoutException from error
+            raise
 
         return response
 
@@ -155,6 +249,67 @@ class ConnectionManager:
         return self._connection_string
 
 
+class TcpConnectionManagerBuilder:
+    """Builder for :class:`aiospamc.connections.TcpConnectionManager`"""
+
+    def __init__(self):
+        """`TcpConnectionManagerBuilder` constructor."""
+
+        self._args = {}
+
+    def build(self) -> TcpConnectionManager:
+        """Builds the `TcpConnectionManager`.
+
+        :return: An instance of :class:`aiospamc.connections.TcpConnectionManager`.
+        """
+
+        return TcpConnectionManager(**self._args)
+
+    def set_host(self, host: str) -> TcpConnectionManagerBuilder:
+        """Sets the host to use.
+
+        :param host: Hostname to use.
+
+        :return: This builder instance.
+        """
+
+        self._args["host"] = host
+        return self
+
+    def set_port(self, port: int) -> TcpConnectionManagerBuilder:
+        """Sets the port to use.
+
+        :param port: Port to use.
+
+        :return: This builder instance.
+        """
+
+        self._args["port"] = port
+        return self
+
+    def set_ssl_context(self, context: ssl.SSLContext) -> TcpConnectionManagerBuilder:
+        """Set an SSL context.
+
+        :param context: An instance of `ssl.SSLContext`.
+
+        :return: This builder instance.
+        """
+
+        self._args["ssl_context"] = context
+        return self
+
+    def set_timeout(self, timeout: Timeout) -> TcpConnectionManagerBuilder:
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
+        self._args["timeout"] = timeout
+        return self
+
+
 class TcpConnectionManager(ConnectionManager):
     """Connection manager for TCP connections."""
 
@@ -197,17 +352,56 @@ class TcpConnectionManager(ConnectionManager):
         return reader, writer
 
 
+class UnixConnectionManagerBuilder:
+    """Builder for `UnixConnectionManager`."""
+
+    def __init__(self):
+        """`UnixConnectionManagerBuilder` constructor."""
+
+        self._args = {}
+
+    def build(self) -> UnixConnectionManager:
+        """Builds a `UnixConnectionManager`.
+
+        :return: An instance of :class:`aiospamc.connections.UnixConnectionManager`.
+        """
+
+        return UnixConnectionManager(**self._args)
+
+    def set_path(self, path: Path) -> UnixConnectionManagerBuilder:
+        """Sets the unix socket path.
+
+        :param path: Path to the Unix socket.
+
+        :return: This builder instance.
+        """
+
+        self._args["path"] = path
+        return self
+
+    def set_timeout(self, timeout: Timeout) -> UnixConnectionManagerBuilder:
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
+        self._args["timeout"] = timeout
+        return self
+
+
 class UnixConnectionManager(ConnectionManager):
     """Connection manager for Unix pipes."""
 
-    def __init__(self, path: str, timeout: Optional[Timeout] = None):
+    def __init__(self, path: Path, timeout: Optional[Timeout] = None):
         """UnixConnectionManager constructor.
 
         :param path: Unix socket path.
         :param timeout: Timeout configuration
         """
 
-        super().__init__(path, timeout)
+        super().__init__(str(path), timeout)
         self.path = path
 
     async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
@@ -227,52 +421,101 @@ class UnixConnectionManager(ConnectionManager):
         return reader, writer
 
 
-def new_ssl_context(verify: Optional[Any]) -> Optional[ssl.SSLContext]:
-    """Creates an SSL context based on the supplied parameter.
+class SSLContextBuilder:
+    """SSL context builder."""
 
-    :param verify: Use SSL for the connection.  If True, will use root certificates.
-        If False, will not verify the certificate.  If a string to a path or a Path
-        object, the connection will use the certificates found there.
-    """
+    def __init__(self):
+        """Builder contstructor. Sets up a default SSL context."""
 
-    if verify is None:
-        return None
-    elif verify is True:
-        return ssl.create_default_context(cafile=certifi.where())
-    elif verify is False:
-        context = ssl.create_default_context(cafile=certifi.where())
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
-        return context
-    else:
-        cert_path = Path(verify).absolute()
-        if cert_path.is_dir():
-            return ssl.create_default_context(capath=str(cert_path))
-        elif cert_path.is_file():
-            return ssl.create_default_context(cafile=str(cert_path))
+        self._context = ssl.create_default_context()
+
+    def build(self) -> ssl.SSLContext:
+        """Builds the SSL context.
+
+        :return: An instance of `ssl.SSLContext`.
+        """
+
+        return self._context
+
+    def with_context(self, context: ssl.SSLContext) -> SSLContextBuilder:
+        """Use the SSL context.
+
+        :param context: Provided SSL context.
+
+        :return: The builder instance.
+        """
+
+        self._context = context
+
+        return self
+
+    def add_ca_file(self, file: Path) -> SSLContextBuilder:
+        """Add certificate authority from a file.
+
+        :param file: File of concatenated certificates.
+
+        :return: The builder instance.
+        """
+
+        self._context.load_verify_locations(cafile=file)
+
+        return self
+
+    def add_ca_dir(self, dir: Path) -> SSLContextBuilder:
+        """Add certificate authority from a directory.
+
+        :param dir: Directory of certificates.
+
+        :return: The builder instance.
+        """
+
+        self._context.load_verify_locations(capath=dir)
+
+        return self
+
+    def add_ca(self, path: Path) -> SSLContextBuilder:
+        """Add a certificate authority.
+
+        :param path: Directory or file of certificates.
+
+        :return: The builder instance.
+        """
+
+        if path.is_dir():
+            return self.add_ca_dir(path)
+        elif path.is_file():
+            return self.add_ca_file(path)
         else:
-            raise FileNotFoundError(f"Certificate path does not exist at {verify}")
+            raise FileNotFoundError(path)
 
+    def add_default_ca(self) -> SSLContextBuilder:
+        """Add default certificate authorities.
 
-def new_connection_manager(
-    host: Optional[str] = None,
-    port: Optional[int] = None,
-    socket_path: Optional[str] = None,
-    timeout: Optional[Timeout] = None,
-    context: Optional[ssl.SSLContext] = None,
-) -> ConnectionManager:
-    """Create a new connection manager.
+        :return: The builder instance.
+        """
 
-    :param host: TCP hostname.
-    :param port: TCP port number.
-    :param socket_path: Unix socket path.
-    :param timeout: Timeout configuration.
-    :param context: SSL context configuration.
-    """
+        self._context.load_verify_locations(cafile=certifi.where())
 
-    if socket_path:
-        return UnixConnectionManager(socket_path, timeout=timeout)
-    elif host and port:
-        return TcpConnectionManager(host, port, context, timeout)
-    else:
-        raise ValueError('Either "host" and "port" or "socket_path" must be specified.')
+        return self
+
+    def add_client(
+        self, file: Path, key: Optional[Path] = None, password: Optional[str] = None
+    ) -> SSLContextBuilder:
+        """Add client certificate.
+
+        :param file: Path to the client certificate.
+        :param key: Path to the key.
+        :param password: Password of the key.
+        """
+
+        self._context.load_cert_chain(file, key, password)
+
+        return self
+
+    def dont_verify(self) -> SSLContextBuilder:
+        """Set the context to not verify certificates."""
+
+        self._context.check_hostname = False
+        self._context.verify_mode = ssl.CERT_NONE
+
+        return self

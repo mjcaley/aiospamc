@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Adding support for using client certificates. :github:issue:`404`
+fixes:
+  - |
+    CLI `--ssl` option type changed from optional boolean to boolean. :github:issue:`394`

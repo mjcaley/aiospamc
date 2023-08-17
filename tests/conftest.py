@@ -1,15 +1,19 @@
+import asyncio
 import datetime
+import ssl
 import sys
+from asyncio import StreamReader, StreamWriter
+from dataclasses import dataclass, field
 from pathlib import Path
 from shutil import which
 from socket import gethostbyname
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
+from typing import Any, Optional
 
 import pytest
 import trustme
 from pytest_mock import MockerFixture
 
-from aiospamc.client import Client
 from aiospamc.header_values import ContentLengthValue
 from aiospamc.requests import Request
 
@@ -283,82 +287,161 @@ def unix_socket(tmp_path_factory):
     return str(tmp_path_factory.mktemp("sockets") / "spamd.sock")
 
 
-@pytest.fixture
-def mock_client(mocker: MockerFixture, response_ok):
-    connection_factory = mocker.Mock()
-    connection_factory.return_value.request = mocker.AsyncMock(return_value=response_ok)
+@pytest.fixture(scope="session")
+def ca():
+    yield trustme.CA()
 
-    mock_connection_factory = mocker.patch.object(
-        Client, "default_connection_factory", connection_factory
+
+@pytest.fixture(scope="session")
+def server_cert(ca, hostname, ip_address):
+    yield ca.issue_cert(hostname, ip_address)
+
+
+@pytest.fixture(scope="session")
+def ca_cert_path(ca, tmp_path_factory: pytest.TempdirFactory):
+    tmp_path = tmp_path_factory.mktemp("ca_certs")
+    cert_file = tmp_path / "ca_cert.pem"
+    ca.cert_pem.write_to_path(cert_file)
+
+    yield cert_file
+
+
+@pytest.fixture(scope="session")
+def server_cert_and_key(server_cert, tmp_path_factory: pytest.TempdirFactory):
+    tmp_path = tmp_path_factory.mktemp("server_certs")
+    cert_file = tmp_path / "server.cert"
+    key_file = tmp_path / "server.key"
+
+    cert_file.write_bytes(
+        b"".join([blob.bytes() for blob in server_cert.cert_chain_pems])
     )
+    server_cert.private_key_pem.write_to_path(key_file)
 
-    return mock_connection_factory
+    yield cert_file, key_file
 
 
-@pytest.fixture
-def mock_client_response(mock_client):
-    def inner(response):
-        mock_client.return_value.request.return_value = response
-        return mock_client
+@pytest.fixture(scope="session")
+def client_cert_and_key(
+    ca, hostname, ip_address, tmp_path_factory: pytest.TempdirFactory
+):
+    tmp_path = tmp_path_factory.mktemp("client_certs")
+    cert_file = tmp_path / "client.cert"
+    key_file = tmp_path / "client.key"
+    cert_key_file = tmp_path / "client_cert_key.pem"
+
+    cert: trustme.LeafCert = ca.issue_cert(hostname, ip_address)
+
+    cert.private_key_and_cert_chain_pem.write_to_path(cert_key_file)
+    cert_file.write_bytes(b"".join([blob.bytes() for blob in cert.cert_chain_pems]))
+    cert.private_key_pem.write_to_path(key_file)
+
+    yield cert_file, key_file, cert_key_file
+
+
+@pytest.fixture(scope="session")
+def server_cert_path(server_cert_and_key):
+    yield server_cert_and_key[0]
+
+
+@pytest.fixture(scope="session")
+def server_key_path(server_cert_and_key):
+    yield server_cert_and_key[1]
+
+
+@pytest.fixture(scope="session")
+def client_cert_and_key_path(client_cert_and_key):
+    yield client_cert_and_key[2]
+
+
+@pytest.fixture(scope="session")
+def client_cert_path(client_cert_and_key):
+    yield client_cert_and_key[0]
+
+
+@pytest.fixture(scope="session")
+def client_key_path(client_cert_and_key):
+    yield client_cert_and_key[1]
+
+
+@dataclass
+class ServerResponse:
+    response: bytes = b""
+
+
+def fake_server(resp: ServerResponse):
+    buffer_size = 1024
+
+    async def inner(reader: StreamReader, writer: StreamWriter):
+        data = b""
+        while len(chunk := await reader.read(buffer_size)) == buffer_size:
+            data += chunk
+        writer.write(resp.response)
+        if writer.can_write_eof():
+            writer.write_eof()
+        await writer.drain()
+        writer.close()
+        await writer.wait_closed()
 
     return inner
 
 
 @pytest.fixture
-def mock_client_raises(mock_client):
-    def inner(side_effect):
-        mock_client.return_value.request.side_effect = side_effect
-        return mock_client
+async def fake_tcp_server(unused_tcp_port, response_ok):
+    response = ServerResponse(response_ok)
+    server = await asyncio.start_server(
+        fake_server(response), "localhost", unused_tcp_port
+    )
+    yield response, "localhost", unused_tcp_port
+    server.close()
 
-    return inner
+
+@pytest.fixture
+async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
+    response = ServerResponse(response_ok)
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    server_cert.configure_cert(context)
+    server = await asyncio.start_server(
+        fake_server(response), "localhost", unused_tcp_port, ssl=context
+    )
+    yield response, "localhost", unused_tcp_port
+    server.close()
+
+
+@pytest.fixture
+async def fake_tcp_ssl_client(unused_tcp_port, response_ok, ca, server_cert):
+    response = ServerResponse(response_ok)
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    context.verify_mode = ssl.CERT_REQUIRED
+    server_cert.configure_cert(context)
+    ca.configure_trust(context)
+    server = await asyncio.start_server(
+        fake_server(response), "localhost", unused_tcp_port, ssl=context
+    )
+    yield response, "localhost", unused_tcp_port
+    server.close()
+
+
+@pytest.fixture
+def mock_reader_writer(mocker: MockerFixture):
+    mock_reader = mocker.MagicMock()
+    mock_reader.read = mocker.AsyncMock()
+    mock_writer = mocker.MagicMock()
+    mock_writer.drain = mocker.AsyncMock()
+    mock_writer.write = mocker.MagicMock()
+
+    mocker.patch("asyncio.open_connection", return_value=(mock_reader, mock_writer))
+    if sys.platform != "win32":
+        mocker.patch(
+            "asyncio.open_unix_connection", return_value=(mock_reader, mock_writer)
+        )
+
+    yield mock_reader, mock_writer
 
 
 # Integration fixtures
 
 
-@pytest.fixture(scope="session")
-def create_certificate(tmp_path_factory, hostname, ip_address):
-    certs_tmp_path = tmp_path_factory.mktemp("localhost_certs")
-    ca_path = certs_tmp_path / "ca.pem"
-    cert_path = certs_tmp_path / "cert.pem"
-
-    ca = trustme.CA()
-    cert = ca.issue_cert(hostname, ip_address)
-
-    ca.cert_pem.write_to_path(ca_path)
-    cert.private_key_and_cert_chain_pem.write_to_path(cert_path)
-
-    yield ca_path, cert_path
-
-
-@pytest.fixture(scope="session")
-def certificate_authority(create_certificate):
-    yield create_certificate[0]
-
-
-@pytest.fixture(scope="session")
-def certificate(create_certificate):
-    yield create_certificate[1]
-
-
-@pytest.fixture(scope="session")
-def spamd(ip_address, tcp_port, ssl_port, unix_socket, certificate, request):
-    # Configure options
-    options = [
-        # f"--syslog={str(log_file)}",
-        "--local",
-        "--allow-tell",
-        f"--listen={ip_address}:{tcp_port}",
-        f"--listen=ssl:{ip_address}:{ssl_port}",
-        "--server-key",
-        f"{certificate}",
-        "--server-cert",
-        f"{certificate}",
-    ]
-    if sys.platform != "win32":
-        options += [f"--socketpath={unix_socket}"]
-
-    # Spawn spamd
+def spawn_spamd(options, timeout):
     spamd_exe = Path(which("spamd"))
     process = Popen(
         [spamd_exe, *options],
@@ -368,10 +451,7 @@ def spamd(ip_address, tcp_port, ssl_port, unix_socket, certificate, request):
         universal_newlines=True,
     )
 
-    # Check the log to see if spamd is running
-    timeout = datetime.datetime.utcnow() + datetime.timedelta(
-        seconds=request.config.getoption("--spamd-process-timeout")
-    )
+    timeout = datetime.datetime.utcnow() + datetime.timedelta(seconds=timeout)
 
     running = False
     spamd_start = "info: spamd: server started on"
@@ -387,12 +467,95 @@ def spamd(ip_address, tcp_port, ssl_port, unix_socket, certificate, request):
     if not running:
         raise ChildProcessError
 
-    yield
+    return process
 
-    # Stop spamd
+
+def shutdown_spamd(process):
     process.terminate()
     try:
         process.wait(timeout=5)
     except TimeoutExpired:
         process.kill()
         process.wait(timeout=5)
+
+
+@pytest.fixture(scope="session")
+def spamd_timeout(request):
+    yield request.config.getoption("--spamd-process-timeout")
+
+
+@pytest.fixture(scope="session")
+def spamd_common_options():
+    yield ["--local", "--allow-tell"]
+
+
+@pytest.fixture(scope="session")
+def spamd_tcp(spamd_common_options, unused_tcp_port_factory, spamd_timeout):
+    port = unused_tcp_port_factory()
+    process = spawn_spamd(
+        spamd_common_options + [f"--listen=localhost:{port}"], spamd_timeout
+    )
+    yield "localhost", port
+    shutdown_spamd(process)
+
+
+@pytest.fixture(scope="session")
+def spamd_ssl(
+    spamd_common_options,
+    unused_tcp_port_factory,
+    server_cert_path,
+    server_key_path,
+    spamd_timeout,
+):
+    port = unused_tcp_port_factory()
+    process = spawn_spamd(
+        spamd_common_options
+        + [
+            f"--listen=ssl:localhost:{port}",
+            "--server-cert",
+            f"{server_cert_path}",
+            "--server-key",
+            f"{server_key_path}",
+        ],
+        spamd_timeout,
+    )
+    yield "localhost", port
+    shutdown_spamd(process)
+
+
+@pytest.fixture(scope="session")
+def spamd_ssl_client(
+    spamd_common_options,
+    unused_tcp_port_factory,
+    server_cert_path,
+    server_key_path,
+    ca_cert_path,
+    spamd_timeout,
+):
+    port = unused_tcp_port_factory()
+    process = spawn_spamd(
+        spamd_common_options
+        + [
+            f"--listen=ssl:localhost:{port}",
+            "--server-cert",
+            f"{server_cert_path}",
+            "--server-key",
+            f"{server_key_path}",
+            "--ssl-ca-file",
+            f"{ca_cert_path}",
+            "--ssl-verify",
+        ],
+        spamd_timeout,
+    )
+    yield "localhost", port
+    shutdown_spamd(process)
+
+
+@pytest.fixture(scope="session")
+def spamd_unix(spamd_common_options, tmp_path_factory, spamd_timeout):
+    unix_socket = tmp_path_factory.mktemp("spamd") / "spamd.sock"
+    process = spawn_spamd(
+        spamd_common_options + [f"--socketpath={unix_socket}"], spamd_timeout
+    )
+    yield unix_socket
+    shutdown_spamd(process)

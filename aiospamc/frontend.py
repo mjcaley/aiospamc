@@ -1,21 +1,150 @@
 """Frontend functions for the package."""
 
-from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union
+from __future__ import annotations
+
+import ssl
+from pathlib import Path
+from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union, cast
 
 from loguru import logger
 
 from .client import Client
-from .connections import Timeout
-from .header_values import (
-    ActionOption,
-    CompressValue,
-    MessageClassOption,
-    MessageClassValue,
-    UserValue,
-)
+from .connections import ConnectionManagerBuilder, SSLContextBuilder, Timeout
+from .header_values import ActionOption, MessageClassOption, MessageClassValue
 from .incremental_parser import parse_set_remove_value
 from .requests import Request
 from .responses import Response
+
+
+class FrontendClientBuilder:
+    """Builds the :class:`aiospamc.client.Client` based off of frontend arguments."""
+
+    def __init__(self):
+        """Constructor for FrontendClientBuilder."""
+
+        self._connection_builder = ConnectionManagerBuilder()
+        self._ssl = False
+        self._ssl_builder = SSLContextBuilder()
+
+    def build(self) -> Client:
+        """Builds the `Client`.
+
+        :return: An instance of :class:`aiospamc.client.Client`.
+        """
+
+        if self._ssl:
+            self._connection_builder.add_ssl_context(self._ssl_builder.build())
+        connection_manager = self._connection_builder.build()
+
+        return Client(connection_manager)
+
+    def with_connection(
+        self,
+        host: str = "localhost",
+        port: int = 783,
+        socket_path: Optional[Path] = None,
+    ) -> FrontendClientBuilder:
+        """Sets the type of connection manager to use.
+
+        Defaults to TCP, but if a Unix socket is provided it will be used.
+
+        :param host: TCP hostname to use.
+        :param port: TCP port to use.
+        :param socket_path: Path to the Unix socket.
+
+        :return: This builder instance.
+        """
+
+        if socket_path:
+            self._connection_builder = self._connection_builder.with_unix_socket(
+                socket_path
+            )
+        else:
+            self._connection_builder = self._connection_builder.with_tcp(host, port)
+
+        return self
+
+    def add_verify(
+        self, verify: Union[bool, Path, ssl.SSLContext, None] = None
+    ) -> FrontendClientBuilder:
+        """Adds an SSL context to the connection manager.
+
+        :param verify: How to configure the SSL context. If `True`, add the default
+        certificate authorities. If `False`, accept any certificate. If a `Path`,
+        add the certificates from it. If an `ssl.SSLContext`, then use it.
+
+        :return: This builder instance.
+        """
+
+        if verify is None:
+            return self
+
+        self._ssl = True
+
+        if verify is True:
+            self._ssl_builder.add_default_ca()
+        elif verify is False:
+            self._ssl_builder.add_default_ca().dont_verify()
+        elif isinstance(verify, ssl.SSLContext):
+            self._ssl_builder.with_context(verify)
+        else:
+            self._ssl_builder.add_ca(verify)
+
+        return self
+
+    def add_client_cert(
+        self,
+        cert: Optional[
+            Union[
+                Path,
+                Tuple[Path, Optional[Path]],
+                Tuple[Path, Optional[Path], Optional[str]],
+            ]
+        ],
+    ) -> FrontendClientBuilder:
+        """Add a client certificate to authenticate to the server.
+
+        :param cert: Client certificate. Takes up to three a three tuple value.
+        1. Path to the certificate and key.
+        2. Path to the certificate and path to the key.
+        3. Path to the certificate, path to the key, and password of the key.
+
+        :return: This builder instance.
+        """
+
+        if cert is None:
+            return self
+
+        if not self._ssl:
+            self.add_verify(True)
+
+        if isinstance(cert, Path):
+            self._ssl_builder.add_client(cert)
+        elif isinstance(cert, tuple) and len(cert) == 2:
+            client, key = cast(Tuple[Path, Optional[Path]], cert)
+            self._ssl_builder.add_client(client, key)
+        elif isinstance(cert, tuple) and len(cert) == 3:
+            client, key, password = cast(
+                Tuple[Path, Optional[Path], Optional[str]], cert
+            )
+            self._ssl_builder.add_client(client, key, password)
+        else:
+            raise TypeError("Unexepected value")
+
+        return self
+
+    def set_timeout(self, timeout: Optional[Timeout] = None) -> FrontendClientBuilder:
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
+        if timeout:
+            self._connection_builder.set_timeout(timeout)
+
+        return self
 
 
 def _add_compress_header(request: Request, compress: bool):
@@ -45,12 +174,18 @@ async def check(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
-    verify: Any = None,
+    verify: Union[bool, Path, ssl.SSLContext, None] = None,
+    cert: Optional[
+        Union[
+            Path,
+            Tuple[Path, Optional[Path]],
+            Tuple[Path, Optional[Path], Optional[str]],
+        ]
+    ] = None,
     user: Optional[str] = None,
     compress: bool = False,
-    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -65,6 +200,9 @@ async def check(
         will use the path to verify the root certificates.
     :param user: Username to pass to the SPAMD service.
     :param compress: Enable compress of the request body.
+    :param client_cert: Client certificate file to use.
+    :param client_key: Key file to use for the client certificate.
+    :param key_password: Password to use for the client key if needed.
 
     :return:
         A successful response with a "Spam" header showing if the message is
@@ -103,14 +241,16 @@ async def check(
     )
     context_logger.info("Sending CHECK request")
 
-    client = Client()
-    ssl_context = client.ssl_context_factory(verify)
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
+    client_builder = FrontendClientBuilder()
+    client = (
+        client_builder.with_connection(host, port, socket_path)
+        .add_verify(verify)
+        .add_client_cert(cert)
+        .set_timeout(timeout)
+        .build()
     )
-    parser = client.parser_factory()
     try:
-        response = await client.request(req, connection, parser)
+        response = await client.request(req)
     except Exception:
         context_logger.exception("Exception when calling check function")
         raise
@@ -127,9 +267,15 @@ async def headers(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
-    verify: Any = None,
+    verify: Union[bool, Path, ssl.SSLContext, None] = None,
+    cert: Union[
+        Path,
+        Tuple[Path, Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
+        None,
+    ] = None,
     user: Optional[str] = None,
     compress: bool = False,
     **kwargs,
@@ -186,14 +332,16 @@ async def headers(
     )
     context_logger.info("Sending HEADERS request")
 
-    client = Client()
-    ssl_context = client.ssl_context_factory(verify)
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
+    client_builder = FrontendClientBuilder()
+    client = (
+        client_builder.with_connection(host, port, socket_path)
+        .add_verify(verify)
+        .add_client_cert(cert)
+        .set_timeout(timeout)
+        .build()
     )
-    parser = client.parser_factory()
     try:
-        response = await client.request(req, connection, parser)
+        response = await client.request(req)
     except Exception:
         context_logger.exception("Exception when calling headers function")
         raise
@@ -209,9 +357,15 @@ async def ping(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
-    verify: Optional[Any] = None,
+    verify: Union[bool, Path, ssl.SSLContext, None] = None,
+    cert: Union[
+        Path,
+        Tuple[Path, Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
+        None,
+    ] = None,
     **kwargs,
 ) -> Response:
     """Sends a ping to the SPAMD service.
@@ -257,14 +411,16 @@ async def ping(
     )
     context_logger.info("Sending PING request")
 
-    client = Client()
-    ssl_context = client.ssl_context_factory(verify)
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
+    client_builder = FrontendClientBuilder()
+    client = (
+        client_builder.with_connection(host, port, socket_path)
+        .add_verify(verify)
+        .add_client_cert(cert)
+        .set_timeout(timeout)
+        .build()
     )
-    parser = client.parser_factory()
     try:
-        response = await client.request(req, connection, parser)
+        response = await client.request(req)
     except Exception:
         context_logger.exception("Exception when calling ping function")
         raise
@@ -281,9 +437,15 @@ async def process(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
-    verify: Any = None,
+    verify: Union[bool, Path, ssl.SSLContext, None] = None,
+    cert: Union[
+        Path,
+        Tuple[Path, Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
+        None,
+    ] = None,
     user: Optional[str] = None,
     compress: bool = False,
     **kwargs,
@@ -340,14 +502,16 @@ async def process(
     )
     context_logger.info("Sending PROCESS request")
 
-    client = Client()
-    ssl_context = client.ssl_context_factory(verify)
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
+    client_builder = FrontendClientBuilder()
+    client = (
+        client_builder.with_connection(host, port, socket_path)
+        .add_verify(verify)
+        .add_client_cert(cert)
+        .set_timeout(timeout)
+        .build()
     )
-    parser = client.parser_factory()
     try:
-        response = await client.request(req, connection, parser)
+        response = await client.request(req)
     except Exception:
         context_logger.exception("Exception when calling process function")
         raise
@@ -364,9 +528,15 @@ async def report(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
-    verify: Any = None,
+    verify: Union[bool, Path, ssl.SSLContext, None] = None,
+    cert: Union[
+        Path,
+        Tuple[Path, Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
+        None,
+    ] = None,
     user: Optional[str] = None,
     compress: bool = False,
     **kwargs,
@@ -422,14 +592,16 @@ async def report(
     )
     context_logger.info("Sending REPORT request")
 
-    client = Client()
-    ssl_context = client.ssl_context_factory(verify)
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
+    client_builder = FrontendClientBuilder()
+    client = (
+        client_builder.with_connection(host, port, socket_path)
+        .add_verify(verify)
+        .add_client_cert(cert)
+        .set_timeout(timeout)
+        .build()
     )
-    parser = client.parser_factory()
     try:
-        response = await client.request(req, connection, parser)
+        response = await client.request(req)
     except Exception:
         context_logger.exception("Exception when calling report function")
         raise
@@ -446,9 +618,15 @@ async def report_if_spam(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
-    verify: Any = None,
+    verify: Union[bool, Path, ssl.SSLContext, None] = None,
+    cert: Union[
+        Path,
+        Tuple[Path, Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
+        None,
+    ] = None,
     user: Optional[str] = None,
     compress: bool = False,
     **kwargs,
@@ -505,14 +683,16 @@ async def report_if_spam(
     )
     context_logger.info("Sending REPORT_IFSPAM request")
 
-    client = Client()
-    ssl_context = client.ssl_context_factory(verify)
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
+    client_builder = FrontendClientBuilder()
+    client = (
+        client_builder.with_connection(host, port, socket_path)
+        .add_verify(verify)
+        .add_client_cert(cert)
+        .set_timeout(timeout)
+        .build()
     )
-    parser = client.parser_factory()
     try:
-        response = await client.request(req, connection, parser)
+        response = await client.request(req)
     except Exception:
         context_logger.exception("Exception when calling report_if_spam function")
         raise
@@ -529,9 +709,15 @@ async def symbols(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
-    verify: Any = None,
+    verify: Union[bool, Path, ssl.SSLContext, None] = None,
+    cert: Union[
+        Path,
+        Tuple[Path, Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
+        None,
+    ] = None,
     user: Optional[str] = None,
     compress: bool = False,
     **kwargs,
@@ -588,14 +774,16 @@ async def symbols(
     )
     context_logger.info("Sending SYMBOLS request")
 
-    client = Client()
-    ssl_context = client.ssl_context_factory(verify)
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
+    client_builder = FrontendClientBuilder()
+    client = (
+        client_builder.with_connection(host, port, socket_path)
+        .add_verify(verify)
+        .add_client_cert(cert)
+        .set_timeout(timeout)
+        .build()
     )
-    parser = client.parser_factory()
     try:
-        response = await client.request(req, connection, parser)
+        response = await client.request(req)
     except Exception:
         context_logger.exception("Exception when calling symbols function")
         raise
@@ -615,9 +803,15 @@ async def tell(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[str] = None,
+    socket_path: Optional[Path] = None,
     timeout: Optional[Timeout] = None,
-    verify: Any = None,
+    verify: Optional[Union[bool, Path, ssl.SSLContext]] = None,
+    cert: Union[
+        Path,
+        Tuple[Path, Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
+        None,
+    ] = None,
     user: Optional[str] = None,
     compress: bool = False,
     **kwargs,
@@ -683,14 +877,16 @@ async def tell(
     )
     context_logger.info("Sending TELL request")
 
-    client = Client()
-    ssl_context = client.ssl_context_factory(verify)
-    connection = client.connection_factory(
-        host, port, socket_path, timeout, ssl_context
+    client_builder = FrontendClientBuilder()
+    client = (
+        client_builder.with_connection(host, port, socket_path)
+        .add_verify(verify)
+        .add_client_cert(cert)
+        .set_timeout(timeout)
+        .build()
     )
-    parser = client.parser_factory()
     try:
-        response = await client.request(req, connection, parser)
+        response = await client.request(req)
     except Exception:
         context_logger.exception("Exception when calling tell function")
         raise

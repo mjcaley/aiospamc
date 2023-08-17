@@ -4,87 +4,85 @@ import aiospamc
 
 
 @pytest.mark.integration
-async def test_verify_false(spamd, hostname, ssl_port, certificate_authority):
-    result = await aiospamc.ping(
-        host=hostname, port=ssl_port, verify=certificate_authority
-    )
+async def test_verify_false(spamd_ssl):
+    result = await aiospamc.ping(host=spamd_ssl[0], port=spamd_ssl[1], verify=False)
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_check(spamd, hostname, ssl_port, spam, certificate_authority):
+async def test_check(spamd_ssl, ca_cert_path, spam):
     result = await aiospamc.check(
-        spam, host=hostname, port=ssl_port, verify=certificate_authority
+        spam, host=spamd_ssl[0], port=spamd_ssl[1], verify=ca_cert_path
     )
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_headers(spamd, hostname, ssl_port, spam, certificate_authority):
+async def test_headers(spamd_ssl, ca_cert_path, spam):
     result = await aiospamc.headers(
-        spam, host=hostname, port=ssl_port, verify=certificate_authority
+        spam, host=spamd_ssl[0], port=spamd_ssl[1], verify=ca_cert_path
     )
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_ping(spamd, hostname, ssl_port, certificate_authority):
+async def test_ping(spamd_ssl, ca_cert_path):
     result = await aiospamc.ping(
-        host=hostname,
-        port=ssl_port,
-        verify=certificate_authority,
+        host=spamd_ssl[0],
+        port=spamd_ssl[1],
+        verify=ca_cert_path,
     )
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_process(spamd, hostname, ssl_port, spam, certificate_authority):
+async def test_process(spamd_ssl, ca_cert_path, spam):
     result = await aiospamc.process(
-        spam, host=hostname, port=ssl_port, verify=certificate_authority
+        spam, host=spamd_ssl[0], port=spamd_ssl[1], verify=ca_cert_path
     )
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_report(spamd, hostname, ssl_port, spam, certificate_authority):
+async def test_report(spamd_ssl, ca_cert_path, spam):
     result = await aiospamc.report(
-        spam, host=hostname, port=ssl_port, verify=certificate_authority
+        spam, host=spamd_ssl[0], port=spamd_ssl[1], verify=ca_cert_path
     )
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_report_if_spam(spamd, hostname, ssl_port, spam, certificate_authority):
+async def test_report_if_spam(spamd_ssl, ca_cert_path, spam):
     result = await aiospamc.report_if_spam(
-        spam, host=hostname, port=ssl_port, verify=certificate_authority
+        spam, host=spamd_ssl[0], port=spamd_ssl[1], verify=ca_cert_path
     )
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_symbols(spamd, hostname, ssl_port, spam, certificate_authority):
+async def test_symbols(spamd_ssl, ca_cert_path, spam):
     result = await aiospamc.symbols(
-        spam, host=hostname, port=ssl_port, verify=certificate_authority
+        spam, host=spamd_ssl[0], port=spamd_ssl[1], verify=ca_cert_path
     )
 
     assert 0 == result.status_code
 
 
 @pytest.mark.integration
-async def test_tell(spamd, hostname, ssl_port, spam, certificate_authority):
+async def test_tell(spamd_ssl, ca_cert_path, spam):
     result = await aiospamc.tell(
         message=spam,
         message_class="spam",
-        host=hostname,
-        port=ssl_port,
-        verify=certificate_authority,
+        host=spamd_ssl[0],
+        port=spamd_ssl[1],
+        verify=ca_cert_path,
     )
 
     assert 0 == result.status_code

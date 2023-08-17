@@ -1,8 +1,18 @@
+import ssl
+from pathlib import Path
+
 import pytest
 
 from aiospamc.client import Client
+from aiospamc.connections import (
+    ConnectionManager,
+    TcpConnectionManager,
+    Timeout,
+    UnixConnectionManager,
+)
 from aiospamc.exceptions import BadResponse
 from aiospamc.frontend import (
+    FrontendClientBuilder,
     check,
     headers,
     ping,
@@ -35,6 +45,133 @@ from aiospamc.responses import (
 )
 
 
+def test_frontend_builder_raises_without_connection():
+    with pytest.raises(ValueError):
+        FrontendClientBuilder().build()
+
+
+def test_frontend_builder_with_tcp_connection():
+    f = FrontendClientBuilder().with_connection().build()
+
+    assert isinstance(f, Client)
+    assert isinstance(f.connection_manager, TcpConnectionManager)
+
+
+def test_frontend_builder_with_unix_connection():
+    f = FrontendClientBuilder().with_connection(socket_path=Path("test")).build()
+
+    assert isinstance(f, Client)
+    assert isinstance(f.connection_manager, UnixConnectionManager)
+
+
+def test_frontend_builder_add_verify_none():
+    f = FrontendClientBuilder().with_connection().add_verify().build()
+
+    assert isinstance(f, Client)
+    assert None is f.connection_manager.ssl_context
+
+
+@pytest.mark.parametrize("test_input", [True, False])
+def test_frontend_builder_add_verify_bool(test_input):
+    f = FrontendClientBuilder().with_connection().add_verify(test_input).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_verify_context():
+    context = ssl.create_default_context()
+    f = FrontendClientBuilder().with_connection().add_verify(context).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_verify_path(ca_cert_path):
+    f = FrontendClientBuilder().with_connection().add_verify(ca_cert_path).build()
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_none():
+    f = FrontendClientBuilder().with_connection().add_client_cert(None).build()
+
+    assert isinstance(f, Client)
+    assert None is f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_cert_arg(client_cert_and_key_path):
+    f = (
+        FrontendClientBuilder()
+        .with_connection()
+        .add_client_cert(client_cert_and_key_path)
+        .build()
+    )
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_cert_arg_verify_added(
+    client_cert_and_key_path,
+):
+    f = (
+        FrontendClientBuilder()
+        .with_connection()
+        .add_verify(True)
+        .add_client_cert(client_cert_and_key_path)
+        .build()
+    )
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_and_key(client_cert_path, client_key_path):
+    f = (
+        FrontendClientBuilder()
+        .with_connection()
+        .add_client_cert((client_cert_path, client_key_path))
+        .build()
+    )
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_key_and_password(
+    client_cert_path, client_key_path
+):
+    f = (
+        FrontendClientBuilder()
+        .with_connection()
+        .add_client_cert((client_cert_path, client_key_path, "password"))
+        .build()
+    )
+
+    assert isinstance(f, Client)
+    assert None is not f.connection_manager.ssl_context
+
+
+def test_frontend_builder_add_client_cert_typeerror(mocker):
+    with pytest.raises(TypeError):
+        FrontendClientBuilder().with_connection().add_client_cert(mocker.Mock()).build()
+
+
+def test_frontend_build_set_timeout_none():
+    f = FrontendClientBuilder().with_connection().set_timeout().build()
+
+    assert isinstance(f, Client)
+
+
+def test_frontend_build_set_timeout():
+    timeout = Timeout()
+    f = FrontendClientBuilder().with_connection().set_timeout(timeout).build()
+
+    assert timeout == f.connection_manager.timeout
+
+
 @pytest.mark.parametrize(
     "func,expected_verb",
     [
@@ -47,11 +184,12 @@ from aiospamc.responses import (
     ],
 )
 async def test_functions_with_default_parameters(
-    func, expected_verb, mock_client, spam, mocker
+    func, expected_verb, fake_tcp_server, spam, mocker
 ):
+    _, host, port = fake_tcp_server
     req_spy = mocker.spy(Client, "request")
-    await func(spam)
-    req = req_spy.await_args[0][0]
+    await func(spam, host=host, port=port)
+    req = req_spy.await_args[0][1]
 
     assert expected_verb == req.verb
     assert "User" not in req.headers
@@ -71,11 +209,12 @@ async def test_functions_with_default_parameters(
     ],
 )
 async def test_functions_with_optional_parameters(
-    func, expected_verb, mock_client, spam, mocker
+    func, expected_verb, fake_tcp_server, spam, mocker
 ):
+    _, host, port = fake_tcp_server
     req_spy = mocker.spy(Client, "request")
-    await func(spam, user="testuser", compress=True)
-    req = req_spy.await_args[0][0]
+    await func(spam, user="testuser", compress=True, host=host, port=port)
+    req = req_spy.await_args[0][1]
 
     assert expected_verb == req.verb
     assert "testuser" == req.headers["User"].name
@@ -94,33 +233,96 @@ async def test_functions_with_optional_parameters(
         symbols,
     ],
 )
-async def test_functions_returns_response(func, mock_client, spam, mocker):
+async def test_functions_returns_response(func, fake_tcp_server, spam):
+    _, host, port = fake_tcp_server
+    result = await func(spam, host=host, port=port)
+
+    assert isinstance(result, Response)
+
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        check,
+        headers,
+        process,
+        report,
+        report_if_spam,
+        symbols,
+    ],
+)
+async def test_functions_returns_response_ssl(
+    func, fake_tcp_ssl_server, spam, ca_cert_path
+):
+    _, host, port = fake_tcp_ssl_server
+    result = await func(spam, host=host, port=port, verify=ca_cert_path)
+
+    assert isinstance(result, Response)
+
+
+@pytest.mark.parametrize(
+    "func",
+    [
+        check,
+        headers,
+        process,
+        report,
+        report_if_spam,
+        symbols,
+    ],
+)
+async def test_functions_returns_response_ssl_client(
+    func, fake_tcp_ssl_client, spam, ca_cert_path, client_cert_and_key_path
+):
+    _, host, port = fake_tcp_ssl_client
+    result = await func(
+        spam, host=host, port=port, verify=ca_cert_path, cert=client_cert_and_key_path
+    )
+
+    assert isinstance(result, Response)
+
+
+async def test_ping_request_with_parameters(fake_tcp_server, mocker):
+    _, host, port = fake_tcp_server
     req_spy = mocker.spy(Client, "request")
-    result = await func(spam)
-
-    assert req_spy.spy_return is result
-
-
-async def test_ping_request_with_parameters(mock_client, mocker):
-    req_spy = mocker.spy(Client, "request")
-    await ping()
-    req = req_spy.await_args[0][0]
+    await ping(host=host, port=port)
+    req = req_spy.await_args[0][1]
 
     assert "PING" == req.verb
     assert "User" not in req.headers
 
 
-async def test_ping_returns_response(mock_client, mocker):
+async def test_ping_returns_response(fake_tcp_server, mocker):
+    _, host, port = fake_tcp_server
     req_spy = mocker.spy(Client, "request")
-    result = await ping()
+    result = await ping(host=host, port=port)
 
     assert req_spy.spy_return is result
 
 
-async def test_tell_request_with_default_parameters(mock_client, spam, mocker):
+async def test_ping_returns_response_ssl(fake_tcp_ssl_server, spam, ca_cert_path):
+    _, host, port = fake_tcp_ssl_server
+    result = await ping(host=host, port=port, verify=ca_cert_path)
+
+    assert isinstance(result, Response)
+
+
+async def test_ping_returns_response_ssl_client(
+    fake_tcp_ssl_client, spam, ca_cert_path, client_cert_and_key_path
+):
+    _, host, port = fake_tcp_ssl_client
+    result = await ping(
+        host=host, port=port, verify=ca_cert_path, cert=client_cert_and_key_path
+    )
+
+    assert isinstance(result, Response)
+
+
+async def test_tell_request_with_default_parameters(fake_tcp_server, spam, mocker):
+    _, host, port = fake_tcp_server
     req_spy = mocker.spy(Client, "request")
-    await tell(spam, MessageClassOption.spam)
-    req = req_spy.await_args[0][0]
+    await tell(spam, MessageClassOption.spam, host=host, port=port)
+    req = req_spy.await_args[0][1]
 
     assert "TELL" == req.verb
     assert "User" not in req.headers
@@ -129,7 +331,8 @@ async def test_tell_request_with_default_parameters(mock_client, spam, mocker):
     assert spam == req.body
 
 
-async def test_tell_request_with_optional_parameters(mock_client, spam, mocker):
+async def test_tell_request_with_optional_parameters(fake_tcp_server, spam, mocker):
+    _, host, port = fake_tcp_server
     req_spy = mocker.spy(Client, "request")
     await tell(
         spam,
@@ -138,8 +341,10 @@ async def test_tell_request_with_optional_parameters(mock_client, spam, mocker):
         remove_action=ActionOption(local=True, remote=True),
         user="testuser",
         compress=True,
+        host=host,
+        port=port,
     )
-    req = req_spy.await_args[0][0]
+    req = req_spy.await_args[0][1]
 
     assert "TELL" == req.verb
     assert "testuser" == req.headers["User"].name
@@ -150,9 +355,10 @@ async def test_tell_request_with_optional_parameters(mock_client, spam, mocker):
     assert spam == req.body
 
 
-async def test_tell_returns_response(mock_client, spam, mocker):
+async def test_tell_returns_response(fake_tcp_server, spam, mocker):
+    _, host, port = fake_tcp_server
     req_spy = mocker.spy(Client, "request")
-    result = await tell(spam, MessageClassOption.spam)
+    result = await tell(spam, MessageClassOption.spam, host=host, port=port)
 
     assert req_spy.spy_return is result
 
@@ -160,507 +366,553 @@ async def test_tell_returns_response(mock_client, spam, mocker):
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_bad_response(
-    func, mock_client_response, response_invalid, mocker
-):
-    mock_client_response(response_invalid)
+async def test_raises_bad_response(func, fake_tcp_server, response_invalid):
+    resp, host, port = fake_tcp_server
+    resp.response = response_invalid
 
     with pytest.raises(BadResponse):
-        await func(mocker.MagicMock())
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_usage(func, mock_client_response, mocker, ex_usage):
-    mock_client = mock_client_response(ex_usage)
+async def test_raises_usage(func, fake_tcp_server, ex_usage):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_usage
 
     with pytest.raises(UsageException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_data_err(func, mock_client_response, mocker, ex_data_err):
-    mock_client = mock_client_response(ex_data_err)
+async def test_raises_data_err(func, fake_tcp_server, ex_data_err):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_data_err
 
     with pytest.raises(DataErrorException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_no_input(func, mock_client_response, mocker, ex_no_input):
-    mock_client = mock_client_response(ex_no_input)
+async def test_raises_no_input(func, fake_tcp_server, ex_no_input):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_input
 
     with pytest.raises(NoInputException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_no_user(func, mock_client_response, mocker, ex_no_user):
-    mock_client = mock_client_response(ex_no_user)
+async def test_raises_no_user(func, fake_tcp_server, ex_no_user):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_user
 
     with pytest.raises(NoUserException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_no_host(func, mock_client_response, mocker, ex_no_host):
-    mock_client = mock_client_response(ex_no_host)
+async def test_raises_no_host(func, fake_tcp_server, ex_no_host):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_host
 
     with pytest.raises(NoHostException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_unavailable(func, mock_client_response, mocker, ex_unavailable):
-    mock_client = mock_client_response(ex_unavailable)
+async def test_raises_unavailable(func, fake_tcp_server, ex_unavailable):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_unavailable
 
     with pytest.raises(UnavailableException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_software(func, mock_client_response, mocker, ex_software):
-    mock_client = mock_client_response(ex_software)
+async def test_raises_software(func, fake_tcp_server, ex_software):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_software
 
     with pytest.raises(InternalSoftwareException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_os_error(func, mock_client_response, mocker, ex_os_err):
-    mock_client = mock_client_response(ex_os_err)
+async def test_raises_os_error(func, fake_tcp_server, ex_os_err):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_os_err
 
     with pytest.raises(OSErrorException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_os_file(func, mock_client_response, mocker, ex_os_file):
-    mock_client = mock_client_response(ex_os_file)
+async def test_raises_os_file(func, fake_tcp_server, ex_os_file):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_os_file
 
     with pytest.raises(OSFileException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_cant_create(func, mock_client_response, mocker, ex_cant_create):
-    mock_client = mock_client_response(ex_cant_create)
+async def test_raises_cant_create(func, fake_tcp_server, ex_cant_create):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_cant_create
 
     with pytest.raises(CantCreateException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_io_error(func, mock_client_response, mocker, ex_io_err):
-    mock_client = mock_client_response(ex_io_err)
+async def test_raises_io_error(func, fake_tcp_server, ex_io_err):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_io_err
 
     with pytest.raises(IOErrorException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_temporary_failure(
-    func, mock_client_response, mocker, ex_temp_fail
-):
-    mock_client = mock_client_response(ex_temp_fail)
+async def test_raises_temporary_failure(func, fake_tcp_server, ex_temp_fail):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_temp_fail
 
     with pytest.raises(TemporaryFailureException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_protocol(func, mock_client_response, mocker, ex_protocol):
-    mock_client = mock_client_response(ex_protocol)
+async def test_raises_protocol(func, fake_tcp_server, ex_protocol):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_protocol
 
     with pytest.raises(ProtocolException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_no_permission(func, mock_client_response, mocker, ex_no_perm):
-    mock_client = mock_client_response(ex_no_perm)
+async def test_raises_no_permission(func, fake_tcp_server, ex_no_perm):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_perm
 
     with pytest.raises(NoPermissionException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_config(func, mock_client_response, mocker, ex_config):
-    mock_client = mock_client_response(ex_config)
+async def test_raises_config(func, fake_tcp_server, ex_config):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_config
 
     with pytest.raises(ConfigException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_timeout(func, mock_client_response, mocker, ex_timeout):
-    mock_client = mock_client_response(ex_timeout)
+async def test_raises_timeout(func, fake_tcp_server, ex_timeout):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_timeout
 
     with pytest.raises(ServerTimeoutException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
 @pytest.mark.parametrize(
     "func", [check, headers, process, report, report_if_spam, symbols]
 )
-async def test_raises_undefined(func, mock_client_response, mocker, ex_undefined):
-    mock_client = mock_client_response(ex_undefined)
+async def test_raises_undefined(func, fake_tcp_server, ex_undefined):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_undefined
 
     with pytest.raises(ResponseException):
-        await func(
-            mocker.MagicMock(),
-        )
+        await func(b"test", host=host, port=port)
 
 
-async def test_ping_raises_usage(mock_client_response, ex_usage):
-    mock_client = mock_client_response(ex_usage)
+async def test_ping_raises_usage(fake_tcp_server, ex_usage):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_usage
 
     with pytest.raises(UsageException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_data_err(mock_client_response, ex_data_err):
-    mock_client = mock_client_response(ex_data_err)
+async def test_ping_raises_data_err(fake_tcp_server, ex_data_err):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_data_err
 
     with pytest.raises(DataErrorException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_no_input(mock_client_response, ex_no_input):
-    mock_client = mock_client_response(ex_no_input)
+async def test_ping_raises_no_input(fake_tcp_server, ex_no_input):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_input
 
     with pytest.raises(NoInputException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_no_user(mock_client_response, ex_no_user):
-    mock_client = mock_client_response(ex_no_user)
+async def test_ping_raises_no_user(fake_tcp_server, ex_no_user):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_user
 
     with pytest.raises(NoUserException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_no_host(mock_client_response, ex_no_host):
-    mock_client = mock_client_response(ex_no_host)
+async def test_ping_raises_no_host(fake_tcp_server, ex_no_host):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_host
 
     with pytest.raises(NoHostException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_unavailable(mock_client_response, ex_unavailable):
-    mock_client = mock_client_response(ex_unavailable)
+async def test_ping_raises_unavailable(fake_tcp_server, ex_unavailable):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_unavailable
 
     with pytest.raises(UnavailableException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_software(mock_client_response, ex_software):
-    mock_client = mock_client_response(ex_software)
+async def test_ping_raises_software(fake_tcp_server, ex_software):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_software
 
     with pytest.raises(InternalSoftwareException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_os_error(mock_client_response, ex_os_err):
-    mock_client = mock_client_response(ex_os_err)
+async def test_ping_raises_os_error(fake_tcp_server, ex_os_err):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_os_err
 
     with pytest.raises(OSErrorException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_os_file(mock_client_response, ex_os_file):
-    mock_client = mock_client_response(ex_os_file)
+async def test_ping_raises_os_file(fake_tcp_server, ex_os_file):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_os_file
 
     with pytest.raises(OSFileException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_cant_create(mock_client_response, ex_cant_create):
-    mock_client = mock_client_response(ex_cant_create)
+async def test_ping_raises_cant_create(fake_tcp_server, ex_cant_create):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_cant_create
 
     with pytest.raises(CantCreateException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_io_error(mock_client_response, ex_io_err):
-    mock_client = mock_client_response(ex_io_err)
+async def test_ping_raises_io_error(fake_tcp_server, ex_io_err):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_io_err
 
     with pytest.raises(IOErrorException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_temporary_failure(mock_client_response, ex_temp_fail):
-    mock_client = mock_client_response(ex_temp_fail)
+async def test_ping_raises_temporary_failure(fake_tcp_server, ex_temp_fail):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_temp_fail
 
     with pytest.raises(TemporaryFailureException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_protocol(mock_client_response, ex_protocol):
-    mock_client = mock_client_response(ex_protocol)
+async def test_ping_raises_protocol(fake_tcp_server, ex_protocol):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_protocol
 
     with pytest.raises(ProtocolException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_no_permission(mock_client_response, ex_no_perm):
-    mock_client = mock_client_response(ex_no_perm)
+async def test_ping_raises_no_permission(fake_tcp_server, ex_no_perm):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_perm
 
     with pytest.raises(NoPermissionException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_config(mock_client_response, ex_config):
-    mock_client = mock_client_response(ex_config)
+async def test_ping_raises_config(fake_tcp_server, ex_config):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_config
 
     with pytest.raises(ConfigException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_timeout(mock_client_response, ex_timeout):
-    mock_client = mock_client_response(ex_timeout)
+async def test_ping_raises_timeout(fake_tcp_server, ex_timeout):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_timeout
 
     with pytest.raises(ServerTimeoutException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_ping_raises_undefined(mock_client_response, ex_undefined):
-    mock_client = mock_client_response(ex_undefined)
+async def test_ping_raises_undefined(fake_tcp_server, ex_undefined):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_undefined
 
     with pytest.raises(ResponseException):
-        await ping()
+        await ping(host=host, port=port)
 
 
-async def test_tell_raises_usage(mock_client_response, mocker, ex_usage):
-    mock_client = mock_client_response(ex_usage)
+async def test_tell_raises_usage(fake_tcp_server, ex_usage):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_usage
 
     with pytest.raises(UsageException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_data_err(mock_client_response, mocker, ex_data_err):
-    mock_client = mock_client_response(ex_data_err)
+async def test_tell_raises_data_err(fake_tcp_server, ex_data_err):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_data_err
 
     with pytest.raises(DataErrorException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_no_input(mock_client_response, mocker, ex_no_input):
-    mock_client = mock_client_response(ex_no_input)
+async def test_tell_raises_no_input(fake_tcp_server, ex_no_input):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_input
 
     with pytest.raises(NoInputException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_no_user(mock_client_response, mocker, ex_no_user):
-    mock_client = mock_client_response(ex_no_user)
+async def test_tell_raises_no_user(fake_tcp_server, ex_no_user):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_user
 
     with pytest.raises(NoUserException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_no_host(mock_client_response, mocker, ex_no_host):
-    mock_client = mock_client_response(ex_no_host)
+async def test_tell_raises_no_host(fake_tcp_server, ex_no_host):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_host
 
     with pytest.raises(NoHostException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_unavailable(mock_client_response, mocker, ex_unavailable):
-    mock_client = mock_client_response(ex_unavailable)
+async def test_tell_raises_unavailable(fake_tcp_server, ex_unavailable):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_unavailable
 
     with pytest.raises(UnavailableException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_software(mock_client_response, mocker, ex_software):
-    mock_client = mock_client_response(ex_software)
+async def test_tell_raises_software(fake_tcp_server, ex_software):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_software
 
     with pytest.raises(InternalSoftwareException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_os_error(mock_client_response, mocker, ex_os_err):
-    mock_client = mock_client_response(ex_os_err)
+async def test_tell_raises_os_error(fake_tcp_server, ex_os_err):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_os_err
 
     with pytest.raises(OSErrorException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_os_file(mock_client_response, mocker, ex_os_file):
-    mock_client = mock_client_response(ex_os_file)
+async def test_tell_raises_os_file(fake_tcp_server, ex_os_file):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_os_file
 
     with pytest.raises(OSFileException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_cant_create(mock_client_response, mocker, ex_cant_create):
-    mock_client = mock_client_response(ex_cant_create)
+async def test_tell_raises_cant_create(fake_tcp_server, ex_cant_create):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_cant_create
 
     with pytest.raises(CantCreateException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_io_error(mock_client_response, mocker, ex_io_err):
-    mock_client = mock_client_response(ex_io_err)
+async def test_tell_raises_io_error(fake_tcp_server, ex_io_err):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_io_err
 
     with pytest.raises(IOErrorException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_temporary_failure(
-    mock_client_response, mocker, ex_temp_fail
-):
-    mock_client = mock_client_response(ex_temp_fail)
+async def test_tell_raises_temporary_failure(fake_tcp_server, ex_temp_fail):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_temp_fail
 
     with pytest.raises(TemporaryFailureException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_protocol(mock_client_response, mocker, ex_protocol):
-    mock_client = mock_client_response(ex_protocol)
+async def test_tell_raises_protocol(fake_tcp_server, ex_protocol):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_protocol
 
     with pytest.raises(ProtocolException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_no_permission(mock_client_response, mocker, ex_no_perm):
-    mock_client = mock_client_response(ex_no_perm)
+async def test_tell_raises_no_permission(fake_tcp_server, ex_no_perm):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_no_perm
 
     with pytest.raises(NoPermissionException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_config(mock_client_response, mocker, ex_config):
-    mock_client = mock_client_response(ex_config)
+async def test_tell_raises_config(fake_tcp_server, ex_config):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_config
 
     with pytest.raises(ConfigException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_timeout(mock_client_response, mocker, ex_timeout):
-    mock_client = mock_client_response(ex_timeout)
+async def test_tell_raises_timeout(fake_tcp_server, ex_timeout):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_timeout
 
     with pytest.raises(ServerTimeoutException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )
 
 
-async def test_tell_raises_undefined(mock_client_response, mocker, ex_undefined):
-    mock_client = mock_client_response(ex_undefined)
+async def test_tell_raises_undefined(fake_tcp_server, ex_undefined):
+    resp, host, port = fake_tcp_server
+    resp.response = ex_undefined
 
     with pytest.raises(ResponseException):
         await tell(
-            mocker.MagicMock(),
-            MessageClassOption.spam,
+            b"test",
+            host=host,
+            port=port,
+            message_class=MessageClassOption.spam,
         )

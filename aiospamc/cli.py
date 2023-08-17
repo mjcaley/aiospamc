@@ -7,13 +7,18 @@ import sys
 from enum import Enum
 from getpass import getuser
 from io import BufferedReader
-from typing import Any, Optional, Union
+from pathlib import Path
+from typing import Optional
 
 import typer
 from loguru import logger
 from typing_extensions import Annotated
 
-from aiospamc.exceptions import AIOSpamcConnectionFailed, ParseError
+from aiospamc.exceptions import (
+    AIOSpamcConnectionFailed,
+    BadResponse,
+    ClientTimeoutException,
+)
 from aiospamc.header_values import (
     ActionOption,
     Headers,
@@ -24,7 +29,7 @@ from aiospamc.header_values import (
 
 from . import __version__
 from .client import Client, Request
-from .connections import Timeout
+from .connections import ConnectionManagerBuilder, SSLContextBuilder, Timeout
 from .responses import Response, ResponseException
 
 app = typer.Typer(no_args_is_help=True)
@@ -43,11 +48,137 @@ class Output(str, Enum):
 # Exit codes
 SUCCESS = NOT_SPAM = PING_SUCCESS = 0
 IS_SPAM = REPORT_FAILED = REVOKE_FAILED = 1
-PARSE_ERROR = 3
+BAD_RESPONSE = 3
 TIMEOUT_ERROR = 4
 CONNECTION_ERROR = 5
 UNEXPECTED_ERROR = 6
 FILE_NOT_FOUND_ERROR = 7
+
+
+class CliClientBuilder:
+    """Client builder for CLI arguments."""
+
+    def __init__(self):
+        """Constructor for the ClieClientBuilder."""
+
+        self._connection_builder = ConnectionManagerBuilder()
+        self._ssl = False
+        self._ssl_builder = SSLContextBuilder()
+
+    def build(self) -> Client:
+        """Builds the `Client`.
+
+        :return: An instance of :class:`aiospamc.client.Client`.
+        """
+
+        if self._ssl:
+            ssl_context = self._ssl_builder.build()
+            self._connection_builder.add_ssl_context(ssl_context)
+        connection_manager = self._connection_builder.build()
+
+        return Client(connection_manager)
+
+    def with_connection(
+        self,
+        host: str = "localhost",
+        port: int = 783,
+        socket_path: Optional[Path] = None,
+    ) -> "CliClientBuilder":
+        """Sets the type of connection manager to use.
+
+        Defaults to TCP, but if a Unix socket is provided it will be used.
+
+        :param host: TCP hostname to use.
+        :param port: TCP port to use.
+        :param socket_path: Path to the Unix socket.
+
+        :return: This builder instance.
+        """
+
+        if socket_path:
+            self._connection_builder = self._connection_builder.with_unix_socket(
+                socket_path
+            )
+        else:
+            self._connection_builder = self._connection_builder.with_tcp(host, port)
+
+        return self
+
+    def set_timeout(self, timeout: Timeout) -> "CliClientBuilder":
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
+        self._connection_builder.set_timeout(timeout)
+
+        return self
+
+    def add_verify(self, verify: bool) -> "CliClientBuilder":
+        """Adds an SSL context to the connection manager.
+
+        :param verify: How to configure the SSL context. If `True`, add the default
+        certificate authorities. If `False`, accept any certificate.
+
+        :return: This builder instance.
+        """
+
+        self._ssl = True
+        self._ssl_builder.add_default_ca()
+        if not verify:
+            self._ssl_builder.dont_verify()
+
+        return self
+
+    def add_ca_cert(self, ca_cert: Optional[Path]) -> "CliClientBuilder":
+        """Adds trusted certificate authorities.
+
+        :param ca_cert: Path to the cerficiate file or directory.
+
+        :return: This builder instance.
+        """
+
+        if ca_cert is None:
+            return self
+
+        self._ssl = True
+        if ca_cert.is_dir():
+            self._ssl_builder.add_ca_dir(ca_cert)
+        elif ca_cert.is_file():
+            self._ssl_builder.add_ca_file(ca_cert)
+        else:
+            raise FileNotFoundError(
+                f"Unable to find CA certificate file/directory {ca_cert}"
+            )
+
+        return self
+
+    def add_client_cert(
+        self,
+        cert: Optional[Path],
+        key: Optional[Path] = None,
+        password: Optional[str] = None,
+    ) -> "CliClientBuilder":
+        """Add a client certificate to authenticate to the server.
+
+        :param cert: Path to the client certificate and optionally the key.
+        :param key: Path to the client key.
+        :param password: Password of the client key.
+
+        :return: This builder instance.
+        """
+
+        if cert is None:
+            return self
+
+        if self._ssl is False:
+            self._ssl = True
+            self.add_verify(True)
+        self._ssl_builder.add_client(cert, key, password)
+
+        return self
 
 
 class CommandRunner:
@@ -55,6 +186,7 @@ class CommandRunner:
 
     def __init__(
         self,
+        client: Client,
         request: Request,
         output: Output = Output.Text,
     ):
@@ -65,50 +197,30 @@ class CommandRunner:
         :param output: Output format when printing to console.
         """
 
+        self.client = client
         self.request = request
         self.response: Optional[Response] = None
         self.output = output
         self.exception: Optional[Exception] = None
         self.exit_code = SUCCESS
 
-        self._client = Client()
         self._logger = logger.bind(request=request)
 
-    async def run(
-        self,
-        host: Optional[str] = None,
-        port: Optional[int] = None,
-        socket_path: Optional[str] = None,
-        timeout: Optional[Timeout] = None,
-        verify: Any = None,
-    ) -> Response:
+    async def run(self) -> Response:
         """Send the request, get the response and handle common exceptions.
 
-        :param host: Hostname or IP address of the SPAMD service, defaults to localhost.
-        :param port: Port number for the SPAMD service, defaults to 783.
-        :param socket_path: Path to Unix socket.
-        :param timeout: Timeout settings.
-        :param verify:
-            Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
-            `False` will use SSL, but not verify the root certificates. Passing a string to a filename
-            will use the path to verify the root certificates.
+        :return: The response.
         """
 
-        ssl_context = self._client.ssl_context_factory(verify)
-        connection = self._client.connection_factory(
-            host, port, socket_path, timeout, ssl_context
-        )
-        parser = self._client.parser_factory()
-        self._logger = self._logger.bind(host=host, port=port, socket_path=socket_path)
         self._logger.info("Sending request")
 
-        ssl_context = self._client.ssl_context_factory(verify)
-        connection = self._client.connection_factory(
-            host, port, socket_path, timeout, ssl_context
-        )
-        parser = self._client.parser_factory()
         try:
-            response = await self._client.request(self.request, connection, parser)
+            response = await self.client.request(self.request)
+        except BadResponse as e:
+            self._logger.exception(e)
+            self.exit_code = BAD_RESPONSE
+            self.exception = e
+            self.exit("Error parsing response", True)
         except ResponseException as e:
             self._logger = self._logger.bind(response=e.response)
             self._logger.exception(e)
@@ -116,12 +228,7 @@ class CommandRunner:
             self.exit_code = int(self.response.status_code)
             self.exception = e
             self.exit(f"Response error from server: {self.response.message}", True)
-        except ParseError as e:
-            self._logger.exception(e)
-            self.exit_code = PARSE_ERROR
-            self.exception = e
-            self.exit("Error parsing response", True)
-        except asyncio.TimeoutError as e:
+        except (asyncio.TimeoutError, ClientTimeoutException) as e:
             self._logger.exception(e)
             self.exit_code = TIMEOUT_ERROR
             self.exception = e
@@ -141,7 +248,7 @@ class CommandRunner:
     def to_json(self) -> str:
         """Converts the object to a JSON string.
 
-        :returns: JSON string.
+        :return: JSON string.
         """
 
         obj = {
@@ -185,31 +292,53 @@ def ping(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
-    ssl: Annotated[
-        Optional[bool],
-        typer.Option(
-            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-            envvar="AIOSPAMC_CERT_FILE",
-        ),
     ] = None,
+    ssl: Annotated[
+        bool, typer.Option(help="Use SSL to communicate with the daemon.")
+    ] = False,
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
+    ca_cert: Annotated[
+        Optional[Path],
+        typer.Option(
+            help="Path to the CA certificates if overriding",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    client_cert: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate")
+    ] = None,
+    client_key: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+    ] = None,
+    key_password: Annotated[
+        Optional[str], typer.Option(help="Password for the client certificate key")
+    ] = None,
 ):
     """Pings the SpamAssassin daemon.
 
     A successful pong exits with code 0.
     """
 
+    client_builder = CliClientBuilder()
+    client_builder.with_connection(host, port, socket_path).set_timeout(
+        Timeout(timeout)
+    )
+    if ssl:
+        client_builder.add_verify(True).add_ca_cert(ca_cert).add_client_cert(
+            client_cert, client_key, key_password
+        )
+    client = client_builder.build()
+
     request = Request("PING")
-    runner = CommandRunner(request, out)
-    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+    runner = CommandRunner(client, request, out)
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
     runner.exit(response.message)
 
 
@@ -249,23 +378,35 @@ def check(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
-    ssl: Annotated[
-        Optional[bool],
-        typer.Option(
-            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-            envvar="AIOSPAMC_CERT_FILE",
-        ),
     ] = None,
+    ssl: Annotated[
+        bool, typer.Option(help="Use SSL to communicate with the daemon.")
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
+    ca_cert: Annotated[
+        Optional[Path],
+        typer.Option(
+            help="Path to the CA certificates if overriding",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    client_cert: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate")
+    ] = None,
+    client_key: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+    ] = None,
+    key_password: Annotated[
+        Optional[str], typer.Option(help="Password for the client certificate key")
+    ] = None,
 ):
     """Submits a message to SpamAssassin and returns the processed message."""
 
@@ -273,8 +414,19 @@ def check(
     headers = Headers()
     headers.user = user
     request = Request("PROCESS", headers=headers, body=message_data)
-    runner = CommandRunner(request, out)
-    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+
+    client_builder = CliClientBuilder()
+    client_builder.with_connection(host, port, socket_path).set_timeout(
+        Timeout(timeout)
+    )
+    if ssl:
+        client_builder.add_verify(True).add_ca_cert(ca_cert).add_client_cert(
+            client_cert, client_key, key_password
+        )
+    client = client_builder.build()
+
+    runner = CommandRunner(client, request, out)
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
 
     if spam_header := response.headers.spam:
         if spam_header.value:
@@ -313,23 +465,35 @@ def learn(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
-    ssl: Annotated[
-        Optional[bool],
-        typer.Option(
-            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-            envvar="AIOSPAMC_CERT_FILE",
-        ),
     ] = None,
+    ssl: Annotated[
+        bool, typer.Option(help="Use SSL to communicate with the daemon.")
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
+    ca_cert: Annotated[
+        Optional[Path],
+        typer.Option(
+            help="Path to the CA certificates if overriding",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    client_cert: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate")
+    ] = None,
+    client_key: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+    ] = None,
+    key_password: Annotated[
+        Optional[str], typer.Option(help="Password for the client certificate key")
+    ] = None,
 ):
     """Ask server to learn the message as spam or ham."""
 
@@ -343,8 +507,19 @@ def learn(
         headers=headers,
         body=message_data,
     )
-    runner = CommandRunner(request, out)
-    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+
+    client_builder = CliClientBuilder()
+    client_builder.with_connection(host, port, socket_path).set_timeout(
+        Timeout(timeout)
+    )
+    if ssl:
+        client_builder.add_verify(True).add_ca_cert(ca_cert).add_client_cert(
+            client_cert, client_key, key_password
+        )
+    client = client_builder.build()
+
+    runner = CommandRunner(client, request, out)
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
 
     if response.headers.did_set:
         runner.exit("Message successfully learned")
@@ -377,23 +552,35 @@ def forget(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
-    ssl: Annotated[
-        Optional[bool],
-        typer.Option(
-            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-            envvar="AIOSPAMC_CERT_FILE",
-        ),
     ] = None,
+    ssl: Annotated[
+        bool, typer.Option(help="Use SSL to communicate with the daemon.")
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
+    ca_cert: Annotated[
+        Optional[Path],
+        typer.Option(
+            help="Path to the CA certificates if overriding",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    client_cert: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate")
+    ] = None,
+    client_key: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+    ] = None,
+    key_password: Annotated[
+        Optional[str], typer.Option(help="Password for the client certificate key")
+    ] = None,
 ):
     """Forgets the classification of a message."""
 
@@ -406,8 +593,19 @@ def forget(
         headers=headers,
         body=message_data,
     )
-    runner = CommandRunner(request, out)
-    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+
+    client_builder = CliClientBuilder()
+    client_builder.with_connection(host, port, socket_path).set_timeout(
+        Timeout(timeout)
+    )
+    if ssl:
+        client_builder.add_verify(True).add_ca_cert(ca_cert).add_client_cert(
+            client_cert, client_key, key_password
+        )
+    client = client_builder.build()
+
+    runner = CommandRunner(client, request, out)
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
 
     if response.headers.did_remove:
         runner.exit("Message successfully forgotten")
@@ -440,23 +638,35 @@ def report(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
-    ssl: Annotated[
-        Optional[bool],
-        typer.Option(
-            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-            envvar="AIOSPAMC_CERT_FILE",
-        ),
     ] = None,
+    ssl: Annotated[
+        bool, typer.Option(help="Use SSL to communicate with the daemon.")
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
+    ca_cert: Annotated[
+        Optional[Path],
+        typer.Option(
+            help="Path to the CA certificates if overriding",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    client_cert: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate")
+    ] = None,
+    client_key: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+    ] = None,
+    key_password: Annotated[
+        Optional[str], typer.Option(help="Password for the client certificate key")
+    ] = None,
 ):
     """Report a message to collaborative filtering databases as spam."""
 
@@ -469,8 +679,19 @@ def report(
         headers=headers,
         body=message_data,
     )
-    runner = CommandRunner(request, out)
-    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+
+    client_builder = CliClientBuilder()
+    client_builder.with_connection(host, port, socket_path).set_timeout(
+        Timeout(timeout)
+    )
+    if ssl:
+        client_builder.add_verify(True).add_ca_cert(ca_cert).add_client_cert(
+            client_cert, client_key, key_password
+        )
+    client = client_builder.build()
+
+    runner = CommandRunner(client, request, out)
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
 
     if response.headers.did_set and response.headers.did_set.remote is True:
         runner.exit("Message successfully reported")
@@ -504,23 +725,35 @@ def revoke(
         ),
     ] = 783,
     socket_path: Annotated[
-        str,
+        Optional[Path],
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
-    ] = "",
-    ssl: Annotated[
-        Optional[bool],
-        typer.Option(
-            help="Use SSL to communicate with the daemon. Setting the environment variable to a certificate file will use that to verify the server certificates.",
-            envvar="AIOSPAMC_CERT_FILE",
-        ),
     ] = None,
+    ssl: Annotated[
+        bool, typer.Option(help="Use SSL to communicate with the daemon.")
+    ] = False,
     user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
+    ca_cert: Annotated[
+        Optional[Path],
+        typer.Option(
+            help="Path to the CA certificates if overriding",
+            envvar="AIOSPAMC_CERT_FILE",
+        ),
+    ] = None,
+    client_cert: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate")
+    ] = None,
+    client_key: Annotated[
+        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+    ] = None,
+    key_password: Annotated[
+        Optional[str], typer.Option(help="Password for the client certificate key")
+    ] = None,
 ):
     """Revoke a message to collaborative filtering databases."""
 
@@ -536,8 +769,20 @@ def revoke(
         },
         body=message_data,
     )
-    runner = CommandRunner(request, out)
-    response = asyncio.run(runner.run(host, port, socket_path, Timeout(timeout), ssl))
+
+    client_builder = CliClientBuilder()
+    client_builder.with_connection(host, port, socket_path).set_timeout(
+        Timeout(timeout)
+    )
+    if ssl:
+        client_builder.add_verify(True).add_ca_cert(ca_cert).add_client_cert(
+            client_cert, client_key, key_password
+        )
+    client = client_builder.build()
+
+    runner = CommandRunner(client, request, out)
+    response = asyncio.get_event_loop().run_until_complete(runner.run())
+
     if response.headers.did_remove and response.headers.did_remove.remote:
         runner.exit("Message successfully revoked")
     else:
@@ -572,9 +817,9 @@ def main(
         bool,
         typer.Option(
             "--version",
-            is_flag=True,
             callback=version_callback,
-            help="Output format for stdout",
+            is_eager=True,
+            help="Print version of aiospamc",
         ),
     ] = False,
     debug: Annotated[
@@ -587,4 +832,6 @@ def main(
         ),
     ] = False,
 ):
+    """aiospamc sends messages to the SpamAssasin daemon."""
+
     pass

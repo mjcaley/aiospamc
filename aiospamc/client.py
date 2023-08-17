@@ -1,67 +1,30 @@
 """Module implementing client objects that all requests go through."""
 
-from ssl import SSLContext
-from typing import Any, Callable, Optional, Type
-
 from loguru import logger
 
-from .connections import (
-    ConnectionManager,
-    Timeout,
-    new_connection_manager,
-    new_ssl_context,
-)
+from .connections import ConnectionManager
 from .exceptions import BadResponse
 from .incremental_parser import ParseError, ResponseParser
 from .requests import Request
 from .responses import Response
 from .user_warnings import raise_warnings
 
-ConnectionFactory = Callable[
-    [
-        Optional[str],
-        Optional[int],
-        Optional[str],
-        Optional[Timeout],
-        Optional[SSLContext],
-    ],
-    ConnectionManager,
-]
-SSLFactory = Callable[[Any], Optional[SSLContext]]
-
 
 class Client:
-    """Client class containing factories."""
+    """Client object to submit requests."""
 
-    default_ssl_context_factory: Optional[SSLFactory] = staticmethod(new_ssl_context)
-    default_connection_factory: ConnectionFactory = staticmethod(new_connection_manager)
-    default_parser_factory: Type[ResponseParser] = ResponseParser
-
-    def __init__(
-        self, ssl_context_factory=None, connection_factory=None, parser_factory=None
-    ):
+    def __init__(self, connection_manager: ConnectionManager):
         """Client constructor.
 
-        :param default_ssl_context_factory: SSL context factory function.
-        :param default_connection_factory: `ConnectionManager` factory function.
-        :param default_parser_factory: Response parser type.
+        :param connection_manager: Instance of a connection manager.
         """
 
-        self.ssl_context_factory = (
-            ssl_context_factory or self.default_ssl_context_factory
-        )
-        self.connection_factory = connection_factory or self.default_connection_factory
-        self.parser_factory = parser_factory or self.default_parser_factory
+        self.connection_manager = connection_manager
 
-    @staticmethod
-    async def request(
-        req: Request, connection: ConnectionManager, parser: ResponseParser
-    ) -> Response:
+    async def request(self, req: Request):
         """Sends a request and returns the parsed response.
 
         :param req: The request to send.
-        :param connection: Instance of a `ConnectionManager`.
-        :param parser: Instance of `ResponseParser`.
 
         :return: The parsed response.
 
@@ -87,16 +50,17 @@ class Client:
         """
 
         context_logger = logger.bind(
-            connection=connection,
+            connection=self.connection_manager,
             request=req,
         )
 
-        raise_warnings(req, connection)
+        raise_warnings(req, self.connection_manager)
 
         context_logger.info("Sending {} request", req.verb)
-        response = await connection.request(bytes(req))
+        response = await self.connection_manager.request(bytes(req))
         context_logger = context_logger.bind(response_bytes=response)
         try:
+            parser = ResponseParser()
             parsed_response = parser.parse(response)
         except ParseError as error:
             context_logger.exception("Error parsing response")
