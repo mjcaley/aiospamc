@@ -14,7 +14,7 @@ def spamd_lt_4():
         return True
 
     process = Popen([spamd_exe, "--version"], stdout=PIPE)
-    process.wait()
+    process.wait(5)
     version = re.match(rb".*?(\d+)\.\d+\.\d+\n", process.stdout.read())
     parsed = [int(i) for i in version.groups()]
 
