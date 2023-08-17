@@ -46,12 +46,18 @@ class Timeout:
 
 
 class ConnectionManagerBuilder:
+    """Builder for connection managers."""
+
     class ManagerType(Enum):
+        """Define connection manager type during build."""
+
         Undefined = auto()
         Tcp = auto()
         Unix = auto()
 
     def __init__(self):
+        """ConnectionManagerBuilder constructor."""
+
         self._manager_type = self.ManagerType.Undefined
         self._tcp_builder = TcpConnectionManagerBuilder()
         self._unix_builder = UnixConnectionManagerBuilder()
@@ -60,6 +66,12 @@ class ConnectionManagerBuilder:
         self._timeout = None
 
     def build(self) -> Union[UnixConnectionManager, TcpConnectionManager]:
+        """Builds the `ConnectionManager`.
+
+        :return: An instance of :class:`aiospamc.connections.TcpConnectionManager`
+        or :class:`aiospamc.connections.UnixConnectionManager`
+        """
+
         if self._manager_type is self.ManagerType.Undefined:
             raise ValueError(
                 "Connection type is undefined, builder must be called with 'with_unix_socket' or 'with_tcp'"
@@ -72,6 +84,13 @@ class ConnectionManagerBuilder:
             return self._unix_builder.set_timeout(self._timeout).build()
 
     def with_unix_socket(self, path: Path) -> ConnectionManagerBuilder:
+        """Configures the builder to use a Unix socket connection.
+
+        :param path: Path to the Unix socket.
+
+        :return: This builder instance.
+        """
+
         self._manager_type = self.ManagerType.Unix
         self._unix_builder.set_path(path)
         self._tcp_host = self._tcp_port = None
@@ -79,6 +98,14 @@ class ConnectionManagerBuilder:
         return self
 
     def with_tcp(self, host: str, port: int = 783) -> ConnectionManagerBuilder:
+        """Configures the builder to use a TCP connection.
+
+        :param host: Hostname to use.
+        :param port: Port to use.
+
+        :return: This builder instance.
+        """
+
         self._manager_type = self.ManagerType.Tcp
         self._tcp_builder.set_host(host).set_port(port)
         self._unix_path = None
@@ -86,12 +113,26 @@ class ConnectionManagerBuilder:
         return self
 
     def add_ssl_context(self, context: ssl.SSLContext) -> ConnectionManagerBuilder:
+        """Adds an SSL context when a TCP connection is being used.
+
+        :param context: `ssl.SSLContext` instance.
+
+        :return: This builder instance.
+        """
+
         self._ssl_builder.with_context(context)
         self._ssl = True
 
         return self
 
     def set_timeout(self, timeout: Timeout) -> ConnectionManagerBuilder:
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
         self._timeout = timeout
 
         return self
@@ -209,25 +250,62 @@ class ConnectionManager:
 
 
 class TcpConnectionManagerBuilder:
+    """Builder for :class:`aiospamc.connections.TcpConnectionManager`"""
+
     def __init__(self):
+        """`TcpConnectionManagerBuilder` constructor."""
+
         self._args = {}
 
     def build(self) -> TcpConnectionManager:
+        """Builds the `TcpConnectionManager`.
+
+        :return: An instance of :class:`aiospamc.connections.TcpConnectionManager`.
+        """
+
         return TcpConnectionManager(**self._args)
 
     def set_host(self, host: str) -> TcpConnectionManagerBuilder:
+        """Sets the host to use.
+
+        :param host: Hostname to use.
+
+        :return: This builder instance.
+        """
+
         self._args["host"] = host
         return self
 
     def set_port(self, port: int) -> TcpConnectionManagerBuilder:
+        """Sets the port to use.
+
+        :param port: Port to use.
+
+        :return: This builder instance.
+        """
+
         self._args["port"] = port
         return self
 
     def set_ssl_context(self, context: ssl.SSLContext) -> TcpConnectionManagerBuilder:
+        """Set an SSL context.
+
+        :param context: An instance of `ssl.SSLContext`.
+
+        :return: This builder instance.
+        """
+
         self._args["ssl_context"] = context
         return self
 
     def set_timeout(self, timeout: Timeout) -> TcpConnectionManagerBuilder:
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
         self._args["timeout"] = timeout
         return self
 
@@ -275,17 +353,40 @@ class TcpConnectionManager(ConnectionManager):
 
 
 class UnixConnectionManagerBuilder:
+    """Builder for `UnixConnectionManager`."""
+
     def __init__(self):
+        """`UnixConnectionManagerBuilder` constructor."""
+
         self._args = {}
 
     def build(self) -> UnixConnectionManager:
+        """Builds a `UnixConnectionManager`.
+
+        :return: An instance of :class:`aiospamc.connections.UnixConnectionManager`.
+        """
+
         return UnixConnectionManager(**self._args)
 
     def set_path(self, path: Path) -> UnixConnectionManagerBuilder:
+        """Sets the unix socket path.
+
+        :param path: Path to the Unix socket.
+
+        :return: This builder instance.
+        """
+
         self._args["path"] = path
         return self
 
     def set_timeout(self, timeout: Timeout) -> UnixConnectionManagerBuilder:
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
         self._args["timeout"] = timeout
         return self
 
@@ -329,6 +430,11 @@ class SSLContextBuilder:
         self._context = ssl.create_default_context()
 
     def build(self) -> ssl.SSLContext:
+        """Builds the SSL context.
+
+        :return: An instance of `ssl.SSLContext`.
+        """
+
         return self._context
 
     def with_context(self, context: ssl.SSLContext) -> SSLContextBuilder:

@@ -11,7 +11,14 @@ from .user_warnings import raise_warnings
 
 
 class Client:
+    """Client object to submit requests."""
+
     def __init__(self, connection_manager: ConnectionManager):
+        """Client constructor.
+
+        :param connection_manager: Instance of a connection manager.
+        """
+
         self.connection_manager = connection_manager
 
     async def request(self, req: Request):

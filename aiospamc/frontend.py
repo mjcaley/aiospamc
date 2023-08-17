@@ -27,9 +27,9 @@ class FrontendClientBuilder:
         self._ssl_builder = SSLContextBuilder()
 
     def build(self) -> Client:
-        """Builds an instance of :class:`aiospamc.client.Client`.
-        
-        :return: `Client` instance.
+        """Builds the `Client`.
+
+        :return: An instance of :class:`aiospamc.client.Client`.
         """
 
         if self._ssl:
@@ -44,6 +44,17 @@ class FrontendClientBuilder:
         port: int = 783,
         socket_path: Optional[Path] = None,
     ) -> FrontendClientBuilder:
+        """Sets the type of connection manager to use.
+
+        Defaults to TCP, but if a Unix socket is provided it will be used.
+
+        :param host: TCP hostname to use.
+        :param port: TCP port to use.
+        :param socket_path: Path to the Unix socket.
+
+        :return: This builder instance.
+        """
+
         if socket_path:
             self._connection_builder = self._connection_builder.with_unix_socket(
                 socket_path
@@ -56,6 +67,15 @@ class FrontendClientBuilder:
     def add_verify(
         self, verify: Union[bool, Path, ssl.SSLContext, None] = None
     ) -> FrontendClientBuilder:
+        """Adds an SSL context to the connection manager.
+
+        :param verify: How to configure the SSL context. If `True`, add the default
+        certificate authorities. If `False`, accept any certificate. If a `Path`,
+        add the certificates from it. If an `ssl.SSLContext`, then use it.
+
+        :return: This builder instance.
+        """
+
         if verify is None:
             return self
 
@@ -78,10 +98,20 @@ class FrontendClientBuilder:
             Union[
                 Path,
                 Tuple[Path, Optional[Path]],
-                Tuple[Path, Optional[Path], Optional[Path]],
+                Tuple[Path, Optional[Path], Optional[str]],
             ]
         ],
     ) -> FrontendClientBuilder:
+        """Add a client certificate to authenticate to the server.
+
+        :param cert: Client certificate. Takes up to three a three tuple value.
+        1. Path to the certificate and key.
+        2. Path to the certificate and path to the key.
+        3. Path to the certificate, path to the key, and password of the key.
+
+        :return: This builder instance.
+        """
+
         if cert is None:
             return self
 
@@ -95,7 +125,7 @@ class FrontendClientBuilder:
             self._ssl_builder.add_client(client, key)
         elif isinstance(cert, tuple) and len(cert) == 3:
             client, key, password = cast(
-                Tuple[Path, Optional[Path], Optional[Path]], cert
+                Tuple[Path, Optional[Path], Optional[str]], cert
             )
             self._ssl_builder.add_client(client, key, password)
         else:
@@ -104,6 +134,13 @@ class FrontendClientBuilder:
         return self
 
     def set_timeout(self, timeout: Optional[Timeout] = None) -> FrontendClientBuilder:
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
         if timeout:
             self._connection_builder.set_timeout(timeout)
 
@@ -144,7 +181,7 @@ async def check(
         Union[
             Path,
             Tuple[Path, Optional[Path]],
-            Tuple[Path, Optional[Path], Optional[Path]],
+            Tuple[Path, Optional[Path], Optional[str]],
         ]
     ] = None,
     user: Optional[str] = None,
@@ -236,7 +273,7 @@ async def headers(
     cert: Union[
         Path,
         Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -326,7 +363,7 @@ async def ping(
     cert: Union[
         Path,
         Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     **kwargs,
@@ -406,7 +443,7 @@ async def process(
     cert: Union[
         Path,
         Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -497,7 +534,7 @@ async def report(
     cert: Union[
         Path,
         Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -587,7 +624,7 @@ async def report_if_spam(
     cert: Union[
         Path,
         Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -678,7 +715,7 @@ async def symbols(
     cert: Union[
         Path,
         Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -772,7 +809,7 @@ async def tell(
     cert: Union[
         Path,
         Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[Path]],
+        Tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,

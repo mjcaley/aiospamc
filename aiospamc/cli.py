@@ -56,12 +56,21 @@ FILE_NOT_FOUND_ERROR = 7
 
 
 class CliClientBuilder:
+    """Client builder for CLI arguments."""
+
     def __init__(self):
+        """Constructor for the ClieClientBuilder."""
+
         self._connection_builder = ConnectionManagerBuilder()
         self._ssl = False
         self._ssl_builder = SSLContextBuilder()
 
     def build(self) -> Client:
+        """Builds the `Client`.
+
+        :return: An instance of :class:`aiospamc.client.Client`.
+        """
+
         if self._ssl:
             ssl_context = self._ssl_builder.build()
             self._connection_builder.add_ssl_context(ssl_context)
@@ -75,6 +84,17 @@ class CliClientBuilder:
         port: int = 783,
         socket_path: Optional[Path] = None,
     ) -> "CliClientBuilder":
+        """Sets the type of connection manager to use.
+
+        Defaults to TCP, but if a Unix socket is provided it will be used.
+
+        :param host: TCP hostname to use.
+        :param port: TCP port to use.
+        :param socket_path: Path to the Unix socket.
+
+        :return: This builder instance.
+        """
+
         if socket_path:
             self._connection_builder = self._connection_builder.with_unix_socket(
                 socket_path
@@ -85,11 +105,26 @@ class CliClientBuilder:
         return self
 
     def set_timeout(self, timeout: Timeout) -> "CliClientBuilder":
+        """Sets the timeout for the connection.
+
+        :param timeout: Timeout object.
+
+        :return: This builder instance.
+        """
+
         self._connection_builder.set_timeout(timeout)
 
         return self
 
     def add_verify(self, verify: bool) -> "CliClientBuilder":
+        """Adds an SSL context to the connection manager.
+
+        :param verify: How to configure the SSL context. If `True`, add the default
+        certificate authorities. If `False`, accept any certificate.
+
+        :return: This builder instance.
+        """
+
         self._ssl = True
         self._ssl_builder.add_default_ca()
         if not verify:
@@ -98,6 +133,13 @@ class CliClientBuilder:
         return self
 
     def add_ca_cert(self, ca_cert: Optional[Path]) -> "CliClientBuilder":
+        """Adds trusted certificate authorities.
+
+        :param ca_cert: Path to the cerficiate file or directory.
+
+        :return: This builder instance.
+        """
+
         if ca_cert is None:
             return self
 
@@ -119,6 +161,15 @@ class CliClientBuilder:
         key: Optional[Path] = None,
         password: Optional[str] = None,
     ) -> "CliClientBuilder":
+        """Add a client certificate to authenticate to the server.
+
+        :param cert: Path to the client certificate and optionally the key.
+        :param key: Path to the client key.
+        :param password: Password of the client key.
+
+        :return: This builder instance.
+        """
+
         if cert is None:
             return self
 
