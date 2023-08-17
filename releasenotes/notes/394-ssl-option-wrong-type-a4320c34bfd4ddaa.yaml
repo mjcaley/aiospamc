@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    Changed `--ssl` CLI option so it accepts a boolean instead of an optional boolean. :github:issue:`394`
