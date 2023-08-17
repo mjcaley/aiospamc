@@ -11,15 +11,9 @@ from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 from typing import Any, Optional
 
 import pytest
-import pytest_asyncio
 import trustme
 from pytest_mock import MockerFixture
 
-from aiospamc.connections import (
-    ConnectionManager,
-    TcpConnectionManager,
-    UnixConnectionManager,
-)
 from aiospamc.header_values import ContentLengthValue
 from aiospamc.requests import Request
 
