@@ -45,9 +45,10 @@ async def test_successful_parse_error(fake_tcp_server, response_invalid):
 
 
 async def test_raise_for_status_called(fake_tcp_server, mocker: MockerFixture):
-    mocker.spy(Response, "raise_for_status")
+    raise_spy = mocker.spy(Response, "raise_for_status")
     _, host, port = fake_tcp_server
     c = Client(ConnectionManagerBuilder().with_tcp(host, port).build())
     response = await c.request(Request("PING"))
 
     assert isinstance(response, Response)
+    assert raise_spy.called
