@@ -1,21 +1,30 @@
 from shutil import which
-from subprocess import Popen, PIPE
-
-import aiospamc
+from subprocess import PIPE, Popen
 
 import pytest
 
+import aiospamc
 
-def check_spamd_version():
+
+def spamd_lt_4():
     import re
 
-    process = Popen([which("spamd"), "--version"], stdout=PIPE)
+    spamd_exe = which("spamd")
+    if not spamd_exe:
+        return True
+
+    process = Popen([spamd_exe, "--version"], stdout=PIPE)
     process.wait()
     version = re.match(rb".*?(\d+)\.\d+\.\d+\n", process.stdout.read())
-    return [int(i) for i in version.groups()]
+    parsed = [int(i) for i in version.groups()]
+
+    return parsed[0] < 4
 
 
-pytestmark = pytest.mark.skipif(check_spamd_version()[0] < 4, reason="SpamAssassin 4+ supports client certificate authentication")
+pytestmark = pytest.mark.skipif(
+    spamd_lt_4(),
+    reason="Only SpamAssassin 4+ supports client certificate authentication",
+)
 
 
 @pytest.mark.integration
