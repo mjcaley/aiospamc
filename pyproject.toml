@@ -11,7 +11,7 @@ homepage = "https://github.com/mjcaley/aiospamc"
 documentation = "https://aiospamc.readthedocs.io"
 
 classifiers = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production/Stable',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
