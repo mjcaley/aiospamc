@@ -1,14 +1,15 @@
 import asyncio
+import concurrent.futures
 import datetime
 import ssl
 import sys
+import threading
 from asyncio import StreamReader, StreamWriter
 from dataclasses import dataclass, field
 from pathlib import Path
 from shutil import which
 from socket import gethostbyname
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
-from typing import Any, Optional
 
 import pytest
 import trustme
@@ -368,63 +369,105 @@ class ServerResponse:
     response: bytes = b""
 
 
-def fake_server(resp: ServerResponse):
+def fake_server(resp: ServerResponse, is_done: asyncio.Event):
     buffer_size = 1024
 
     async def inner(reader: StreamReader, writer: StreamWriter):
         data = b""
-        while len(chunk := await reader.read(buffer_size)) == buffer_size:
+        while chunk := await reader.read(buffer_size):
             data += chunk
+            if len(chunk) < buffer_size:
+                break
         writer.write(resp.response)
         if writer.can_write_eof():
             writer.write_eof()
         await writer.drain()
         writer.close()
         await writer.wait_closed()
+        is_done.set()
 
     return inner
 
 
+def run_fake_tcp_server(is_running, response, port, ssl_context=None):
+    async def server():
+        is_done = asyncio.Event()
+        server = await asyncio.start_server(
+            fake_server(response, is_done), "localhost", port, ssl=ssl_context
+        )
+        is_running.set()
+        await is_done.wait()
+        server.close()
+        await server.wait_closed()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(server())
+    loop.close()
+
+
+def run_fake_unix_server(is_running, response, path):
+    async def server():
+        is_done = asyncio.Event()
+        server = await asyncio.start_unix_server(fake_server(response, is_done), path)
+        is_running.set()
+        await is_done.wait()
+        server.close()
+        await server.wait_closed()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(server())
+    loop.close()
+
+
 @pytest.fixture
 async def fake_tcp_server(unused_tcp_port, response_ok):
+    is_running = threading.Event()
     response = ServerResponse(response_ok)
-    server = await asyncio.start_server(
-        fake_server(response), "localhost", unused_tcp_port
-    )
-    yield response, "localhost", unused_tcp_port
-    server.close()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        executor.submit(run_fake_tcp_server, is_running, response, unused_tcp_port)
+        is_running.wait()
+        yield response, "localhost", unused_tcp_port
+        executor.shutdown(wait=False, cancel_futures=True)
 
 
 @pytest.fixture
 async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
-    response = ServerResponse(response_ok)
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     server_cert.configure_cert(context)
-    server = await asyncio.start_server(
-        fake_server(response), "localhost", unused_tcp_port, ssl=context
-    )
-    yield response, "localhost", unused_tcp_port
-    server.close()
+    is_running = threading.Event()
+    response = ServerResponse(response_ok)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        executor.submit(
+            run_fake_tcp_server, is_running, response, unused_tcp_port, context
+        )
+        is_running.wait()
+        yield response, "localhost", unused_tcp_port
+        executor.shutdown(wait=False, cancel_futures=True)
 
 
 @pytest.fixture
 async def fake_tcp_ssl_client(unused_tcp_port, response_ok, ca, server_cert):
-    response = ServerResponse(response_ok)
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.verify_mode = ssl.CERT_REQUIRED
     server_cert.configure_cert(context)
     ca.configure_trust(context)
-    server = await asyncio.start_server(
-        fake_server(response), "localhost", unused_tcp_port, ssl=context
-    )
-    yield response, "localhost", unused_tcp_port
-    server.close()
+    is_running = threading.Event()
+    response = ServerResponse(response_ok)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        executor.submit(
+            run_fake_tcp_server, is_running, response, unused_tcp_port, context
+        )
+        is_running.wait()
+        yield response, "localhost", unused_tcp_port
+        executor.shutdown(wait=False, cancel_futures=True)
 
 
 @pytest.fixture
-def mock_reader_writer(mocker: MockerFixture):
+def mock_reader_writer(mocker: MockerFixture, response_ok):
     mock_reader = mocker.MagicMock()
-    mock_reader.read = mocker.AsyncMock()
+    mock_reader.read = mocker.AsyncMock(return_value=response_ok)
     mock_writer = mocker.MagicMock()
     mock_writer.drain = mocker.AsyncMock()
     mock_writer.write = mocker.MagicMock()

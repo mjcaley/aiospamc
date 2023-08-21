@@ -338,7 +338,7 @@ def ping(
 
     request = Request("PING")
     runner = CommandRunner(client, request, out)
-    response = asyncio.get_event_loop().run_until_complete(runner.run())
+    response = asyncio.run(runner.run())
     runner.exit(response.message)
 
 
@@ -426,7 +426,7 @@ def check(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.get_event_loop().run_until_complete(runner.run())
+    response = asyncio.run(runner.run())
 
     if spam_header := response.headers.spam:
         if spam_header.value:
@@ -519,7 +519,7 @@ def learn(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.get_event_loop().run_until_complete(runner.run())
+    response = asyncio.run(runner.run())
 
     if response.headers.did_set:
         runner.exit("Message successfully learned")
@@ -605,7 +605,7 @@ def forget(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.get_event_loop().run_until_complete(runner.run())
+    response = asyncio.run(runner.run())
 
     if response.headers.did_remove:
         runner.exit("Message successfully forgotten")
@@ -691,7 +691,7 @@ def report(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.get_event_loop().run_until_complete(runner.run())
+    response = asyncio.run(runner.run())
 
     if response.headers.did_set and response.headers.did_set.remote is True:
         runner.exit("Message successfully reported")
@@ -781,7 +781,7 @@ def revoke(
     client = client_builder.build()
 
     runner = CommandRunner(client, request, out)
-    response = asyncio.get_event_loop().run_until_complete(runner.run())
+    response = asyncio.run(runner.run())
 
     if response.headers.did_remove and response.headers.did_remove.remote:
         runner.exit("Message successfully revoked")

@@ -4,12 +4,7 @@ from pathlib import Path
 import pytest
 
 from aiospamc.client import Client
-from aiospamc.connections import (
-    ConnectionManager,
-    TcpConnectionManager,
-    Timeout,
-    UnixConnectionManager,
-)
+from aiospamc.connections import TcpConnectionManager, Timeout, UnixConnectionManager
 from aiospamc.exceptions import BadResponse
 from aiospamc.frontend import (
     FrontendClientBuilder,
