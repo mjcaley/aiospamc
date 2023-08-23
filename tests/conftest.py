@@ -429,7 +429,7 @@ async def fake_tcp_server(unused_tcp_port, response_ok):
         executor.submit(run_fake_tcp_server, is_running, response, unused_tcp_port)
         is_running.wait()
         yield response, "localhost", unused_tcp_port
-        executor.shutdown(wait=False, cancel_futures=True)
+        executor.shutdown(wait=False)
 
 
 @pytest.fixture
@@ -444,7 +444,7 @@ async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
         )
         is_running.wait()
         yield response, "localhost", unused_tcp_port
-        executor.shutdown(wait=False, cancel_futures=True)
+        executor.shutdown(wait=False)
 
 
 @pytest.fixture
@@ -461,7 +461,7 @@ async def fake_tcp_ssl_client(unused_tcp_port, response_ok, ca, server_cert):
         )
         is_running.wait()
         yield response, "localhost", unused_tcp_port
-        executor.shutdown(wait=False, cancel_futures=True)
+        executor.shutdown(wait=False)
 
 
 @pytest.fixture
