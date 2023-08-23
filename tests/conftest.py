@@ -374,8 +374,8 @@ class FakeServer:
         self.loop = loop
         self.resp = resp
         self.is_ready = threading.Event()
-        self.is_done = asyncio.Event()
-        self.shutdown = asyncio.Event()
+        self.is_done = None
+        self.shutdown = None
 
     async def server(self, reader: StreamReader, writer: StreamWriter):
         buffer_size = 1024
@@ -413,6 +413,8 @@ class FakeServer:
 
     def start(self, *args, **kwargs):
         asyncio.set_event_loop(self.loop)
+        self.is_done = asyncio.Event()
+        self.shutdown = asyncio.Event()
         self.loop.run_until_complete(self.run(*args, **kwargs))
 
 
