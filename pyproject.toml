@@ -65,10 +65,12 @@ exclude_lines = [
 ]
 fail_under = 95.0
 
+
 [tool.poetry.group.docs.dependencies]
 sphinx = "^6.2"
 sphinx-toolbox = "^3.4"
 reno = "^4.0"
+
 
 [tool.poetry.group.quality.dependencies]
 mypy = "^1.2"
@@ -93,6 +95,7 @@ exclude = ["changes", "docs", "example", "test", "util"]
 [tool.isort]
 profile = "black"
 src_paths = ["aiospamc", "tests"]
+
 
 [tool.poetry.group.mgmt.dependencies]
 tbump = "^6.10"
