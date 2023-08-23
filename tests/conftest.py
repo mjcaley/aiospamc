@@ -397,12 +397,12 @@ class FakeServer:
 
     async def start_server(self, *args, **kwargs):
         server = await self.create_server(*args, **kwargs)
-        asyncio.get_event_loop().call_soon_threadsafe(self.is_ready.set)
+        self.loop.call_soon_threadsafe(self.is_ready.set)
         await self.is_done.wait()
         server.close()
         await server.wait_closed()
 
-    async def run(self, *args, **kwargs):
+    async def start_controller(self, *args, **kwargs):
         server_task = asyncio.create_task(self.start_server(*args, **kwargs))
         await self.shutdown.wait()
         server_task.cancel()
@@ -411,11 +411,11 @@ class FakeServer:
         except asyncio.CancelledError:
             pass
 
-    def start(self, *args, **kwargs):
+    def run(self, *args, **kwargs):
         asyncio.set_event_loop(self.loop)
         self.is_done = asyncio.Event()
         self.shutdown = asyncio.Event()
-        self.loop.run_until_complete(self.run(*args, **kwargs))
+        self.loop.run_until_complete(self.start_controller(*args, **kwargs))
 
 
 class FakeTcpServer(FakeServer):
@@ -435,7 +435,7 @@ async def fake_tcp_server(unused_tcp_port, response_ok):
     resp = ServerResponse(response_ok)
     fake = FakeTcpServer(asyncio.new_event_loop(), resp)
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(fake.start, unused_tcp_port)
+        executor.submit(fake.run, unused_tcp_port)
         fake.is_ready.wait()
         yield resp, "localhost", unused_tcp_port
         fake.loop.call_soon_threadsafe(fake.shutdown.set)
@@ -448,7 +448,7 @@ async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
     resp = ServerResponse(response_ok)
     fake = FakeTcpServer(asyncio.new_event_loop(), resp)
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(fake.start, unused_tcp_port, context)
+        executor.submit(fake.run, unused_tcp_port, context)
         fake.is_ready.wait()
         yield resp, "localhost", unused_tcp_port
         fake.loop.call_soon_threadsafe(fake.shutdown.set)
@@ -463,7 +463,7 @@ async def fake_tcp_ssl_client(unused_tcp_port, response_ok, ca, server_cert):
     resp = ServerResponse(response_ok)
     fake = FakeTcpServer(asyncio.new_event_loop(), resp)
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(fake.start, unused_tcp_port, context)
+        executor.submit(fake.run, unused_tcp_port, context)
         fake.is_ready.wait()
         yield resp, "localhost", unused_tcp_port
         fake.loop.call_soon_threadsafe(fake.shutdown.set)
