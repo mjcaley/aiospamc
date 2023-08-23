@@ -109,10 +109,9 @@ def test_cli_builder_add_ca_client(client_cert_path, client_key_path):
 
 
 def test_cli_runner_init_defaults(fake_tcp_server):
-    _, host, port = fake_tcp_server
     request = Request("PING")
     c = CommandRunner(
-        Client(ConnectionManagerBuilder().with_tcp(host, port).build()), request
+        Client(ConnectionManagerBuilder().with_tcp("localhost", 783).build()), request
     )
 
     assert request == c.request
@@ -137,8 +136,7 @@ async def test_cli_runner_run_success(fake_tcp_server, response_pong):
     assert expected == c.response
 
 
-def test_cli_runner_to_json(fake_tcp_server):
-    _, host, port = fake_tcp_server
+def test_cli_runner_to_json():
     request = Request("PING")
     expected = {
         "request": request.to_json(),
@@ -147,7 +145,7 @@ def test_cli_runner_to_json(fake_tcp_server):
     }
 
     c = CommandRunner(
-        Client(ConnectionManagerBuilder().with_tcp(host, port).build()), request
+        Client(ConnectionManagerBuilder().with_tcp("localhost", 783).build()), request
     )
     result = c.to_json()
 
@@ -309,13 +307,11 @@ def test_command_with_message_parser_exception(
     assert "Error parsing response\n" == result.stdout
 
 
-def test_command_without_message_timeout_exception(fake_tcp_server):
-    resp, host, port = fake_tcp_server
+def test_command_without_message_timeout_exception(mock_reader_writer):
+    reader, writer = mock_reader_writer
+    reader.read.side_effect = asyncio.TimeoutError()
     runner = CliRunner()
-    resp.sleep = 10
-    result = runner.invoke(
-        app, ["ping", "--timeout", 0, "--host", host, "--port", port]
-    )
+    result = runner.invoke(app, ["ping"])
 
     assert TIMEOUT_ERROR == result.exit_code
     assert "Error: timeout\n" == result.stdout

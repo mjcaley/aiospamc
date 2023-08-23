@@ -1,14 +1,15 @@
 import asyncio
+import concurrent.futures
 import datetime
 import ssl
 import sys
+import threading
 from asyncio import StreamReader, StreamWriter
 from dataclasses import dataclass, field
 from pathlib import Path
 from shutil import which
 from socket import gethostbyname
 from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
-from typing import Any, Optional
 
 import pytest
 import trustme
@@ -368,63 +369,110 @@ class ServerResponse:
     response: bytes = b""
 
 
-def fake_server(resp: ServerResponse):
-    buffer_size = 1024
+class FakeServer:
+    def __init__(self, loop: asyncio.AbstractEventLoop, resp: ServerResponse):
+        self.loop = loop
+        self.resp = resp
+        self.is_ready = threading.Event()
+        self.is_done = None
+        self.shutdown = None
 
-    async def inner(reader: StreamReader, writer: StreamWriter):
+    async def server(self, reader: StreamReader, writer: StreamWriter):
+        buffer_size = 1024
         data = b""
-        while len(chunk := await reader.read(buffer_size)) == buffer_size:
+        while chunk := await reader.read(buffer_size):
             data += chunk
-        writer.write(resp.response)
+            if len(chunk) < buffer_size:
+                break
+        writer.write(self.resp.response)
         if writer.can_write_eof():
             writer.write_eof()
         await writer.drain()
         writer.close()
         await writer.wait_closed()
+        self.is_done.set()
 
-    return inner
+    async def create_server(self, *args, **kwargs):
+        raise NotImplementedError
+
+    async def start_server(self, *args, **kwargs):
+        server = await self.create_server(*args, **kwargs)
+        self.loop.call_soon_threadsafe(self.is_ready.set)
+        await self.is_done.wait()
+        server.close()
+        await server.wait_closed()
+
+    async def start_controller(self, *args, **kwargs):
+        server_task = asyncio.create_task(self.start_server(*args, **kwargs))
+        await self.shutdown.wait()
+        server_task.cancel()
+        try:
+            await server_task
+        except asyncio.CancelledError:
+            pass
+
+    def run(self, *args, **kwargs):
+        asyncio.set_event_loop(self.loop)
+        self.is_done = asyncio.Event()
+        self.shutdown = asyncio.Event()
+        self.loop.run_until_complete(self.start_controller(*args, **kwargs))
+
+
+class FakeTcpServer(FakeServer):
+    async def create_server(self, port, ssl_context=None):
+        return await asyncio.start_server(
+            self.server, "localhost", port, ssl=ssl_context
+        )
+
+
+class FakeUnixServer(FakeServer):
+    async def create_server(self, path):
+        return await asyncio.start_unix_server(self.server, path)
 
 
 @pytest.fixture
 async def fake_tcp_server(unused_tcp_port, response_ok):
-    response = ServerResponse(response_ok)
-    server = await asyncio.start_server(
-        fake_server(response), "localhost", unused_tcp_port
-    )
-    yield response, "localhost", unused_tcp_port
-    server.close()
+    resp = ServerResponse(response_ok)
+    fake = FakeTcpServer(asyncio.new_event_loop(), resp)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(fake.run, unused_tcp_port)
+        fake.is_ready.wait()
+        yield resp, "localhost", unused_tcp_port
+        fake.loop.call_soon_threadsafe(fake.shutdown.set)
 
 
 @pytest.fixture
 async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
-    response = ServerResponse(response_ok)
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     server_cert.configure_cert(context)
-    server = await asyncio.start_server(
-        fake_server(response), "localhost", unused_tcp_port, ssl=context
-    )
-    yield response, "localhost", unused_tcp_port
-    server.close()
+    resp = ServerResponse(response_ok)
+    fake = FakeTcpServer(asyncio.new_event_loop(), resp)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(fake.run, unused_tcp_port, context)
+        fake.is_ready.wait()
+        yield resp, "localhost", unused_tcp_port
+        fake.loop.call_soon_threadsafe(fake.shutdown.set)
 
 
 @pytest.fixture
 async def fake_tcp_ssl_client(unused_tcp_port, response_ok, ca, server_cert):
-    response = ServerResponse(response_ok)
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.verify_mode = ssl.CERT_REQUIRED
     server_cert.configure_cert(context)
     ca.configure_trust(context)
-    server = await asyncio.start_server(
-        fake_server(response), "localhost", unused_tcp_port, ssl=context
-    )
-    yield response, "localhost", unused_tcp_port
-    server.close()
+    resp = ServerResponse(response_ok)
+    fake = FakeTcpServer(asyncio.new_event_loop(), resp)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(fake.run, unused_tcp_port, context)
+        fake.is_ready.wait()
+        yield resp, "localhost", unused_tcp_port
+        fake.loop.call_soon_threadsafe(fake.shutdown.set)
 
 
 @pytest.fixture
-def mock_reader_writer(mocker: MockerFixture):
+def mock_reader_writer(mocker: MockerFixture, response_ok):
     mock_reader = mocker.MagicMock()
-    mock_reader.read = mocker.AsyncMock()
+    mock_reader.read = mocker.AsyncMock(return_value=response_ok)
     mock_writer = mocker.MagicMock()
     mock_writer.drain = mocker.AsyncMock()
     mock_writer.write = mocker.MagicMock()
