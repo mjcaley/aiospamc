@@ -369,82 +369,87 @@ class ServerResponse:
     response: bytes = b""
 
 
-def fake_server(resp: ServerResponse, is_done: asyncio.Event):
-    buffer_size = 1024
+class FakeServer:
+    def __init__(self, loop: asyncio.AbstractEventLoop, resp: ServerResponse):
+        self.loop = loop
+        self.resp = resp
+        self.is_ready = threading.Event()
+        self.is_done = asyncio.Event()
+        self.shutdown = asyncio.Event()
 
-    async def inner(reader: StreamReader, writer: StreamWriter):
+    async def server(self, reader: StreamReader, writer: StreamWriter):
+        buffer_size = 1024
         data = b""
         while chunk := await reader.read(buffer_size):
             data += chunk
             if len(chunk) < buffer_size:
                 break
-        writer.write(resp.response)
+        writer.write(self.resp.response)
         if writer.can_write_eof():
             writer.write_eof()
         await writer.drain()
         writer.close()
         await writer.wait_closed()
-        is_done.set()
+        self.is_done.set()
 
-    return inner
+    async def create_server(self, *args, **kwargs):
+        raise NotImplementedError
+
+    async def start_server(self, *args, **kwargs):
+        server = await self.create_server(*args, **kwargs)
+        asyncio.get_event_loop().call_soon_threadsafe(self.is_ready.set)
+        await self.is_done.wait()
+        server.close()
+        await server.wait_closed()
+
+    async def run(self, *args, **kwargs):
+        server_task = asyncio.create_task(self.start_server(*args, **kwargs))
+        await self.shutdown.wait()
+        server_task.cancel()
+        try:
+            await server_task
+        except asyncio.CancelledError:
+            pass
+
+    def start(self, *args, **kwargs):
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self.run(*args, **kwargs))
 
 
-def run_fake_tcp_server(is_running, response, port, ssl_context=None):
-    async def server():
-        is_done = asyncio.Event()
-        server = await asyncio.start_server(
-            fake_server(response, is_done), "localhost", port, ssl=ssl_context
+class FakeTcpServer(FakeServer):
+    async def create_server(self, port, ssl_context=None):
+        return await asyncio.start_server(
+            self.server, "localhost", port, ssl=ssl_context
         )
-        is_running.set()
-        await is_done.wait()
-        server.close()
-        await server.wait_closed()
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(server())
-    loop.close()
 
 
-def run_fake_unix_server(is_running, response, path):
-    async def server():
-        is_done = asyncio.Event()
-        server = await asyncio.start_unix_server(fake_server(response, is_done), path)
-        is_running.set()
-        await is_done.wait()
-        server.close()
-        await server.wait_closed()
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(server())
-    loop.close()
+class FakeUnixServer(FakeServer):
+    async def create_server(self, path):
+        return await asyncio.start_unix_server(self.server, path)
 
 
 @pytest.fixture
 async def fake_tcp_server(unused_tcp_port, response_ok):
-    is_running = threading.Event()
-    response = ServerResponse(response_ok)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        executor.submit(run_fake_tcp_server, is_running, response, unused_tcp_port)
-        is_running.wait()
-        yield response, "localhost", unused_tcp_port
-        executor.shutdown(wait=False)
+    resp = ServerResponse(response_ok)
+    fake = FakeTcpServer(asyncio.new_event_loop(), resp)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(fake.start, unused_tcp_port)
+        fake.is_ready.wait()
+        yield resp, "localhost", unused_tcp_port
+        fake.loop.call_soon_threadsafe(fake.shutdown.set)
 
 
 @pytest.fixture
 async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     server_cert.configure_cert(context)
-    is_running = threading.Event()
-    response = ServerResponse(response_ok)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        executor.submit(
-            run_fake_tcp_server, is_running, response, unused_tcp_port, context
-        )
-        is_running.wait()
-        yield response, "localhost", unused_tcp_port
-        executor.shutdown(wait=False)
+    resp = ServerResponse(response_ok)
+    fake = FakeTcpServer(asyncio.new_event_loop(), resp)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(fake.start, unused_tcp_port, context)
+        fake.is_ready.wait()
+        yield resp, "localhost", unused_tcp_port
+        fake.loop.call_soon_threadsafe(fake.shutdown.set)
 
 
 @pytest.fixture
@@ -453,15 +458,13 @@ async def fake_tcp_ssl_client(unused_tcp_port, response_ok, ca, server_cert):
     context.verify_mode = ssl.CERT_REQUIRED
     server_cert.configure_cert(context)
     ca.configure_trust(context)
-    is_running = threading.Event()
-    response = ServerResponse(response_ok)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        executor.submit(
-            run_fake_tcp_server, is_running, response, unused_tcp_port, context
-        )
-        is_running.wait()
-        yield response, "localhost", unused_tcp_port
-        executor.shutdown(wait=False)
+    resp = ServerResponse(response_ok)
+    fake = FakeTcpServer(asyncio.new_event_loop(), resp)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.submit(fake.start, unused_tcp_port, context)
+        fake.is_ready.wait()
+        yield resp, "localhost", unused_tcp_port
+        fake.loop.call_soon_threadsafe(fake.shutdown.set)
 
 
 @pytest.fixture

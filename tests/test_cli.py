@@ -108,7 +108,7 @@ def test_cli_builder_add_ca_client(client_cert_path, client_key_path):
     assert hasattr(c.connection_manager, "ssl_context")
 
 
-def test_cli_runner_init_defaults():
+def test_cli_runner_init_defaults(fake_tcp_server):
     request = Request("PING")
     c = CommandRunner(
         Client(ConnectionManagerBuilder().with_tcp("localhost", 783).build()), request
@@ -167,10 +167,6 @@ def test_ping_json(mocker, fake_tcp_server, response_pong):
     }
 
     assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
-
-
-def test_ping(mocker, fake_tcp_server):
-    assert True
 
 
 @pytest.mark.parametrize(
