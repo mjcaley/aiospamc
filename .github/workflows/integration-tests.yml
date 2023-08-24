@@ -40,14 +40,24 @@ jobs:
       - run: sudo sa-update
       - run: spamd --version
       - name: Run integration tests
-        run: |
-          poetry run pytest -m integration --junit-xml="output/integration-tests.xml"
+        run: >
+          poetry run pytest -m integration
+          --cov
+          --cov-report="xml:output/coverage.xml"
+          --cov-fail-under=0
+          --junit-xml="output/integration-tests.xml"
       - name: Publish test results
         if: success() || failure()
         uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: output/**
+      - name: Upload to Codecov.io
+        if: success() || failure()
+        uses: codecov/codecov-action@v3
+        with:
+          files: output/coverage.xml
+          flags: integrationtests
   status:
     if: ${{ always() }}
     runs-on: ubuntu-latest
