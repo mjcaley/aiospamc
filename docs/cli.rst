@@ -52,6 +52,22 @@ Commands
 
         |ssl_description|
 
+    .. option:: --ca-cert PATH
+
+        |ca_cert_description|
+
+    .. option:: --client-cert PATH
+
+        |client_cert_description|
+
+    .. option:: --client-key PATH
+
+        |client_key_description|
+
+    .. option:: --key-password
+
+        |key_password_description|
+
     .. option:: --user USERNAME
 
         |user_description|
@@ -84,6 +100,22 @@ Commands
 
         |ssl_description|
 
+    .. option:: --ca-cert PATH
+
+        |ca_cert_description|
+
+    .. option:: --client-cert PATH
+
+        |client_cert_description|
+
+    .. option:: --client-key PATH
+
+        |client_key_description|
+
+    .. option:: --key-password
+
+        |key_password_description|
+
     .. option:: --user USERNAME
 
         |user_description|
@@ -115,6 +147,22 @@ Commands
     .. option:: --ssl
 
         |ssl_description|
+
+    .. option:: --ca-cert PATH
+
+        |ca_cert_description|
+
+    .. option:: --client-cert PATH
+
+        |client_cert_description|
+
+    .. option:: --client-key PATH
+
+        |client_key_description|
+
+    .. option:: --key-password
+
+        |key_password_description|
 
     .. option:: --user USERNAME
 
@@ -150,6 +198,22 @@ Commands
 
         |ssl_description|
 
+    .. option:: --ca-cert PATH
+
+        |ca_cert_description|
+
+    .. option:: --client-cert PATH
+
+        |client_cert_description|
+
+    .. option:: --client-key PATH
+
+        |client_key_description|
+
+    .. option:: --key-password
+
+        |key_password_description|
+
     .. option:: --user USERNAME
 
         |user_description|
@@ -183,6 +247,22 @@ Commands
     .. option:: --ssl
 
         |ssl_description|
+
+    .. option:: --ca-cert PATH
+
+        |ca_cert_description|
+
+    .. option:: --client-cert PATH
+
+        |client_cert_description|
+
+    .. option:: --client-key PATH
+
+        |client_key_description|
+
+    .. option:: --key-password
+
+        |key_password_description|
 
     .. option:: --user USERNAME
 
@@ -218,6 +298,22 @@ Commands
 
         |ssl_description|
 
+    .. option:: --ca-cert PATH
+
+        |ca_cert_description|
+
+    .. option:: --client-cert PATH
+
+        |client_cert_description|
+
+    .. option:: --client-key PATH
+
+        |client_key_description|
+
+    .. option:: --key-password
+
+        |key_password_description|
+
     .. option:: --user USERNAME
 
         |user_description|
@@ -238,6 +334,16 @@ Commands
 
 .. |ssl_description| replace:: Enables or disables SSL when using a TCP connection. Will use the
                                system's root certificates by default.
+
+.. |ca_cert_description| replace:: Path to certificate authority file or path. Overrides the
+                                   default path.
+
+.. |client_cert_description| replace:: Filename for the client certificate.
+
+.. |client_key_description| replace:: Filename for the client certificate key. Specify this if
+                                      this isn't included in the client certificate.
+
+.. |key_password_description| replace:: Password for the client certificate key if encrypted.
 
 .. |user_description| replace:: User to send the request as.
 

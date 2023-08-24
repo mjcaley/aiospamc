@@ -386,7 +386,9 @@ def check(
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
-    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    user: Annotated[
+        str, typer.Option(metavar="USERNAME", help="User to send the request as.")
+    ] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
@@ -473,7 +475,9 @@ def learn(
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
-    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    user: Annotated[
+        str, typer.Option(metavar="USERNAME", help="User to send the request as.")
+    ] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
@@ -560,7 +564,9 @@ def forget(
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
-    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    user: Annotated[
+        str, typer.Option(metavar="USERNAME", help="User to send the request as.")
+    ] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
@@ -646,7 +652,9 @@ def report(
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
-    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    user: Annotated[
+        str, typer.Option(metavar="USERNAME", help="User to send the request as.")
+    ] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
@@ -733,7 +741,9 @@ def revoke(
     ssl: Annotated[
         bool, typer.Option(help="Use SSL to communicate with the daemon.")
     ] = False,
-    user: Annotated[str, typer.Option(help="User to send the request as.")] = getuser(),
+    user: Annotated[
+        str, typer.Option(metavar="USERNAME", help="User to send the request as.")
+    ] = getuser(),
     timeout: Annotated[
         float, typer.Option(metavar="SECONDS", help="Timeout in seconds")
     ] = 10,
