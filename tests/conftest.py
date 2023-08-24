@@ -375,7 +375,6 @@ class FakeServer:
         self.resp = resp
         self.is_ready = threading.Event()
         self.is_done = None
-        self.shutdown = None
 
     async def server(self, reader: StreamReader, writer: StreamWriter):
         buffer_size = 1024
@@ -397,25 +396,15 @@ class FakeServer:
 
     async def start_server(self, *args, **kwargs):
         server = await self.create_server(*args, **kwargs)
-        self.loop.call_soon_threadsafe(self.is_ready.set)
+        self.is_ready.set()
         await self.is_done.wait()
         server.close()
         await server.wait_closed()
 
-    async def start_controller(self, *args, **kwargs):
-        server_task = asyncio.create_task(self.start_server(*args, **kwargs))
-        await self.shutdown.wait()
-        server_task.cancel()
-        try:
-            await server_task
-        except asyncio.CancelledError:
-            pass
-
     def run(self, *args, **kwargs):
         asyncio.set_event_loop(self.loop)
         self.is_done = asyncio.Event()
-        self.shutdown = asyncio.Event()
-        self.loop.run_until_complete(self.start_controller(*args, **kwargs))
+        self.loop.run_until_complete(self.start_server(*args, **kwargs))
 
 
 class FakeTcpServer(FakeServer):
@@ -438,7 +427,7 @@ async def fake_tcp_server(unused_tcp_port, response_ok):
         executor.submit(fake.run, unused_tcp_port)
         fake.is_ready.wait()
         yield resp, "localhost", unused_tcp_port
-        fake.loop.call_soon_threadsafe(fake.shutdown.set)
+        fake.loop.call_soon_threadsafe(fake.is_done.set)
 
 
 @pytest.fixture
@@ -451,7 +440,7 @@ async def fake_tcp_ssl_server(unused_tcp_port, response_ok, server_cert):
         executor.submit(fake.run, unused_tcp_port, context)
         fake.is_ready.wait()
         yield resp, "localhost", unused_tcp_port
-        fake.loop.call_soon_threadsafe(fake.shutdown.set)
+        fake.loop.call_soon_threadsafe(fake.is_done.set)
 
 
 @pytest.fixture
@@ -466,7 +455,7 @@ async def fake_tcp_ssl_client(unused_tcp_port, response_ok, ca, server_cert):
         executor.submit(fake.run, unused_tcp_port, context)
         fake.is_ready.wait()
         yield resp, "localhost", unused_tcp_port
-        fake.loop.call_soon_threadsafe(fake.shutdown.set)
+        fake.loop.call_soon_threadsafe(fake.is_done.set)
 
 
 @pytest.fixture
