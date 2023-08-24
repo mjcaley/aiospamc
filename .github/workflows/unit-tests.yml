@@ -38,6 +38,12 @@ jobs:
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.python }}
           path: output/**
+      - name: Upload to Codecov.io
+        if: success() || failure()
+        uses: codecov/codecov-action@v3
+        with:
+          files: output/coverage.xml
+          flags: unittests
   status:
     if: ${{ always() }}
     runs-on: ubuntu-latest
