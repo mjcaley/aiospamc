@@ -108,7 +108,7 @@ def test_cli_builder_add_ca_client(client_cert_path, client_key_path):
     assert hasattr(c.connection_manager, "ssl_context")
 
 
-def test_cli_runner_init_defaults(fake_tcp_server):
+def test_cli_runner_init_defaults():
     request = Request("PING")
     c = CommandRunner(
         Client(ConnectionManagerBuilder().with_tcp("localhost", 783).build()), request
