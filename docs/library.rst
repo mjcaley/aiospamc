@@ -11,32 +11,26 @@ message, specify the host and await on the request.  In this case, the response
 will contain a header called `Spam` with a boolean if the message is considered
 spam as well as the score.
 
-.. code-block::
+.. code-block:: python
 
     import asyncio
     import aiospamc
 
-    example_message = ('From: John Doe <jdoe@machine.example>'
-                   'To: Mary Smith <mary@example.net>'
-                   'Subject: Saying Hello'
-                   'Date: Fri, 21 Nov 1997 09:55:06 -0600'
-                   'Message-ID: <1234@local.machine.example>'
-                   ''
-                   'This is a message just to say hello.'
-                   'So, "Hello".').encode('ascii')
+    example_message = ("From: John Doe <jdoe@machine.example>"
+                   "To: Mary Smith <mary@example.net>"
+                   "Subject: Saying Hello"
+                   "Date: Fri, 21 Nov 1997 09:55:06 -0600"
+                   "Message-ID: <1234@local.machine.example>"
+                   ""
+                   "This is a message just to say hello."
+                   "So, 'Hello'.").encode("ascii")
 
-    async def check_for_spam(message):
-        response = await aiospamc.check(message, host='localhost')
-        return response
-
-    loop = asyncio.get_event_loop()
-
-    response = loop.run_until_complete(check_for_spam(example_message))
+    response = asyncio.run(aiospamc.check(message, host="localhost"))
     print(
-        f'Is the message spam? {response.headers['Spam'].value}\n',
-        f'The score and threshold is {response.headers['Spam'].score} ',
-        f'/ {response.headers['Spam'].threshold}'),
-        sep=''
+        f"Is the message spam? {response.headers.spam.value}\n",
+        f"The score and threshold is {response.headers.spam.score} ",
+        f"/ {response.headers.spam.threshold}",
+        sep=""
     )
 
 *****************
