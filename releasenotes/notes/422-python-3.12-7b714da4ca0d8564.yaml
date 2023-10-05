@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Added support for Python 3.12 :github:issue:`422`
