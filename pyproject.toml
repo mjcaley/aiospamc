@@ -16,6 +16,7 @@ classifiers = [
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
     'Intended Audience :: Developers',
     'Intended Audience :: System Administrators',
     'License :: OSI Approved :: MIT License',
@@ -39,9 +40,8 @@ pytest = "^7.1"
 pytest-cov = "^4.0"
 pytest-asyncio = "^0.21"
 pytest-mock = "^3.10"
-mock = "^5.0"
 coverage = {extras = ["toml"], version = "^7.2"}
-trustme = "^0.9.0"
+trustme = "^1.1"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -50,7 +50,6 @@ testpaths = [
 ]
 markers = ["integration: spawn an instance of spamd and test against it"]
 addopts = "-m \"not integration\""
-mock_use_standalone_module = true
 asyncio_mode = "auto"
 
 [tool.coverage.run]
