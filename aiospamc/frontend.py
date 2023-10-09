@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ssl
+from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union, cast
 
@@ -118,16 +119,29 @@ class FrontendClientBuilder:
         if not self._ssl:
             self.add_verify(True)
 
+        def pwd_check(password: Optional[str] = None) -> str:
+            """Return the password, otherwise throw an exception.
+
+            :return: The password.
+            :raises ValueError: When the password is `None`.
+            """
+
+            if password is None:
+                raise ValueError("Private key password not provided")
+            return password
+
         if isinstance(cert, Path):
-            self._ssl_builder.add_client(cert)
+            self._ssl_builder.add_client(cert, password=partial(pwd_check, None))
         elif isinstance(cert, tuple) and len(cert) == 2:
             client, key = cast(Tuple[Path, Optional[Path]], cert)
-            self._ssl_builder.add_client(client, key)
+            self._ssl_builder.add_client(client, key, password=partial(pwd_check, None))
         elif isinstance(cert, tuple) and len(cert) == 3:
             client, key, password = cast(
                 Tuple[Path, Optional[Path], Optional[str]], cert
             )
-            self._ssl_builder.add_client(client, key, password)
+            self._ssl_builder.add_client(
+                client, key, password=partial(pwd_check, password)
+            )
         else:
             raise TypeError("Unexepected value")
 

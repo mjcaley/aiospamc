@@ -5,7 +5,7 @@ import json
 import ssl
 import sys
 from enum import Enum
-from getpass import getuser
+from getpass import getpass, getuser
 from io import BufferedReader
 from pathlib import Path
 from typing import Optional
@@ -176,7 +176,9 @@ class CliClientBuilder:
         if self._ssl is False:
             self._ssl = True
             self.add_verify(True)
-        self._ssl_builder.add_client(cert, key, password)
+        self._ssl_builder.add_client(
+            cert, key, lambda: password or getpass("Private key password")
+        )
 
         return self
 

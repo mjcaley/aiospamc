@@ -136,12 +136,14 @@ def test_frontend_builder_add_client_cert_and_key(client_cert_path, client_key_p
 
 
 def test_frontend_builder_add_client_cert_key_and_password(
-    client_cert_path, client_key_path
+    client_cert_path, client_encrypted_key_path, client_private_key_password
 ):
     f = (
         FrontendClientBuilder()
         .with_connection()
-        .add_client_cert((client_cert_path, client_key_path, "password"))
+        .add_client_cert(
+            (client_cert_path, client_encrypted_key_path, client_private_key_password)
+        )
         .build()
     )
 
@@ -311,6 +313,43 @@ async def test_ping_returns_response_ssl_client(
     )
 
     assert isinstance(result, Response)
+
+
+async def test_ping_returns_response_ssl_client_encrypted_private_key(
+    fake_tcp_ssl_client,
+    spam,
+    ca_cert_path,
+    client_cert_path,
+    client_encrypted_key_path,
+    client_private_key_password,
+):
+    _, host, port = fake_tcp_ssl_client
+    result = await ping(
+        host=host,
+        port=port,
+        verify=ca_cert_path,
+        cert=(client_cert_path, client_encrypted_key_path, client_private_key_password),
+    )
+
+    assert isinstance(result, Response)
+
+
+async def test_ping_returns_response_ssl_client_encrypted_private_key_raises_error(
+    fake_tcp_ssl_client,
+    spam,
+    ca_cert_path,
+    client_cert_path,
+    client_encrypted_key_path,
+):
+    _, host, port = fake_tcp_ssl_client
+
+    with pytest.raises(ValueError):
+        await ping(
+            host=host,
+            port=port,
+            verify=ca_cert_path,
+            cert=(client_cert_path, client_encrypted_key_path),
+        )
 
 
 async def test_tell_request_with_default_parameters(fake_tcp_server, spam, mocker):
