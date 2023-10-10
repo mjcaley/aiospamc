@@ -59,7 +59,7 @@ class CliClientBuilder:
     """Client builder for CLI arguments."""
 
     def __init__(self):
-        """Constructor for the ClieClientBuilder."""
+        """Constructor for the CliClientBuilder."""
 
         self._connection_builder = ConnectionManagerBuilder()
         self._ssl = False
