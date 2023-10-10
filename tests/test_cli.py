@@ -5,7 +5,7 @@ from ssl import SSLError
 
 import pytest
 from loguru import logger
-from pytest_mock import MockerFixture
+from pytest_mock import MockerFixture, MockFixture
 from typer.testing import CliRunner
 
 import aiospamc
@@ -97,11 +97,19 @@ def test_cli_builder_add_ca_cert_not_found():
         CliClientBuilder().with_connection().add_ca_cert(Path("doesnt_exist")).build()
 
 
-def test_cli_builder_add_ca_client(client_cert_path, client_key_path):
+def test_cli_builder_add_ca_client(
+    mocker: MockFixture,
+    client_cert_path,
+    client_encrypted_key_path,
+    client_private_key_password,
+):
+    mocker.patch("getpass.getpass", return_value=client_private_key_password)
     c = (
         CliClientBuilder()
         .with_connection()
-        .add_client_cert(client_cert_path, client_key_path, "password")
+        .add_client_cert(
+            client_cert_path, client_encrypted_key_path, client_private_key_password
+        )
         .build()
     )
 
