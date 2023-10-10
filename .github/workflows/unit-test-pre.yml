@@ -1,7 +1,8 @@
-name: Unit tests prerelease
+name: Unit tests pre-release
 on:
   schedule:
     - cron: '0 0 * * 5'
+  workflow_dispatch:
 jobs:
   unit-tests:
     name: "Run Unit Tests"
@@ -31,7 +32,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v3
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.python }}
+          name: test-results-${{ matrix.os }}-prerelease
           path: output/**
   status:
     if: ${{ always() }}
