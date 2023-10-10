@@ -5,8 +5,9 @@ from __future__ import annotations
 import asyncio
 import ssl
 from enum import Enum, auto
+from getpass import getpass
 from pathlib import Path
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Tuple, Union
 
 import certifi
 import loguru
@@ -499,13 +500,16 @@ class SSLContextBuilder:
         return self
 
     def add_client(
-        self, file: Path, key: Optional[Path] = None, password: Optional[str] = None
+        self,
+        file: Path,
+        key: Optional[Path] = None,
+        password: Optional[Callable[[], Union[str, bytes, bytearray]]] = None,
     ) -> SSLContextBuilder:
         """Add client certificate.
 
         :param file: Path to the client certificate.
         :param key: Path to the key.
-        :param password: Password of the key.
+        :param password: Callable that returns the password, if any.
         """
 
         self._context.load_cert_chain(file, key, password)

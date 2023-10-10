@@ -335,10 +335,18 @@ def test_ssl_context_builder_add_ca_path_not_found():
 
 
 def test_ssl_context_builder_add_client_cert(
-    mocker: MockerFixture, client_cert_path, client_key_path
+    mocker: MockerFixture,
+    client_cert_path,
+    client_key_path,
+    client_private_key_password,
 ):
     builder = SSLContextBuilder()
     certs_spy = mocker.spy(builder._context, "load_cert_chain")
-    s = builder.add_client(client_cert_path, client_key_path, "password").build()
+    password_call = lambda: client_private_key_password
+    s = builder.add_client(client_cert_path, client_key_path, password_call).build()
 
-    assert (client_cert_path, client_key_path, "password") == certs_spy.call_args.args
+    assert (
+        client_cert_path,
+        client_key_path,
+        password_call,
+    ) == certs_spy.call_args.args

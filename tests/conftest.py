@@ -5,7 +5,7 @@ import ssl
 import sys
 import threading
 from asyncio import StreamReader, StreamWriter
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from shutil import which
 from socket import gethostbyname
@@ -13,6 +13,12 @@ from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
 import pytest
 import trustme
+from cryptography.hazmat.primitives.serialization import (
+    BestAvailableEncryption,
+    Encoding,
+    PrivateFormat,
+    load_pem_private_key,
+)
 from pytest_mock import MockerFixture
 
 from aiospamc.header_values import ContentLengthValue
@@ -322,13 +328,23 @@ def server_cert_and_key(server_cert, tmp_path_factory: pytest.TempdirFactory):
 
 
 @pytest.fixture(scope="session")
+def client_private_key_password():
+    yield b"password"
+
+
+@pytest.fixture(scope="session")
 def client_cert_and_key(
-    ca, hostname, ip_address, tmp_path_factory: pytest.TempdirFactory
+    ca,
+    hostname,
+    ip_address,
+    tmp_path_factory: pytest.TempdirFactory,
+    client_private_key_password,
 ):
     tmp_path = tmp_path_factory.mktemp("client_certs")
     cert_file = tmp_path / "client.cert"
     key_file = tmp_path / "client.key"
     cert_key_file = tmp_path / "client_cert_key.pem"
+    enc_key_file = tmp_path / "client_enc_key.pem"
 
     cert: trustme.LeafCert = ca.issue_cert(hostname, ip_address)
 
@@ -336,7 +352,18 @@ def client_cert_and_key(
     cert_file.write_bytes(b"".join([blob.bytes() for blob in cert.cert_chain_pems]))
     cert.private_key_pem.write_to_path(key_file)
 
-    yield cert_file, key_file, cert_key_file
+    client_private_key = load_pem_private_key(
+        cert.private_key_pem.bytes(),
+        None,
+    )
+    client_enc_key_bytes = client_private_key.private_bytes(
+        Encoding.PEM,
+        PrivateFormat.PKCS8,
+        BestAvailableEncryption(client_private_key_password),
+    )
+    enc_key_file.write_bytes(client_enc_key_bytes)
+
+    yield cert_file, key_file, cert_key_file, enc_key_file
 
 
 @pytest.fixture(scope="session")
@@ -362,6 +389,11 @@ def client_cert_path(client_cert_and_key):
 @pytest.fixture(scope="session")
 def client_key_path(client_cert_and_key):
     yield client_cert_and_key[1]
+
+
+@pytest.fixture(scope="session")
+def client_encrypted_key_path(client_cert_and_key):
+    yield client_cert_and_key[3]
 
 
 @dataclass
