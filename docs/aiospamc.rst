@@ -4,6 +4,22 @@ aiospamc package
 Submodules
 ----------
 
+aiospamc.cli module
+---------------------------
+
+.. automodule:: aiospamc.cli
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.client module
+---------------------------
+
+.. automodule:: aiospamc.client
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 aiospamc.connections module
 ---------------------------
 
@@ -56,6 +72,14 @@ aiospamc.responses module
 -------------------------
 
 .. automodule:: aiospamc.responses
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiospamc.user\_warnings module
+-------------------------
+
+.. automodule:: aiospamc.user_warnings
    :members:
    :undoc-members:
    :show-inheritance:
