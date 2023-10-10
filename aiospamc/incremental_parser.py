@@ -109,12 +109,12 @@ class Parser:
         return self.result
 
     def status(self) -> None:
-        """Splits the message at the delimiter and sends the first part of the message to the `status_line` callable to
+        """Splits the message at the delimiter and sends the first part of the message to the :attr:`status_parser` callable to
         be parsed.  If successful then the results are stored in the :attr:`result` class attribute and the state
         transitions to :class:`States.Header`.
 
         :raises NotEnoughDataError: When there is no delimiter the message is incomplete.
-        :raises ParseError: When the `status_line` callable experiences an error.
+        :raises ParseError: When the :attr:`status_parser` callable experiences an error.
         """
 
         status_line, delimiter, leftover = self.buffer.partition(self.delimiter)
@@ -130,7 +130,7 @@ class Parser:
             raise NotEnoughDataError
 
     def header(self) -> None:
-        """Splits the message at the delimiter and sends the line to the `header_parser`.
+        """Splits the message at the delimiter and sends the line to the :attr:`header_parser`.
 
         When splitting the action will be determined depending what is matched:
 
@@ -331,9 +331,9 @@ def parse_message_class_value(
 ) -> MessageClassValue:
     """Parses the `Message-class` header value.
 
-    :param stream: String or `MessageClassOption` instance.
+    :param stream: String or :class:`aiospamc.header_values.MessageClassOption` instance.
 
-    :return: A `MessageClassValue` instance representing the value.
+    :return: A :class:`aiospamc.header_values.MessageClassValue` instance representing the value.
 
     :raises ParseError: When the value doesn't match either `ham` or `spam`.
     """
@@ -355,7 +355,7 @@ def parse_content_length_value(stream: Union[str, int]) -> ContentLengthValue:
 
     :param stream: String or integer value of the header.
 
-    :return: A `ContentLengthValue` instance.
+    :return: A :class:`aiospamc.header_values.ContentLengthValue` instance.
 
     :raises ParseError: When the value cannot be cast to an integer.
     """
@@ -375,18 +375,18 @@ def parse_compress_value(stream: str) -> CompressValue:
 
     :param stream: String to parse.
 
-    :return: A `CompressValue` instance.
+    :return: A :class:`aiospamc.header_values.CompressValue` instance.
     """
 
     return CompressValue(algorithm=stream.strip())
 
 
 def parse_set_remove_value(stream: Union[ActionOption, str]) -> SetOrRemoveValue:
-    """Parse a value for the `DidRemove`, `DidSet`, `Remove`, and `Set` headers.
+    """Parse a value for the :class:`aiospamc.header_values.DidRemove`, :class:`aiospamc.header_values.DidSet`, :class:`aiospamc.header_values.Remove`, and :class:`aiospamc.header_values.Set` headers.
 
-    :param stream: String to parse or an instance of `ActionOption`.
+    :param stream: String to parse or an instance of :class:`aiospamc.header_values.ActionOption`.
 
-    :return: A `SetOrRemoveValue` instance.
+    :return: A :class:`aiospamc.header_values.SetOrRemoveValue` instance.
     """
 
     if isinstance(stream, ActionOption):
@@ -415,7 +415,7 @@ def parse_spam_value(stream: str) -> SpamValue:
 
     :param stream: String to parse.
 
-    :return: An `SpamValue` instance.
+    :return: A :class:`aiospamc.header_values.SpamValue` instance.
 
     :raises ParseError: Raised if there is no true/false value, or valid numbers for the score or threshold.
     """
@@ -452,7 +452,7 @@ def parse_user_value(stream: str) -> UserValue:
 
     :param stream: String of username to parse. Whitespace is trimmed.
 
-    :return: The `UserValue` instance.
+    :return: The :class:`aiospamc.header_values.UserValue` instance.
     """
 
     return UserValue(name=stream.strip())
@@ -464,7 +464,7 @@ def parse_header_value(header: str, value: Union[str, bytes]) -> Any:
     :param header: Name of the header.
     :param value: String or byte stream of the header value.
 
-    :return: The `HeaderValue` instance from the parsing function.
+    :return: The :class:`aiospamc.header_values.HeaderValue` instance from the parsing function.
     """
 
     if header in header_value_parsers:

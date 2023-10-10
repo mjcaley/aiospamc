@@ -59,14 +59,14 @@ class CliClientBuilder:
     """Client builder for CLI arguments."""
 
     def __init__(self):
-        """Constructor for the ClieClientBuilder."""
+        """Constructor for the CliClientBuilder."""
 
         self._connection_builder = ConnectionManagerBuilder()
         self._ssl = False
         self._ssl_builder = SSLContextBuilder()
 
     def build(self) -> Client:
-        """Builds the `Client`.
+        """Builds the :class:`aiospamc.client.Client`.
 
         :return: An instance of :class:`aiospamc.client.Client`.
         """

@@ -2,8 +2,7 @@
 Library
 #######
 
-:mod:`aiospamc` provides top-level functions for basic functionality a lot like
-the `requests` library.
+:mod:`aiospamc` provides top-level functions for all request types.
 
 For example, to ask SpamAssassin to check and score a message you can use the
 :func:`aiospamc.check` function.  Just give it a bytes-encoded copy of the
@@ -11,32 +10,27 @@ message, specify the host and await on the request.  In this case, the response
 will contain a header called `Spam` with a boolean if the message is considered
 spam as well as the score.
 
-.. code-block::
+.. code-block:: python
 
     import asyncio
     import aiospamc
 
-    example_message = ('From: John Doe <jdoe@machine.example>'
-                   'To: Mary Smith <mary@example.net>'
-                   'Subject: Saying Hello'
-                   'Date: Fri, 21 Nov 1997 09:55:06 -0600'
-                   'Message-ID: <1234@local.machine.example>'
-                   ''
-                   'This is a message just to say hello.'
-                   'So, "Hello".').encode('ascii')
+    example_message = (
+        "From: John Doe <jdoe@machine.example>"
+        "To: Mary Smith <mary@example.net>"
+        "Subject: Saying Hello"
+        "Date: Fri, 21 Nov 1997 09:55:06 -0600"
+        "Message-ID: <1234@local.machine.example>"
+        ""
+        "This is a message just to say hello."
+        "So, 'Hello'.").encode("ascii")
 
-    async def check_for_spam(message):
-        response = await aiospamc.check(message, host='localhost')
-        return response
-
-    loop = asyncio.get_event_loop()
-
-    response = loop.run_until_complete(check_for_spam(example_message))
+    response = asyncio.run(aiospamc.check(message, host="localhost"))
     print(
-        f'Is the message spam? {response.headers['Spam'].value}\n',
-        f'The score and threshold is {response.headers['Spam'].score} ',
-        f'/ {response.headers['Spam'].threshold}'),
-        sep=''
+        f"Is the message spam? {response.headers.spam.value}\n",
+        f"The score and threshold is {response.headers.spam.score} ",
+        f"/ {response.headers.spam.threshold}",
+        sep=""
     )
 
 *****************
@@ -55,6 +49,29 @@ is used to load certificates to verify the connection.
 If `False` then an SSL connection is established, but the server certificate
 is not verified.
 
+*********************************
+Client Certificate Authentication
+*********************************
+
+Client certificate authentication can be used with SSL. It's driven through the `cert`
+parameter on frontend functions. The parameter value takes three forms:
+* A path to a file expecting the certificate and key in the PEM format
+* A tuple of certificate and key files
+* A tuple of certificate file, key file, and password if the key is encrypted
+
+.. code:: python
+
+    import aiospamc
+
+    # Client certificate and key in one file
+    response = await aiospamc.ping("localhost", cert=cert_file)
+
+    # Client certificate and key file
+    response = await aiospamc.ping("localhost", cert=(cert_file, key_file))
+
+    # Client certificate and key in one file
+    response = await aiospamc.ping("localhost", cert=(cert_file, key_file, password))
+
 ****************
 Setting timeouts
 ****************
@@ -70,7 +87,9 @@ You can configure any of the three optional parameters:
 * connection - time in seconds to wait for a connection to be established
 * response - time in seconds to wait for a response after sending the request
 
-Example::
+.. code:: python
+
+    import aiospamc
 
     my_timeout = aiospamc.Timeout(total=60, connection=10, response=10)
 
@@ -88,7 +107,7 @@ Logging is provided using through the `loguru <https://github.com/Delgan/loguru>
 The `aiospamc` package disables logging by default. It can be enabled by calling the
 function:
 
-.. code-block::
+.. code-block:: python
 
     from loguru import logger
     logger.enable("aiospamc")

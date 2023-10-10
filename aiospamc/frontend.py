@@ -28,7 +28,7 @@ class FrontendClientBuilder:
         self._ssl_builder = SSLContextBuilder()
 
     def build(self) -> Client:
-        """Builds the `Client`.
+        """Builds the :class:`aiospamc.client.Client`.
 
         :return: An instance of :class:`aiospamc.client.Client`.
         """
@@ -71,8 +71,8 @@ class FrontendClientBuilder:
         """Adds an SSL context to the connection manager.
 
         :param verify: How to configure the SSL context. If `True`, add the default
-        certificate authorities. If `False`, accept any certificate. If a `Path`,
-        add the certificates from it. If an `ssl.SSLContext`, then use it.
+        certificate authorities. If `False`, accept any certificate. If a :class:`pathlib.Path`,
+        add the certificates from it. If an :class:`ssl.SSLContext`, then use it.
 
         :return: This builder instance.
         """
@@ -212,11 +212,12 @@ async def check(
         Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
+    :param cert: Use client certificate. Can either by a :class:`pathlib.Path` to a file that includes both the
+        certificate and key. Can be a tuple containing a :class:`pathlib.Path` to the certificate and a :class:`pathlib.Path` to
+        the key. Can be a tuple containing a :class:`pathlib.Path` to the certificate, :class:`pathlib.Path` to the key, and a
+        password.
     :param user: Username to pass to the SPAMD service.
     :param compress: Enable compress of the request body.
-    :param client_cert: Client certificate file to use.
-    :param client_key: Key file to use for the client certificate.
-    :param key_password: Password to use for the client key if needed.
 
     :return:
         A successful response with a "Spam" header showing if the message is
@@ -292,7 +293,6 @@ async def headers(
     ] = None,
     user: Optional[str] = None,
     compress: bool = False,
-    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return the modified message headers.
 
@@ -305,6 +305,10 @@ async def headers(
         Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
+    :param cert: Use client certificate. Can either by a :class:`pathlib.Path` to a file that includes both the
+        certificate and key. Can be a tuple containing a :class:`pathlib.Path` to the certificate and a :class:`pathlib.Path` to
+        the key. Can be a tuple containing a :class:`pathlib.Path` to the certificate, :class:`pathlib.Path` to the key, and a
+        password.
     :param user: Username to pass to the SPAMD service.
     :param compress: Enable compress of the request body.
 
@@ -380,7 +384,6 @@ async def ping(
         Tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
-    **kwargs,
 ) -> Response:
     """Sends a ping to the SPAMD service.
 
@@ -392,6 +395,10 @@ async def ping(
         Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
+    :param cert: Use client certificate. Can either by a :class:`pathlib.Path` to a file that includes both the
+        certificate and key. Can be a tuple containing a :class:`pathlib.Path` to the certificate and a :class:`pathlib.Path` to
+        the key. Can be a tuple containing a :class:`pathlib.Path` to the certificate, :class:`pathlib.Path` to the key, and a
+        password.
 
     :return: A response with "PONG".
 
@@ -462,7 +469,6 @@ async def process(
     ] = None,
     user: Optional[str] = None,
     compress: bool = False,
-    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -475,6 +481,10 @@ async def process(
         Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
+    :param cert: Use client certificate. Can either by a :class:`pathlib.Path` to a file that includes both the
+        certificate and key. Can be a tuple containing a :class:`pathlib.Path` to the certificate and a :class:`pathlib.Path` to
+        the key. Can be a tuple containing a :class:`pathlib.Path` to the certificate, :class:`pathlib.Path` to the key, and a
+        password.
     :param user: Username to pass to the SPAMD service.
     :param compress: Enable compress of the request body.
 
@@ -553,7 +563,6 @@ async def report(
     ] = None,
     user: Optional[str] = None,
     compress: bool = False,
-    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -566,6 +575,10 @@ async def report(
         Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
+    :param cert: Use client certificate. Can either by a :class:`pathlib.Path` to a file that includes both the
+        certificate and key. Can be a tuple containing a :class:`pathlib.Path` to the certificate and a :class:`pathlib.Path` to
+        the key. Can be a tuple containing a :class:`pathlib.Path` to the certificate, :class:`pathlib.Path` to the key, and a
+        password.
     :param user: Username to pass to the SPAMD service.
     :param compress: Enable compress of the request body.
 
@@ -643,7 +656,6 @@ async def report_if_spam(
     ] = None,
     user: Optional[str] = None,
     compress: bool = False,
-    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -656,6 +668,10 @@ async def report_if_spam(
         Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
+    :param cert: Use client certificate. Can either by a :class:`pathlib.Path` to a file that includes both the
+        certificate and key. Can be a tuple containing a :class:`pathlib.Path` to the certificate and a :class:`pathlib.Path` to
+        the key. Can be a tuple containing a :class:`pathlib.Path` to the certificate, :class:`pathlib.Path` to the key, and a
+        password.
     :param user: Username to pass to the SPAMD service.
     :param compress: Enable compress of the request body.
 
@@ -734,7 +750,6 @@ async def symbols(
     ] = None,
     user: Optional[str] = None,
     compress: bool = False,
-    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with rules that matched.
 
@@ -747,6 +762,10 @@ async def symbols(
         Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
+    :param cert: Use client certificate. Can either by a :class:`pathlib.Path` to a file that includes both the
+        certificate and key. Can be a tuple containing a :class:`pathlib.Path` to the certificate and a :class:`pathlib.Path` to
+        the key. Can be a tuple containing a :class:`pathlib.Path` to the certificate, :class:`pathlib.Path` to the key, and a
+        password.
     :param user: Username to pass to the SPAMD service.
     :param compress: Enable compress of the request body.
 
@@ -828,7 +847,6 @@ async def tell(
     ] = None,
     user: Optional[str] = None,
     compress: bool = False,
-    **kwargs,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
 
@@ -844,6 +862,10 @@ async def tell(
         Enable SSL. `True` will use the root certificates from the :py:mod:`certifi` package.
         `False` will use SSL, but not verify the root certificates. Passing a string to a filename
         will use the path to verify the root certificates.
+    :param cert: Use client certificate. Can either by a :class:`pathlib.Path` to a file that includes both the
+        certificate and key. Can be a tuple containing a :class:`pathlib.Path` to the certificate and a :class:`pathlib.Path` to
+        the key. Can be a tuple containing a :class:`pathlib.Path` to the certificate, :class:`pathlib.Path` to the key, and a
+        password.
     :param user: Username to pass to the SPAMD service.
     :param compress: Enable compress of the request body.
 
