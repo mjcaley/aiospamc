@@ -66,7 +66,7 @@ class CliClientBuilder:
         self._ssl_builder = SSLContextBuilder()
 
     def build(self) -> Client:
-        """Builds the `Client`.
+        """Builds the :class:`aiospamc.client.Client`.
 
         :return: An instance of :class:`aiospamc.client.Client`.
         """

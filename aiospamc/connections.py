@@ -67,7 +67,7 @@ class ConnectionManagerBuilder:
         self._timeout = None
 
     def build(self) -> Union[UnixConnectionManager, TcpConnectionManager]:
-        """Builds the `ConnectionManager`.
+        """Builds the :class:`aiospamc.connections.ConnectionManager`.
 
         :return: An instance of :class:`aiospamc.connections.TcpConnectionManager`
         or :class:`aiospamc.connections.UnixConnectionManager`
@@ -116,7 +116,7 @@ class ConnectionManagerBuilder:
     def add_ssl_context(self, context: ssl.SSLContext) -> ConnectionManagerBuilder:
         """Adds an SSL context when a TCP connection is being used.
 
-        :param context: `ssl.SSLContext` instance.
+        :param context: :class:`ssl.SSLContext` instance.
 
         :return: This builder instance.
         """
@@ -259,7 +259,7 @@ class TcpConnectionManagerBuilder:
         self._args = {}
 
     def build(self) -> TcpConnectionManager:
-        """Builds the `TcpConnectionManager`.
+        """Builds the :class:`aiospamc.connections.TcpConnectionManager`.
 
         :return: An instance of :class:`aiospamc.connections.TcpConnectionManager`.
         """
@@ -291,7 +291,7 @@ class TcpConnectionManagerBuilder:
     def set_ssl_context(self, context: ssl.SSLContext) -> TcpConnectionManagerBuilder:
         """Set an SSL context.
 
-        :param context: An instance of `ssl.SSLContext`.
+        :param context: An instance of :class:`ssl.SSLContext`.
 
         :return: This builder instance.
         """
@@ -354,7 +354,7 @@ class TcpConnectionManager(ConnectionManager):
 
 
 class UnixConnectionManagerBuilder:
-    """Builder for `UnixConnectionManager`."""
+    """Builder for :class:`aiospamc.connections.UnixConnectionManager`."""
 
     def __init__(self):
         """`UnixConnectionManagerBuilder` constructor."""
@@ -362,7 +362,7 @@ class UnixConnectionManagerBuilder:
         self._args = {}
 
     def build(self) -> UnixConnectionManager:
-        """Builds a `UnixConnectionManager`.
+        """Builds a :class:`aiospamc.connections.UnixConnectionManager`.
 
         :return: An instance of :class:`aiospamc.connections.UnixConnectionManager`.
         """
@@ -433,7 +433,7 @@ class SSLContextBuilder:
     def build(self) -> ssl.SSLContext:
         """Builds the SSL context.
 
-        :return: An instance of `ssl.SSLContext`.
+        :return: An instance of :class:`ssl.SSLContext`.
         """
 
         return self._context
