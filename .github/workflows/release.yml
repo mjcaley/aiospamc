@@ -7,6 +7,9 @@ jobs:
   release:
     name: "Upload release artifacts"
     runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v3
       - name: Save tag
@@ -48,6 +51,4 @@ jobs:
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to PyPI
-        run: poetry publish -n
-        env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_ACCESS_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@release/v1
