@@ -70,7 +70,7 @@ class ConnectionManagerBuilder:
         """Builds the :class:`aiospamc.connections.ConnectionManager`.
 
         :return: An instance of :class:`aiospamc.connections.TcpConnectionManager`
-        or :class:`aiospamc.connections.UnixConnectionManager`
+            or :class:`aiospamc.connections.UnixConnectionManager`
         """
 
         if self._manager_type is self.ManagerType.Undefined:

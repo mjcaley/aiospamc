@@ -71,8 +71,8 @@ class FrontendClientBuilder:
         """Adds an SSL context to the connection manager.
 
         :param verify: How to configure the SSL context. If `True`, add the default
-        certificate authorities. If `False`, accept any certificate. If a :class:`pathlib.Path`,
-        add the certificates from it. If an :class:`ssl.SSLContext`, then use it.
+            certificate authorities. If `False`, accept any certificate. If a :class:`pathlib.Path`,
+            add the certificates from it. If an :class:`ssl.SSLContext`, then use it.
 
         :return: This builder instance.
         """
@@ -106,9 +106,9 @@ class FrontendClientBuilder:
         """Add a client certificate to authenticate to the server.
 
         :param cert: Client certificate. Takes up to three a three tuple value.
-        1. Path to the certificate and key.
-        2. Path to the certificate and path to the key.
-        3. Path to the certificate, path to the key, and password of the key.
+            1. Path to the certificate and key.
+            2. Path to the certificate and path to the key.
+            3. Path to the certificate, path to the key, and password of the key.
 
         :return: This builder instance.
         """
