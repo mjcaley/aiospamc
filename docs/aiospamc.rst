@@ -77,7 +77,7 @@ aiospamc.responses module
    :show-inheritance:
 
 aiospamc.user\_warnings module
--------------------------
+------------------------------
 
 .. automodule:: aiospamc.user_warnings
    :members:

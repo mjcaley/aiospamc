@@ -120,7 +120,7 @@ class CliClientBuilder:
         """Adds an SSL context to the connection manager.
 
         :param verify: How to configure the SSL context. If `True`, add the default
-        certificate authorities. If `False`, accept any certificate.
+            certificate authorities. If `False`, accept any certificate.
 
         :return: This builder instance.
         """
