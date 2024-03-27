@@ -29,7 +29,7 @@ keywords = ["spam", "spamc", "spamassassin"]
 python = "^3.8"
 certifi = "*"
 loguru = "^0.7.0"
-typer = "^0.9.0"
+typer = ">=0.9,<0.12"
 typing-extensions = "^4.6.2"
 
 [tool.poetry.scripts]
