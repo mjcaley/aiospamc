@@ -39,7 +39,7 @@ Detailed documentation can be found at: https://aiospamc.readthedocs.io/
 Requirements
 ************
 
-* Python 3.8 or higher
+* Python 3.9 or higher
 * `certifi` for updated certificate authorities
 * `loguru` for structured logging
 * `typer` for the command line interface

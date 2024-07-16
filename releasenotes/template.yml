@@ -1,0 +1,8 @@
+---
+deprecations:
+  - Description of deprecation. :github:issue:`###`
+fixes:
+  - Description of bugfix. :github:issue:`###`
+features:
+  - |
+    Description of feature :github:issue:`###`
