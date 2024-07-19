@@ -5,7 +5,7 @@ from __future__ import annotations
 import ssl
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Optional, SupportsBytes, Tuple, Union, cast
+from typing import Any, Optional, SupportsBytes, Union, cast
 
 from loguru import logger
 
@@ -98,8 +98,8 @@ class FrontendClientBuilder:
         cert: Optional[
             Union[
                 Path,
-                Tuple[Path, Optional[Path]],
-                Tuple[Path, Optional[Path], Optional[str]],
+                tuple[Path, Optional[Path]],
+                tuple[Path, Optional[Path], Optional[str]],
             ]
         ],
     ) -> FrontendClientBuilder:
@@ -133,11 +133,11 @@ class FrontendClientBuilder:
         if isinstance(cert, Path):
             self._ssl_builder.add_client(cert, password=partial(pwd_check, None))
         elif isinstance(cert, tuple) and len(cert) == 2:
-            client, key = cast(Tuple[Path, Optional[Path]], cert)
+            client, key = cast(tuple[Path, Optional[Path]], cert)
             self._ssl_builder.add_client(client, key, password=partial(pwd_check, None))
         elif isinstance(cert, tuple) and len(cert) == 3:
             client, key, password = cast(
-                Tuple[Path, Optional[Path], Optional[str]], cert
+                tuple[Path, Optional[Path], Optional[str]], cert
             )
             self._ssl_builder.add_client(
                 client, key, password=partial(pwd_check, password)
@@ -194,8 +194,8 @@ async def check(
     cert: Optional[
         Union[
             Path,
-            Tuple[Path, Optional[Path]],
-            Tuple[Path, Optional[Path], Optional[str]],
+            tuple[Path, Optional[Path]],
+            tuple[Path, Optional[Path], Optional[str]],
         ]
     ] = None,
     user: Optional[str] = None,
@@ -287,8 +287,8 @@ async def headers(
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
         Path,
-        Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[str]],
+        tuple[Path, Optional[Path]],
+        tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -380,8 +380,8 @@ async def ping(
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
         Path,
-        Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[str]],
+        tuple[Path, Optional[Path]],
+        tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
 ) -> Response:
@@ -463,8 +463,8 @@ async def process(
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
         Path,
-        Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[str]],
+        tuple[Path, Optional[Path]],
+        tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -557,8 +557,8 @@ async def report(
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
         Path,
-        Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[str]],
+        tuple[Path, Optional[Path]],
+        tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -650,8 +650,8 @@ async def report_if_spam(
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
         Path,
-        Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[str]],
+        tuple[Path, Optional[Path]],
+        tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -744,8 +744,8 @@ async def symbols(
     verify: Union[bool, Path, ssl.SSLContext, None] = None,
     cert: Union[
         Path,
-        Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[str]],
+        tuple[Path, Optional[Path]],
+        tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -841,8 +841,8 @@ async def tell(
     verify: Optional[Union[bool, Path, ssl.SSLContext]] = None,
     cert: Union[
         Path,
-        Tuple[Path, Optional[Path]],
-        Tuple[Path, Optional[Path], Optional[str]],
+        tuple[Path, Optional[Path]],
+        tuple[Path, Optional[Path], Optional[str]],
         None,
     ] = None,
     user: Optional[str] = None,
@@ -894,7 +894,7 @@ async def tell(
     :raises ClientTimeoutException: Client timed out during connection.
     """
 
-    headers: Dict[str, Any] = {
+    headers: dict[str, Any] = {
         "Message-class": MessageClassValue(MessageClassOption(message_class))
     }
     if remove_action:

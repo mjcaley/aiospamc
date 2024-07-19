@@ -2,7 +2,7 @@
 
 import zlib
 from base64 import b64encode
-from typing import Any, Dict, SupportsBytes, Union
+from typing import Any, SupportsBytes, Union
 
 from .header_values import ContentLengthValue, Headers
 
@@ -14,7 +14,7 @@ class Request:
         self,
         verb: str,
         version: str = "1.5",
-        headers: Union[Dict[str, Any], Headers, None] = None,
+        headers: Union[dict[str, Any], Headers, None] = None,
         body: Union[bytes, SupportsBytes] = b"",
         **_,
     ) -> None:
