@@ -7,7 +7,7 @@ import ssl
 from enum import Enum, auto
 from getpass import getpass
 from pathlib import Path
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 import certifi
 import loguru
@@ -220,7 +220,7 @@ class ConnectionManager:
 
         return response
 
-    async def _connect(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    async def _connect(self) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Opens a connection from the connection manager.
 
         :return: Tuple or asyncio reader and writer.
@@ -238,7 +238,7 @@ class ConnectionManager:
 
         return reader, writer
 
-    async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    async def open(self) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Opens a connection, returning the reader and writer objects."""
 
         raise NotImplementedError
@@ -334,7 +334,7 @@ class TcpConnectionManager(ConnectionManager):
         self.port = port
         self.ssl_context = ssl_context
 
-    async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    async def open(self) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Opens a TCP connection.
 
         :raises: AIOSpamcConnectionFailed
@@ -405,7 +405,7 @@ class UnixConnectionManager(ConnectionManager):
         super().__init__(str(path), timeout)
         self.path = path
 
-    async def open(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    async def open(self) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Opens a unix socket path connection.
 
         :raises: AIOSpamcConnectionFailed

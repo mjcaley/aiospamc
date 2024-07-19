@@ -5,7 +5,7 @@ from __future__ import annotations
 import zlib
 from base64 import b64encode
 from enum import IntEnum
-from typing import Any, Dict, SupportsBytes, Union
+from typing import Any, SupportsBytes, Union
 
 from .exceptions import TimeoutException
 from .header_values import ContentLengthValue, Headers
@@ -41,7 +41,7 @@ class Response:
         version: str = "1.5",
         status_code: Union[Status, int] = 0,
         message: str = "",
-        headers: Union[Dict[str, Any], Headers, None] = None,
+        headers: Union[dict[str, Any], Headers, None] = None,
         body: bytes = b"",
         **_,
     ):
@@ -208,7 +208,7 @@ class Response:
             else:
                 raise ResponseException(self.status_code, self.message, self)
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         """Converts to JSON serializable object."""
 
         return {

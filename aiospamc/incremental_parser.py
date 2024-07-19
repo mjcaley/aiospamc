@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from enum import Enum, auto
-from typing import Any, Callable, Dict, Mapping, Tuple, Union
+from typing import Any, Callable, Mapping, Union
 
 import loguru
 from loguru import logger
@@ -42,7 +42,7 @@ class Parser:
         self,
         delimiter: bytes,
         status_parser: Callable[[bytes], Mapping[str, str]],
-        header_parser: Callable[[bytes], Tuple[str, Any]],
+        header_parser: Callable[[bytes], tuple[str, Any]],
         body_parser: Callable[[bytes, int], bytes],
         start: States = States.Status,
     ) -> None:
@@ -59,7 +59,7 @@ class Parser:
         self.status_parser = status_parser
         self.header_parser = header_parser
         self.body_parser = body_parser
-        self.result: Dict[str, Any] = {"headers": {}, "body": b""}
+        self.result: dict[str, Any] = {"headers": {}, "body": b""}
 
         self._state = start
         self.buffer = b""
@@ -250,7 +250,7 @@ class Parser:
             raise
 
 
-def parse_request_status(stream: bytes) -> Dict[str, str]:
+def parse_request_status(stream: bytes) -> dict[str, str]:
     """Parses the status line from a request.
 
     :param stream: The byte stream to parse.
@@ -288,7 +288,7 @@ def parse_request_status(stream: bytes) -> Dict[str, str]:
     return {"verb": verb, "protocol": protocol, "version": version}
 
 
-def parse_response_status(stream: bytes) -> Dict[str, Union[str, int]]:
+def parse_response_status(stream: bytes) -> dict[str, Union[str, int]]:
     """Parse the status line for a response.
 
     :param stream: The byte stream to parse.
@@ -485,7 +485,7 @@ def parse_header_value(header: str, value: Union[str, bytes]) -> Any:
             return GenericHeaderValue(value)
 
 
-def parse_header(stream: bytes) -> Tuple[str, Any]:
+def parse_header(stream: bytes) -> tuple[str, Any]:
     """Splits the header line and sends to the header parsing function.
 
     :param stream: Byte stream of the header line.
