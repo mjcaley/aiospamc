@@ -29,7 +29,6 @@ python = "^3.9"
 certifi = "*"
 loguru = "^0.7.0"
 typer = ">=0.9,<0.13"
-typing-extensions = "^4.6.2"
 
 [tool.poetry.scripts]
 aiospamc = "aiospamc.cli:app"
@@ -64,11 +63,13 @@ exclude_lines = [
 ]
 fail_under = 95.0
 
+
 [tool.poetry.group.docs.dependencies]
 sphinx = "^6.2"
 sphinx-rtd-theme = "^1.3"
 sphinx-toolbox = "^3.4"
 reno = "^4.0"
+
 
 [tool.poetry.group.quality.dependencies]
 mypy = "^1.2"
@@ -93,6 +94,7 @@ exclude = ["changes", "docs", "example", "test", "util"]
 [tool.isort]
 profile = "black"
 src_paths = ["aiospamc", "tests"]
+
 
 [tool.poetry.group.mgmt.dependencies]
 tbump = "^6.10"
