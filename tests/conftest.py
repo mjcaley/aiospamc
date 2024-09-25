@@ -520,12 +520,12 @@ def spawn_spamd(options, timeout):
         universal_newlines=True,
     )
 
-    timeout = datetime.datetime.utcnow() + datetime.timedelta(seconds=timeout)
+    timeout = datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=timeout)
 
     running = False
     spamd_start = "info: spamd: server started on"
     while not running:
-        if datetime.datetime.utcnow() > timeout:
+        if datetime.datetime.now(datetime.UTC) > timeout:
             raise TimeoutError
 
         for line in process.stdout:
