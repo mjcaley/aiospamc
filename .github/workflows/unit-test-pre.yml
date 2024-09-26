@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 5'
+env:
+  python-version: '3.14-dev'
 jobs:
   unit-tests:
     name: "Run Unit Tests"
@@ -17,7 +19,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13-dev'
+          python-version: ${{ env.python-version }}
           cache: 'poetry'
       - name: Install dependencies
         run: poetry install
@@ -32,7 +34,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.os }}-3.13-dev
+          name: test-results-${{ matrix.os }}-${{ env.python-version }}
           path: output/**
   status:
     if: ${{ always() }}
