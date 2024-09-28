@@ -14,11 +14,11 @@ jobs:
       matrix:
         spamassassin: ["3.4.6", "4.0.1"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Poetry
         run: pipx install poetry
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           cache: 'poetry'
@@ -48,13 +48,13 @@ jobs:
           --junit-xml="output/integration-tests.xml"
       - name: Publish test results
         if: success() || failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: output/**
       - name: Upload to Codecov.io
         if: success() || failure()
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: output/coverage.xml
