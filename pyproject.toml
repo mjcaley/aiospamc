@@ -36,7 +36,7 @@ aiospamc = "aiospamc.cli:app"
 [tool.poetry.group.test.dependencies]
 pytest = "^7.1"
 pytest-cov = "^4.0"
-pytest-asyncio = "^0.21"
+pytest-asyncio = ">=0.21,<0.24"
 pytest-mock = "^3.10"
 coverage = {extras = ["toml"], version = "^7.2"}
 trustme = "^1.1"
