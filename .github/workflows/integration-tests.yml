@@ -50,7 +50,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-${{ matrix.spamassassin }}
           path: output/**
       - name: Upload to Codecov.io
         if: success() || failure()
