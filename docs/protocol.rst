@@ -721,5 +721,5 @@ that was sent.
 References
 **********
 
-.. [1] https://svn.apache.org/viewvc/spamassassin/branches/3.4/spamd/PROTOCOL?revision=1676616&view=co
-.. [2] https://svn.apache.org/viewvc/spamassassin/branches/3.4/spamd/spamd.raw?revision=1749346&view=co
+.. [1] https://svn.apache.org/viewvc/spamassassin/tags/spamassassin_release_4_0_1/spamd/PROTOCOL?view=co
+.. [2] https://svn.apache.org/viewvc/spamassassin/tags/spamassassin_release_4_0_1/spamd/spamd.raw?view=co
