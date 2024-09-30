@@ -123,3 +123,6 @@ Interpreting results
 
 Responses are encapsulated in the :class:`aiospamc.responses.Response` class.
 It includes the status code, headers and body.
+
+The :class:`aiospamc.headers.Headers` class provides properties for headers defined in the
+protocol.
