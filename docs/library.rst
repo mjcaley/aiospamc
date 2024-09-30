@@ -55,6 +55,7 @@ Client Certificate Authentication
 
 Client certificate authentication can be used with SSL. It's driven through the `cert`
 parameter on frontend functions. The parameter value takes three forms:
+
 * A path to a file expecting the certificate and key in the PEM format
 * A tuple of certificate and key files
 * A tuple of certificate file, key file, and password if the key is encrypted
@@ -122,3 +123,6 @@ Interpreting results
 
 Responses are encapsulated in the :class:`aiospamc.responses.Response` class.
 It includes the status code, headers and body.
+
+The :class:`aiospamc.headers.Headers` class provides properties for headers defined in the
+protocol.

@@ -366,8 +366,8 @@ Environment Variables
 Exit Codes
 **********
 
-`3` - Error occurred when parsing response.
-`4` - Network timeout.
-`5` - Connection error. Check the host, port, or socket path.
-`6` - Unexpected error.
-`7` - Could not open the message.
+* `3` - Error occurred when parsing response.
+* `4` - Network timeout.
+* `5` - Connection error. Check the host, port, or socket path.
+* `6` - Unexpected error.
+* `7` - Could not open the message.
