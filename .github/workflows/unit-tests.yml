@@ -8,7 +8,7 @@ on:
     - cron: '0 0 * * 5'
 jobs:
   unit-tests:
-    name: "Run Unit Tests"
+    name: "Run unit tests"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
