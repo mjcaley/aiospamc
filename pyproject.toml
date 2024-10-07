@@ -76,7 +76,7 @@ mypy = "^1.2"
 black = ">=23,<25"
 interrogate = "^1.5"
 isort = "^5.12"
-pre-commit = "^3.2"
+pre-commit = ">=3.2,<5.0"
 
 [tool.black]
 target-version = ["py38"]
