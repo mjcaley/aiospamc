@@ -9,7 +9,7 @@ on:
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
-    name: "Run Integration Tests"
+    name: "Run integration tests"
     strategy:
       matrix:
         spamassassin: ["3.4.6", "4.0.1"]

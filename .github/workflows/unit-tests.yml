@@ -8,12 +8,12 @@ on:
     - cron: '0 0 * * 5'
 jobs:
   unit-tests:
-    name: "Run Unit Tests"
+    name: "Run unit tests"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ['3.9', '3.10', '3.11', '3.12']
+        python: ['3.9', '3.10', '3.11', '3.12', '3.13']
     steps:
       - uses: actions/checkout@v4
       - name: Install Poetry
