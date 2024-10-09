@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aiospamc"
-version = "1.1.0"
+version = "1.1.1"
 description = "An asyncio-based library to communicate with SpamAssassin's SPAMD service."
 authors = ["Michael Caley <mjcaley@darkarctic.com>"]
 license = "MIT"
@@ -105,7 +105,7 @@ tbump = "^6.10"
 github_url = "https://github.com/mjcaley/aiospamc/"
 
 [tool.tbump.version]
-current = "1.1.0"
+current = "1.1.1"
 regex = '''
   (?P<major>\d+)
   \.
