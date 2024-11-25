@@ -40,7 +40,7 @@ jobs:
           path: output/**
       - name: Upload to Codecov.io
         if: success() || failure()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: output/coverage.xml
