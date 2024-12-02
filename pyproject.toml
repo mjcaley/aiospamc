@@ -29,7 +29,7 @@ keywords = ["spam", "spamc", "spamassassin"]
 python = "^3.9"
 certifi = "*"
 loguru = "^0.7.0"
-typer = ">=0.9,<0.14"
+typer = ">=0.9,<0.15"
 
 [tool.poetry.scripts]
 aiospamc = "aiospamc.cli:app"
