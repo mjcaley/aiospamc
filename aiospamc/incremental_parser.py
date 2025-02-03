@@ -327,7 +327,7 @@ def parse_response_status(stream: bytes) -> dict[str, Union[str, int]]:
 
 
 def parse_message_class_value(
-    stream: Union[str, MessageClassOption]
+    stream: Union[str, MessageClassOption],
 ) -> MessageClassValue:
     """Parses the `Message-class` header value.
 
