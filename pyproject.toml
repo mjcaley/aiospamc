@@ -1,8 +1,10 @@
-[tool.poetry]
+[project]
 name = "aiospamc"
 version = "1.1.1"
 description = "An asyncio-based library to communicate with SpamAssassin's SPAMD service."
-authors = ["Michael Caley <mjcaley@darkarctic.com>"]
+authors = [
+    {name = "Michael Caley", email = "mjcaley@darkarctic.com"}
+]
 license = "MIT"
 readme = "README.rst"
 
@@ -25,14 +27,13 @@ classifiers = [
 
 keywords = ["spam", "spamc", "spamassassin"]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-certifi = "*"
-loguru = "^0.7.0"
-typer = ">=0.9,<0.16"
+requires-python = ">= 3.9, < 4.0"
 
-[tool.poetry.scripts]
-aiospamc = "aiospamc.cli:app"
+dependencies = [
+    "certifi",
+    "loguru >=0.7",
+    "typer >=0.9,<0.16"
+]
 
 [tool.poetry.group.test.dependencies]
 pytest = ">=7.1,<9.0"
@@ -42,6 +43,9 @@ pytest-mock = "^3.10"
 coverage = {extras = ["toml"], version = "^7.2"}
 trustme = "^1.1"
 cryptography = "^43.0"
+
+[project.scripts]
+aiospamc = "aiospamc.cli:app"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
