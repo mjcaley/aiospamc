@@ -81,7 +81,7 @@ reno = "^4.0"
 mypy = "^1.2"
 black = ">=25,<26"
 interrogate = "^1.5"
-isort = "^5.12"
+isort = "^6.0.0"
 pre-commit = ">=3.2,<5.0"
 
 [tool.black]
