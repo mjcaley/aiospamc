@@ -102,33 +102,6 @@ profile = "black"
 src_paths = ["aiospamc", "tests"]
 
 
-[tool.poetry.group.mgmt.dependencies]
-tbump = "^6.10"
-
-[tool.tbump]
-github_url = "https://github.com/mjcaley/aiospamc/"
-
-[tool.tbump.version]
-current = "1.1.1"
-regex = '''
-  (?P<major>\d+)
-  \.
-  (?P<minor>\d+)
-  \.
-  (?P<patch>\d+)
-  '''
-
-[tool.tbump.git]
-message_template = "Bump to {new_version}"
-tag_template = "v{new_version}"
-
-[[tool.tbump.file]]
-src = "aiospamc/__init__.py"
-
-[[tool.tbump.file]]
-src = "pyproject.toml"
-search = 'version = "{current_version}"'
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
