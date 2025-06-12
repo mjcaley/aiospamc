@@ -42,7 +42,7 @@ pytest-asyncio = ">=0.21,<0.27"
 pytest-mock = "^3.14"
 coverage = {extras = ["toml"], version = "^7.9"}
 trustme = "^1.1"
-cryptography = "^43.0"
+cryptography = "^44.0.0"
 
 [project.scripts]
 aiospamc = "aiospamc.cli:app"
