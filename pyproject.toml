@@ -32,7 +32,7 @@ requires-python = ">= 3.9, < 4.0"
 dependencies = [
     "certifi",
     "loguru >=0.7",
-    "typer >=0.9,<0.16"
+    "typer >=0.16,<0.17"
 ]
 
 [tool.poetry.group.test.dependencies]
