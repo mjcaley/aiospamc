@@ -78,7 +78,7 @@ reno = "^4.0"
 
 
 [tool.poetry.group.quality.dependencies]
-mypy = "^1.2"
+mypy = "^1.16"
 black = ">=25,<26"
 interrogate = "^1.5"
 isort = "^6.0.0"
