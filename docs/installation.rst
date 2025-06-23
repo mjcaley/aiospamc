@@ -27,7 +27,7 @@ With git
 
     git clone https://github.com/mjcaley/aiospamc.git
     cd aiospamc
-    poetry install
+    uv sync
 
 .. note::
-    aiospamc's build system uses Poetry which you can get from here: https://python-poetry.org/
+    aiospamc's build system uses uv which you can get from here: https://docs.astral.sh/uv/

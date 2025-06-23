@@ -10,24 +10,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Install uv
+        run: pipx install uv
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-          cache: 'poetry'
       - name: Install dependencies
-        run: poetry install
+        run: uv sync
       - name: Run mypy
         run: >
-          poetry run
-          mypy aiospamc
+          uv run
+          mypy src/aiospamc
           --install-types
           --junit-xml output/mypy-tests.xml
           --non-interactive
       - name: Run interrogate
-        run: poetry run interrogate
+        run: uv run interrogate
       - name: Publish test results
         if: success() || failure()
         uses: actions/upload-artifact@v4

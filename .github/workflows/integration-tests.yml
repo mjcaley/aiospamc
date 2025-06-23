@@ -15,15 +15,14 @@ jobs:
         spamassassin: ["3.4.6", "4.0.1"]
     steps:
       - uses: actions/checkout@v4
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Install uv
+        run: pipx install uv
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-          cache: 'poetry'
       - name: Install dependencies
-        run: poetry install
+        run: uv sync
       - name: Download SpamAssasin
         run: |
           curl -s https://dlcdn.apache.org//spamassassin/source/Mail-SpamAssassin-${{ matrix.spamassassin }}.tar.bz2 -o spamassassin.tar.bz2
@@ -41,7 +40,7 @@ jobs:
       - run: spamd --version
       - name: Run integration tests
         run: >
-          poetry run pytest -m integration
+          uv run pytest -m integration
           --cov
           --cov-report="xml:output/coverage.xml"
           --cov-fail-under=0
