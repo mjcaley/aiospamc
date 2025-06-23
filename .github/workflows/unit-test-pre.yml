@@ -11,18 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Install uv
+        run: pipx install uv
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.python-version }}
-          cache: 'poetry'
       - name: Install dependencies
-        run: poetry install
+        run: uv sync
       - name: Run unit tests
         run: >
-          poetry run pytest
+          uv run pytest
           --junit-xml="output/unit-tests.xml"
           --cov
           --cov-report="xml:output/coverage.xml"
@@ -31,7 +30,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.os }}-${{ env.python-version }}
+          name: test-results-${{ env.python-version }}
           path: output/**
   status:
     if: ${{ always() }}

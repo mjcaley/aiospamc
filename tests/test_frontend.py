@@ -2,7 +2,6 @@ import ssl
 from pathlib import Path
 
 import pytest
-
 from aiospamc.client import Client
 from aiospamc.connections import TcpConnectionManager, Timeout, UnixConnectionManager
 from aiospamc.exceptions import BadResponse

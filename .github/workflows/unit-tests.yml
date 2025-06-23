@@ -16,18 +16,17 @@ jobs:
         python: ['3.9', '3.10', '3.11', '3.12', '3.13']
     steps:
       - uses: actions/checkout@v4
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Install uv
+        run: pipx install uv
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-          cache: 'poetry'
       - name: Install dependencies
-        run: poetry install
+        run: uv sync
       - name: Run unit tests
         run: >
-          poetry run pytest
+          uv run pytest
           --junit-xml="output/unit-tests.xml"
           --cov
           --cov-report="xml:output/coverage.xml"

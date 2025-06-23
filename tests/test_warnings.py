@@ -1,5 +1,4 @@
 import pytest
-
 from aiospamc.connections import TcpConnectionManager
 from aiospamc.header_values import CompressValue
 from aiospamc.requests import Request

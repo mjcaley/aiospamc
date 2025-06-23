@@ -1,5 +1,4 @@
 import pytest
-
 from aiospamc.exceptions import NotEnoughDataError, ParseError, TooMuchDataError
 from aiospamc.header_values import (
     ActionOption,
