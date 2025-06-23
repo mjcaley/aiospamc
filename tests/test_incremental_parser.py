@@ -1,4 +1,5 @@
 import pytest
+
 from aiospamc.exceptions import NotEnoughDataError, ParseError, TooMuchDataError
 from aiospamc.header_values import (
     ActionOption,
@@ -509,3 +510,5 @@ def test_request_from_bytes(request_with_body):
 def test_timeout_response(response_timeout):
     r = ResponseParser()
     result = r.parse(response_timeout)
+
+    assert result is not None

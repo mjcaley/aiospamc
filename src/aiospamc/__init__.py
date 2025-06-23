@@ -24,5 +24,18 @@ __copyright__ = "Copyright 2016-2025 Michael Caley"
 __license__ = "MIT"
 __version__ = version("aiospamc")
 __email__ = "mjcaley@darkarctic.com"
+__all__ = [
+    "Timeout",
+    "check",
+    "headers",
+    "ping",
+    "process",
+    "report",
+    "report_if_spam",
+    "symbols",
+    "tell",
+    "ActionOption",
+    "MessageClassOption",
+]
 
 logger.disable(__package__)

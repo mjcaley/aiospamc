@@ -1,7 +1,8 @@
 from email.message import EmailMessage
 
-import aiospamc
 import pytest
+
+import aiospamc
 
 
 @pytest.mark.integration
@@ -22,7 +23,7 @@ async def test_gtk_encoding(spamd_tcp):
     message.add_header("X-Mozilla-Draft-Info", "")
     message.add_header("User-Agent", "")
     message.set_param("charset", "gbk")
-    message.set_content("这是Unicode文字." "This is Unicode characters.")
+    message.set_content("这是Unicode文字.", "This is Unicode characters.")
 
     result = await aiospamc.check(message, host=spamd_tcp[0], port=spamd_tcp[1])
 

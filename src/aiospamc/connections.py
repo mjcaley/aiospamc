@@ -5,9 +5,8 @@ from __future__ import annotations
 import asyncio
 import ssl
 from enum import Enum, auto
-from getpass import getpass
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Callable, Optional, Union
 
 import certifi
 import loguru
