@@ -837,7 +837,6 @@ def main(
         bool,
         typer.Option(
             "--debug",
-            is_flag=True,
             callback=debug_callback,
             help="Enable debug logging",
         ),
