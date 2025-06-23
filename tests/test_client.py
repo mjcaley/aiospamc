@@ -1,6 +1,4 @@
 import pytest
-from pytest_mock import MockerFixture
-
 from aiospamc.client import Client
 from aiospamc.connections import ConnectionManagerBuilder
 from aiospamc.exceptions import BadResponse
@@ -25,6 +23,7 @@ from aiospamc.responses import (
     UnavailableException,
     UsageException,
 )
+from pytest_mock import MockerFixture
 
 
 async def test_successful_response(fake_tcp_server):

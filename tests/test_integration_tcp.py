@@ -1,6 +1,5 @@
-import pytest
-
 import aiospamc
+import pytest
 
 
 @pytest.mark.integration

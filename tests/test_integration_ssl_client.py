@@ -1,9 +1,8 @@
 from shutil import which
 from subprocess import PIPE, Popen
 
-import pytest
-
 import aiospamc
+import pytest
 
 
 def spamd_lt_4():

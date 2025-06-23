@@ -13,6 +13,8 @@ from subprocess import PIPE, STDOUT, Popen, TimeoutExpired
 
 import pytest
 import trustme
+from aiospamc.header_values import ContentLengthValue
+from aiospamc.requests import Request
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
     Encoding,
@@ -20,9 +22,6 @@ from cryptography.hazmat.primitives.serialization import (
     load_pem_private_key,
 )
 from pytest_mock import MockerFixture
-
-from aiospamc.header_values import ContentLengthValue
-from aiospamc.requests import Request
 
 
 def pytest_addoption(parser):

@@ -5,8 +5,6 @@ from pathlib import Path
 
 import certifi
 import pytest
-from pytest_mock import MockerFixture
-
 from aiospamc.connections import (
     ConnectionManager,
     ConnectionManagerBuilder,
@@ -16,6 +14,7 @@ from aiospamc.connections import (
     UnixConnectionManager,
 )
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
+from pytest_mock import MockerFixture
 
 
 @pytest.fixture

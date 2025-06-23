@@ -3,12 +3,8 @@ import json
 from pathlib import Path
 from ssl import SSLError
 
-import pytest
-from loguru import logger
-from pytest_mock import MockerFixture, MockFixture
-from typer.testing import CliRunner
-
 import aiospamc
+import pytest
 from aiospamc.cli import (
     BAD_RESPONSE,
     CONNECTION_ERROR,
@@ -32,6 +28,9 @@ from aiospamc.exceptions import AIOSpamcConnectionFailed
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.requests import Request
 from aiospamc.responses import Response
+from loguru import logger
+from pytest_mock import MockerFixture, MockFixture
+from typer.testing import CliRunner
 
 
 @pytest.fixture

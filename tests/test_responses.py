@@ -2,7 +2,6 @@ import zlib
 from base64 import b64encode
 
 import pytest
-
 from aiospamc.header_values import CompressValue, ContentLengthValue, Headers
 from aiospamc.incremental_parser import ResponseParser
 from aiospamc.responses import (

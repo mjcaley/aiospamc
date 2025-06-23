@@ -1,8 +1,7 @@
 import sys
 
-import pytest
-
 import aiospamc
+import pytest
 
 pytestmark = pytest.mark.skipif(
     sys.platform == "win32", reason="Unix sockets not supported on Windows"
