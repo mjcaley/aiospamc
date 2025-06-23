@@ -52,9 +52,7 @@ class Request:
             ]
         )
 
-        request = (
-            b"%(verb)b " b"SPAMC/%(version)b" b"\r\n" b"%(headers)b\r\n" b"%(body)b"
-        )
+        request = b"%(verb)b SPAMC/%(version)b\r\n%(headers)b\r\n%(body)b"
 
         return request % {
             b"verb": self.verb.encode("ascii"),

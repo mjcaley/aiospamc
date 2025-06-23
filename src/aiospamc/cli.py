@@ -11,6 +11,9 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+from loguru import logger
+from typing_extensions import Annotated
+
 from aiospamc.exceptions import (
     AIOSpamcConnectionFailed,
     BadResponse,
@@ -23,8 +26,6 @@ from aiospamc.header_values import (
     MessageClassValue,
     SetOrRemoveValue,
 )
-from loguru import logger
-from typing_extensions import Annotated
 
 from . import __version__
 from .client import Client, Request

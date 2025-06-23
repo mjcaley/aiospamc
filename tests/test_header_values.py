@@ -3,6 +3,7 @@
 from base64 import b64encode
 
 import pytest
+
 from aiospamc.header_values import (
     ActionOption,
     BytesHeaderValue,

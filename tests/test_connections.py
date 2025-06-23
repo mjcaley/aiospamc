@@ -5,6 +5,8 @@ from pathlib import Path
 
 import certifi
 import pytest
+from pytest_mock import MockerFixture
+
 from aiospamc.connections import (
     ConnectionManager,
     ConnectionManagerBuilder,
@@ -14,7 +16,6 @@ from aiospamc.connections import (
     UnixConnectionManager,
 )
 from aiospamc.exceptions import AIOSpamcConnectionFailed, ClientTimeoutException
-from pytest_mock import MockerFixture
 
 
 @pytest.fixture
@@ -341,8 +342,11 @@ def test_ssl_context_builder_add_client_cert(
 ):
     builder = SSLContextBuilder()
     certs_spy = mocker.spy(builder._context, "load_cert_chain")
-    password_call = lambda: client_private_key_password
-    s = builder.add_client(client_cert_path, client_key_path, password_call).build()
+
+    def password_call():
+        return client_private_key_password
+
+    builder.add_client(client_cert_path, client_key_path, password_call).build()
 
     assert (
         client_cert_path,
