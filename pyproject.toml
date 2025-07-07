@@ -100,5 +100,5 @@ fail-under = 95
 exclude = ["changes", "docs", "example", "test", "util"]
 
 [build-system]
-requires = ["uv_build>=0.7.13,<0.8.0"]
+requires = ["uv_build>=0.7.19,<0.8.0"]
 build-backend = "uv_build"
