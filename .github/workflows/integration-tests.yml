@@ -12,7 +12,7 @@ jobs:
     name: "Run integration tests"
     strategy:
       matrix:
-        spamassassin: ["3.4.6", "4.0.1"]
+        spamassassin: ["3.4.6", "4.0.2"]
     steps:
       - uses: actions/checkout@v5
       - name: Install uv
