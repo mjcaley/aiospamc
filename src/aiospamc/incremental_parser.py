@@ -41,7 +41,7 @@ class Parser:
     def __init__(
         self,
         delimiter: bytes,
-        status_parser: Callable[[bytes], Mapping[str, str]],
+        status_parser: Callable[[bytes], Mapping[str, Any]],
         header_parser: Callable[[bytes], tuple[str, Any]],
         body_parser: Callable[[bytes, int], bytes],
         start: States = States.Status,
