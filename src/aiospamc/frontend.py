@@ -95,7 +95,10 @@ class FrontendClientBuilder:
 
     def add_client_cert(
         self,
-        cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+        cert: Path
+        | tuple[Path, Path | None]
+        | tuple[Path, Path | None, str | None]
+        | None = None,
     ) -> FrontendClientBuilder:
         """Add a client certificate to authenticate to the server.
 
@@ -130,9 +133,7 @@ class FrontendClientBuilder:
             client, key = cast(tuple[Path, Path | None], cert)
             self._ssl_builder.add_client(client, key, password=partial(pwd_check, None))
         elif isinstance(cert, tuple) and len(cert) == 3:
-            client, key, password = cast(
-                tuple[Path, Path | None, str | None], cert
-            )
+            client, key, password = cast(tuple[Path, Path | None, str | None], cert)
             self._ssl_builder.add_client(
                 client, key, password=partial(pwd_check, password)
             )
@@ -185,7 +186,10 @@ async def check(
     socket_path: Path | None = None,
     timeout: Timeout | None = None,
     verify: bool | Path | ssl.SSLContext | None = None,
-    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    cert: Path
+    | tuple[Path, Path | None]
+    | tuple[Path, Path | None, str | None]
+    | None = None,
     user: str | None = None,
     compress: bool = False,
 ) -> Response:
@@ -273,7 +277,10 @@ async def headers(
     socket_path: Path | None = None,
     timeout: Timeout | None = None,
     verify: bool | Path | ssl.SSLContext | None = None,
-    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    cert: Path
+    | tuple[Path, Path | None]
+    | tuple[Path, Path | None, str | None]
+    | None = None,
     user: str | None = None,
     compress: bool = False,
 ) -> Response:
@@ -361,7 +368,10 @@ async def ping(
     socket_path: Path | None = None,
     timeout: Timeout | None = None,
     verify: bool | Path | ssl.SSLContext | None = None,
-    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    cert: Path
+    | tuple[Path, Path | None]
+    | tuple[Path, Path | None, str | None]
+    | None = None,
 ) -> Response:
     """Sends a ping to the SPAMD service.
 
@@ -439,7 +449,10 @@ async def process(
     socket_path: Path | None = None,
     timeout: Timeout | None = None,
     verify: bool | Path | ssl.SSLContext | None = None,
-    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    cert: Path
+    | tuple[Path, Path | None]
+    | tuple[Path, Path | None, str | None]
+    | None = None,
     user: str | None = None,
     compress: bool = False,
 ) -> Response:
@@ -528,7 +541,10 @@ async def report(
     socket_path: Path | None = None,
     timeout: Timeout | None = None,
     verify: bool | Path | ssl.SSLContext | None = None,
-    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    cert: Path
+    | tuple[Path, Path | None]
+    | tuple[Path, Path | None, str | None]
+    | None = None,
     user: str | None = None,
     compress: bool = False,
 ) -> Response:
@@ -616,7 +632,10 @@ async def report_if_spam(
     socket_path: Path | None = None,
     timeout: Timeout | None = None,
     verify: bool | Path | ssl.SSLContext | None = None,
-    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    cert: Path
+    | tuple[Path, Path | None]
+    | tuple[Path, Path | None, str | None]
+    | None = None,
     user: str | None = None,
     compress: bool = False,
 ) -> Response:
@@ -705,7 +724,10 @@ async def symbols(
     socket_path: Path | None = None,
     timeout: Timeout | None = None,
     verify: bool | Path | ssl.SSLContext | None = None,
-    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    cert: Path
+    | tuple[Path, Path | None]
+    | tuple[Path, Path | None, str | None]
+    | None = None,
     user: str | None = None,
     compress: bool = False,
 ) -> Response:
@@ -797,7 +819,10 @@ async def tell(
     socket_path: Path | None = None,
     timeout: Timeout | None = None,
     verify: bool | Path | ssl.SSLContext | None = None,
-    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    cert: Path
+    | tuple[Path, Path | None]
+    | tuple[Path, Path | None, str | None]
+    | None = None,
     user: str | None = None,
     compress: bool = False,
 ) -> Response:

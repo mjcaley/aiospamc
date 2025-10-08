@@ -141,9 +141,7 @@ class ConnectionManagerBuilder:
 class ConnectionManager:
     """Stores connection parameters and creates connections."""
 
-    def __init__(
-        self, connection_string: str, timeout: Timeout | None = None
-    ) -> None:
+    def __init__(self, connection_string: str, timeout: Timeout | None = None) -> None:
         """ConnectionManager constructor.
 
         :param timeout: Timeout configuration
@@ -287,7 +285,9 @@ class TcpConnectionManagerBuilder:
         self._args["port"] = port
         return self
 
-    def set_ssl_context(self, context: ssl.SSLContext | None) -> TcpConnectionManagerBuilder:
+    def set_ssl_context(
+        self, context: ssl.SSLContext | None
+    ) -> TcpConnectionManagerBuilder:
         """Set an SSL context.
 
         :param context: An instance of :class:`ssl.SSLContext`.

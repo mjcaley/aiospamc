@@ -11,8 +11,7 @@ from typing import Any, Protocol
 class HeaderValue(Protocol):  # pragma: no cover
     """Protocol for headers."""
 
-    def __bytes__(self) -> bytes:
-        ...
+    def __bytes__(self) -> bytes: ...
 
     def to_json(self) -> Any:
         """Convert to a JSON object."""
