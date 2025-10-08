@@ -8,7 +8,6 @@ from enum import Enum
 from getpass import getpass, getuser
 from io import BufferedReader
 from pathlib import Path
-from typing import Optional
 
 import typer
 from loguru import logger
@@ -82,7 +81,7 @@ class CliClientBuilder:
         self,
         host: str = "localhost",
         port: int = 783,
-        socket_path: Optional[Path] = None,
+        socket_path: Path | None = None,
     ) -> "CliClientBuilder":
         """Sets the type of connection manager to use.
 
@@ -132,7 +131,7 @@ class CliClientBuilder:
 
         return self
 
-    def add_ca_cert(self, ca_cert: Optional[Path]) -> "CliClientBuilder":
+    def add_ca_cert(self, ca_cert: Path | None) -> "CliClientBuilder":
         """Adds trusted certificate authorities.
 
         :param ca_cert: Path to the cerficiate file or directory.
@@ -157,9 +156,9 @@ class CliClientBuilder:
 
     def add_client_cert(
         self,
-        cert: Optional[Path],
-        key: Optional[Path] = None,
-        password: Optional[str] = None,
+        cert: Path | None,
+        key: Path | None = None,
+        password: str | None = None,
     ) -> "CliClientBuilder":
         """Add a client certificate to authenticate to the server.
 
@@ -201,9 +200,9 @@ class CommandRunner:
 
         self.client = client
         self.request = request
-        self.response: Optional[Response] = None
+        self.response: Response | None = None
         self.output = output
-        self.exception: Optional[Exception] = None
+        self.exception: Exception | None = None
         self.exit_code = SUCCESS
 
         self._logger = logger.bind(request=request)
@@ -294,7 +293,7 @@ def ping(
         ),
     ] = 783,
     socket_path: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
@@ -307,20 +306,20 @@ def ping(
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
     ca_cert: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             help="Path to the CA certificates if overriding",
             envvar="AIOSPAMC_CERT_FILE",
         ),
     ] = None,
     client_cert: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate")
+        Path | None, typer.Option(help="Filename of the client certificate")
     ] = None,
     client_key: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+        Path | None, typer.Option(help="Filename of the client certificate's key")
     ] = None,
     key_password: Annotated[
-        Optional[str], typer.Option(help="Password for the client certificate key")
+        str | None, typer.Option(help="Password for the client certificate key")
     ] = None,
 ):
     """Pings the SpamAssassin daemon.
@@ -344,7 +343,7 @@ def ping(
     runner.exit(response.message)
 
 
-def read_message(file: Optional[BufferedReader]) -> bytes:
+def read_message(file: BufferedReader | None) -> bytes:
     """Utility function to read data from stdin.
 
     :param file: File-like object.
@@ -358,7 +357,7 @@ def read_message(file: Optional[BufferedReader]) -> bytes:
 @app.command()
 def check(
     message: Annotated[
-        Optional[typer.FileBinaryRead],
+        typer.FileBinaryRead | None,
         typer.Argument(show_default=False, help="Filename of message"),
     ] = None,
     host: Annotated[
@@ -380,7 +379,7 @@ def check(
         ),
     ] = 783,
     socket_path: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
@@ -396,20 +395,20 @@ def check(
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
     ca_cert: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             help="Path to the CA certificates if overriding",
             envvar="AIOSPAMC_CERT_FILE",
         ),
     ] = None,
     client_cert: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate")
+        Path | None, typer.Option(help="Filename of the client certificate")
     ] = None,
     client_key: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+        Path | None, typer.Option(help="Filename of the client certificate's key")
     ] = None,
     key_password: Annotated[
-        Optional[str], typer.Option(help="Password for the client certificate key")
+        str | None, typer.Option(help="Password for the client certificate key")
     ] = None,
 ):
     """Submits a message to SpamAssassin and returns the processed message."""
@@ -444,7 +443,7 @@ def check(
 @app.command()
 def learn(
     message: Annotated[
-        Optional[typer.FileBinaryRead],
+        typer.FileBinaryRead | None,
         typer.Argument(help="Filename of message"),
     ] = None,
     message_class: Annotated[
@@ -469,7 +468,7 @@ def learn(
         ),
     ] = 783,
     socket_path: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
@@ -485,20 +484,20 @@ def learn(
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
     ca_cert: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             help="Path to the CA certificates if overriding",
             envvar="AIOSPAMC_CERT_FILE",
         ),
     ] = None,
     client_cert: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate")
+        Path | None, typer.Option(help="Filename of the client certificate")
     ] = None,
     client_key: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+        Path | None, typer.Option(help="Filename of the client certificate's key")
     ] = None,
     key_password: Annotated[
-        Optional[str], typer.Option(help="Password for the client certificate key")
+        str | None, typer.Option(help="Password for the client certificate key")
     ] = None,
 ):
     """Ask server to learn the message as spam or ham."""
@@ -536,7 +535,7 @@ def learn(
 @app.command()
 def forget(
     message: Annotated[
-        Optional[typer.FileBinaryRead],
+        typer.FileBinaryRead | None,
         typer.Argument(help="Filename of message"),
     ] = None,
     host: Annotated[
@@ -558,7 +557,7 @@ def forget(
         ),
     ] = 783,
     socket_path: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
@@ -574,20 +573,20 @@ def forget(
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
     ca_cert: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             help="Path to the CA certificates if overriding",
             envvar="AIOSPAMC_CERT_FILE",
         ),
     ] = None,
     client_cert: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate")
+        Path | None, typer.Option(help="Filename of the client certificate")
     ] = None,
     client_key: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+        Path | None, typer.Option(help="Filename of the client certificate's key")
     ] = None,
     key_password: Annotated[
-        Optional[str], typer.Option(help="Password for the client certificate key")
+        str | None, typer.Option(help="Password for the client certificate key")
     ] = None,
 ):
     """Forgets the classification of a message."""
@@ -624,7 +623,7 @@ def forget(
 @app.command()
 def report(
     message: Annotated[
-        Optional[typer.FileBinaryRead],
+        typer.FileBinaryRead | None,
         typer.Argument(help="Filename of message"),
     ] = None,
     host: Annotated[
@@ -646,7 +645,7 @@ def report(
         ),
     ] = 783,
     socket_path: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
@@ -662,20 +661,20 @@ def report(
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
     ca_cert: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             help="Path to the CA certificates if overriding",
             envvar="AIOSPAMC_CERT_FILE",
         ),
     ] = None,
     client_cert: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate")
+        Path | None, typer.Option(help="Filename of the client certificate")
     ] = None,
     client_key: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+        Path | None, typer.Option(help="Filename of the client certificate's key")
     ] = None,
     key_password: Annotated[
-        Optional[str], typer.Option(help="Password for the client certificate key")
+        str | None, typer.Option(help="Password for the client certificate key")
     ] = None,
 ):
     """Report a message to collaborative filtering databases as spam."""
@@ -713,7 +712,7 @@ def report(
 @app.command()
 def revoke(
     message: Annotated[
-        Optional[typer.FileBinaryRead],
+        typer.FileBinaryRead | None,
         typer.Argument(help="Filename of message"),
     ] = None,
     host: Annotated[
@@ -735,7 +734,7 @@ def revoke(
         ),
     ] = 783,
     socket_path: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             metavar="PATH", help="Path to use when connecting using Unix sockets"
         ),
@@ -751,20 +750,20 @@ def revoke(
     ] = 10,
     out: Annotated[Output, typer.Option(help="Output format for stdout")] = Output.Text,
     ca_cert: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             help="Path to the CA certificates if overriding",
             envvar="AIOSPAMC_CERT_FILE",
         ),
     ] = None,
     client_cert: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate")
+        Path | None, typer.Option(help="Filename of the client certificate")
     ] = None,
     client_key: Annotated[
-        Optional[Path], typer.Option(help="Filename of the client certificate's key")
+        Path | None, typer.Option(help="Filename of the client certificate's key")
     ] = None,
     key_password: Annotated[
-        Optional[str], typer.Option(help="Password for the client certificate key")
+        str | None, typer.Option(help="Password for the client certificate key")
     ] = None,
 ):
     """Revoke a message to collaborative filtering databases."""

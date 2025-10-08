@@ -6,7 +6,7 @@ import asyncio
 import ssl
 from enum import Enum, auto
 from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import Callable
 
 import certifi
 import loguru
@@ -21,8 +21,8 @@ class Timeout:
     def __init__(
         self,
         total: float = 600,
-        connection: Optional[float] = None,
-        response: Optional[float] = None,
+        connection: float | None = None,
+        response: float | None = None,
     ) -> None:
         """Timeout constructor.
 
@@ -65,7 +65,7 @@ class ConnectionManagerBuilder:
         self._ssl = False
         self._timeout = None
 
-    def build(self) -> Union[UnixConnectionManager, TcpConnectionManager]:
+    def build(self) -> UnixConnectionManager | TcpConnectionManager:
         """Builds the :class:`aiospamc.connections.ConnectionManager`.
 
         :return: An instance of :class:`aiospamc.connections.TcpConnectionManager`
@@ -142,7 +142,7 @@ class ConnectionManager:
     """Stores connection parameters and creates connections."""
 
     def __init__(
-        self, connection_string: str, timeout: Optional[Timeout] = None
+        self, connection_string: str, timeout: Timeout | None = None
     ) -> None:
         """ConnectionManager constructor.
 
@@ -287,7 +287,7 @@ class TcpConnectionManagerBuilder:
         self._args["port"] = port
         return self
 
-    def set_ssl_context(self, context: ssl.SSLContext) -> TcpConnectionManagerBuilder:
+    def set_ssl_context(self, context: ssl.SSLContext | None) -> TcpConnectionManagerBuilder:
         """Set an SSL context.
 
         :param context: An instance of :class:`ssl.SSLContext`.
@@ -298,7 +298,7 @@ class TcpConnectionManagerBuilder:
         self._args["ssl_context"] = context
         return self
 
-    def set_timeout(self, timeout: Timeout) -> TcpConnectionManagerBuilder:
+    def set_timeout(self, timeout: Timeout | None) -> TcpConnectionManagerBuilder:
         """Sets the timeout for the connection.
 
         :param timeout: Timeout object.
@@ -317,8 +317,8 @@ class TcpConnectionManager(ConnectionManager):
         self,
         host: str,
         port: int,
-        ssl_context: Optional[ssl.SSLContext] = None,
-        timeout: Optional[Timeout] = None,
+        ssl_context: ssl.SSLContext | None = None,
+        timeout: Timeout | None = None,
     ) -> None:
         """TcpConnectionManager constructor.
 
@@ -379,7 +379,7 @@ class UnixConnectionManagerBuilder:
         self._args["path"] = path
         return self
 
-    def set_timeout(self, timeout: Timeout) -> UnixConnectionManagerBuilder:
+    def set_timeout(self, timeout: Timeout | None) -> UnixConnectionManagerBuilder:
         """Sets the timeout for the connection.
 
         :param timeout: Timeout object.
@@ -394,7 +394,7 @@ class UnixConnectionManagerBuilder:
 class UnixConnectionManager(ConnectionManager):
     """Connection manager for Unix pipes."""
 
-    def __init__(self, path: Path, timeout: Optional[Timeout] = None):
+    def __init__(self, path: Path, timeout: Timeout | None = None):
         """UnixConnectionManager constructor.
 
         :param path: Unix socket path.
@@ -501,8 +501,8 @@ class SSLContextBuilder:
     def add_client(
         self,
         file: Path,
-        key: Optional[Path] = None,
-        password: Optional[Callable[[], Union[str, bytes, bytearray]]] = None,
+        key: Path | None = None,
+        password: Callable[[], str | bytes | bytearray] | None = None,
     ) -> SSLContextBuilder:
         """Add client certificate.
 

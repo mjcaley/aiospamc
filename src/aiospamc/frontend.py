@@ -5,7 +5,7 @@ from __future__ import annotations
 import ssl
 from functools import partial
 from pathlib import Path
-from typing import Any, Optional, SupportsBytes, Union, cast
+from typing import Any, SupportsBytes, cast
 
 from loguru import logger
 
@@ -43,7 +43,7 @@ class FrontendClientBuilder:
         self,
         host: str = "localhost",
         port: int = 783,
-        socket_path: Optional[Path] = None,
+        socket_path: Path | None = None,
     ) -> FrontendClientBuilder:
         """Sets the type of connection manager to use.
 
@@ -66,7 +66,7 @@ class FrontendClientBuilder:
         return self
 
     def add_verify(
-        self, verify: Union[bool, Path, ssl.SSLContext, None] = None
+        self, verify: bool | Path | ssl.SSLContext | None = None
     ) -> FrontendClientBuilder:
         """Adds an SSL context to the connection manager.
 
@@ -95,13 +95,7 @@ class FrontendClientBuilder:
 
     def add_client_cert(
         self,
-        cert: Optional[
-            Union[
-                Path,
-                tuple[Path, Optional[Path]],
-                tuple[Path, Optional[Path], Optional[str]],
-            ]
-        ],
+        cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
     ) -> FrontendClientBuilder:
         """Add a client certificate to authenticate to the server.
 
@@ -119,7 +113,7 @@ class FrontendClientBuilder:
         if not self._ssl:
             self.add_verify(True)
 
-        def pwd_check(password: Optional[str] = None) -> str:
+        def pwd_check(password: str | None = None) -> str:
             """Return the password, otherwise throw an exception.
 
             :return: The password.
@@ -133,11 +127,11 @@ class FrontendClientBuilder:
         if isinstance(cert, Path):
             self._ssl_builder.add_client(cert, password=partial(pwd_check, None))
         elif isinstance(cert, tuple) and len(cert) == 2:
-            client, key = cast(tuple[Path, Optional[Path]], cert)
+            client, key = cast(tuple[Path, Path | None], cert)
             self._ssl_builder.add_client(client, key, password=partial(pwd_check, None))
         elif isinstance(cert, tuple) and len(cert) == 3:
             client, key, password = cast(
-                tuple[Path, Optional[Path], Optional[str]], cert
+                tuple[Path, Path | None, str | None], cert
             )
             self._ssl_builder.add_client(
                 client, key, password=partial(pwd_check, password)
@@ -147,7 +141,7 @@ class FrontendClientBuilder:
 
         return self
 
-    def set_timeout(self, timeout: Optional[Timeout] = None) -> FrontendClientBuilder:
+    def set_timeout(self, timeout: Timeout | None = None) -> FrontendClientBuilder:
         """Sets the timeout for the connection.
 
         :param timeout: Timeout object.
@@ -172,7 +166,7 @@ def _add_compress_header(request: Request, compress: bool):
         request.headers.compress = "zlib"
 
 
-def _add_user_header(request: Request, user: Optional[str]):
+def _add_user_header(request: Request, user: str | None):
     """Adds a user header to the request if specified.
 
     :param request: The request to be modified.
@@ -184,21 +178,15 @@ def _add_user_header(request: Request, user: Optional[str]):
 
 
 async def check(
-    message: Union[bytes, SupportsBytes],
+    message: SupportsBytes,
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[Path] = None,
-    timeout: Optional[Timeout] = None,
-    verify: Union[bool, Path, ssl.SSLContext, None] = None,
-    cert: Optional[
-        Union[
-            Path,
-            tuple[Path, Optional[Path]],
-            tuple[Path, Optional[Path], Optional[str]],
-        ]
-    ] = None,
-    user: Optional[str] = None,
+    socket_path: Path | None = None,
+    timeout: Timeout | None = None,
+    verify: bool | Path | ssl.SSLContext | None = None,
+    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    user: str | None = None,
     compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
@@ -278,20 +266,15 @@ async def check(
 
 
 async def headers(
-    message: Union[bytes, SupportsBytes],
+    message: SupportsBytes,
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[Path] = None,
-    timeout: Optional[Timeout] = None,
-    verify: Union[bool, Path, ssl.SSLContext, None] = None,
-    cert: Union[
-        Path,
-        tuple[Path, Optional[Path]],
-        tuple[Path, Optional[Path], Optional[str]],
-        None,
-    ] = None,
-    user: Optional[str] = None,
+    socket_path: Path | None = None,
+    timeout: Timeout | None = None,
+    verify: bool | Path | ssl.SSLContext | None = None,
+    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    user: str | None = None,
     compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return the modified message headers.
@@ -375,15 +358,10 @@ async def ping(
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[Path] = None,
-    timeout: Optional[Timeout] = None,
-    verify: Union[bool, Path, ssl.SSLContext, None] = None,
-    cert: Union[
-        Path,
-        tuple[Path, Optional[Path]],
-        tuple[Path, Optional[Path], Optional[str]],
-        None,
-    ] = None,
+    socket_path: Path | None = None,
+    timeout: Timeout | None = None,
+    verify: bool | Path | ssl.SSLContext | None = None,
+    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
 ) -> Response:
     """Sends a ping to the SPAMD service.
 
@@ -454,20 +432,15 @@ async def ping(
 
 
 async def process(
-    message: Union[bytes, SupportsBytes],
+    message: SupportsBytes,
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[Path] = None,
-    timeout: Optional[Timeout] = None,
-    verify: Union[bool, Path, ssl.SSLContext, None] = None,
-    cert: Union[
-        Path,
-        tuple[Path, Optional[Path]],
-        tuple[Path, Optional[Path], Optional[str]],
-        None,
-    ] = None,
-    user: Optional[str] = None,
+    socket_path: Path | None = None,
+    timeout: Timeout | None = None,
+    verify: bool | Path | ssl.SSLContext | None = None,
+    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    user: str | None = None,
     compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
@@ -548,20 +521,15 @@ async def process(
 
 
 async def report(
-    message: Union[bytes, SupportsBytes],
+    message: SupportsBytes,
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[Path] = None,
-    timeout: Optional[Timeout] = None,
-    verify: Union[bool, Path, ssl.SSLContext, None] = None,
-    cert: Union[
-        Path,
-        tuple[Path, Optional[Path]],
-        tuple[Path, Optional[Path], Optional[str]],
-        None,
-    ] = None,
-    user: Optional[str] = None,
+    socket_path: Path | None = None,
+    timeout: Timeout | None = None,
+    verify: bool | Path | ssl.SSLContext | None = None,
+    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    user: str | None = None,
     compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
@@ -641,20 +609,15 @@ async def report(
 
 
 async def report_if_spam(
-    message: Union[bytes, SupportsBytes],
+    message: SupportsBytes,
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[Path] = None,
-    timeout: Optional[Timeout] = None,
-    verify: Union[bool, Path, ssl.SSLContext, None] = None,
-    cert: Union[
-        Path,
-        tuple[Path, Optional[Path]],
-        tuple[Path, Optional[Path], Optional[str]],
-        None,
-    ] = None,
-    user: Optional[str] = None,
+    socket_path: Path | None = None,
+    timeout: Timeout | None = None,
+    verify: bool | Path | ssl.SSLContext | None = None,
+    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    user: str | None = None,
     compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
@@ -735,20 +698,15 @@ async def report_if_spam(
 
 
 async def symbols(
-    message: Union[bytes, SupportsBytes],
+    message: SupportsBytes,
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[Path] = None,
-    timeout: Optional[Timeout] = None,
-    verify: Union[bool, Path, ssl.SSLContext, None] = None,
-    cert: Union[
-        Path,
-        tuple[Path, Optional[Path]],
-        tuple[Path, Optional[Path], Optional[str]],
-        None,
-    ] = None,
-    user: Optional[str] = None,
+    socket_path: Path | None = None,
+    timeout: Timeout | None = None,
+    verify: bool | Path | ssl.SSLContext | None = None,
+    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    user: str | None = None,
     compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with rules that matched.
@@ -829,23 +787,18 @@ async def symbols(
 
 
 async def tell(
-    message: Union[bytes, SupportsBytes],
-    message_class: Union[str, MessageClassOption],
-    remove_action: Union[str, ActionOption, None] = None,
-    set_action: Union[str, ActionOption, None] = None,
+    message: SupportsBytes,
+    message_class: str | MessageClassOption,
+    remove_action: str | ActionOption | None = None,
+    set_action: str | ActionOption | None = None,
     *,
     host: str = "localhost",
     port: int = 783,
-    socket_path: Optional[Path] = None,
-    timeout: Optional[Timeout] = None,
-    verify: Optional[Union[bool, Path, ssl.SSLContext]] = None,
-    cert: Union[
-        Path,
-        tuple[Path, Optional[Path]],
-        tuple[Path, Optional[Path], Optional[str]],
-        None,
-    ] = None,
-    user: Optional[str] = None,
+    socket_path: Path | None = None,
+    timeout: Timeout | None = None,
+    verify: bool | Path | ssl.SSLContext | None = None,
+    cert: Path | tuple[Path, Path | None] | tuple[Path, Path | None, str | None] | None = None,
+    user: str | None = None,
     compress: bool = False,
 ) -> Response:
     """Checks a message if it's spam and return a response with a score header.
