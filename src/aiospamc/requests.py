@@ -2,7 +2,7 @@
 
 import zlib
 from base64 import b64encode
-from typing import Any, SupportsBytes, Union
+from typing import Any, SupportsBytes
 
 from .header_values import ContentLengthValue, Headers
 
@@ -14,8 +14,8 @@ class Request:
         self,
         verb: str,
         version: str = "1.5",
-        headers: Union[dict[str, Any], Headers, None] = None,
-        body: Union[bytes, SupportsBytes] = b"",
+        headers: dict[str, Any] | Headers | None = None,
+        body: SupportsBytes = b"",
         **_,
     ) -> None:
         """Request constructor.
@@ -81,7 +81,7 @@ class Request:
         return self._body
 
     @body.setter
-    def body(self, value: Union[bytes, SupportsBytes]) -> None:
+    def body(self, value: SupportsBytes) -> None:
         """Body property setter.
 
         :param value: Value to set the body.
