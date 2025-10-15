@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from enum import Enum, auto
-from typing import Any, Callable, Mapping, Union
+from typing import Any, Callable, Mapping, cast
 
 import loguru
 from loguru import logger
@@ -41,7 +41,7 @@ class Parser:
     def __init__(
         self,
         delimiter: bytes,
-        status_parser: Callable[[bytes], Mapping[str, str]],
+        status_parser: Callable[[bytes], Mapping[str, Any]],
         header_parser: Callable[[bytes], tuple[str, Any]],
         body_parser: Callable[[bytes, int], bytes],
         start: States = States.Status,
@@ -288,7 +288,7 @@ def parse_request_status(stream: bytes) -> dict[str, str]:
     return {"verb": verb, "protocol": protocol, "version": version}
 
 
-def parse_response_status(stream: bytes) -> dict[str, Union[str, int]]:
+def parse_response_status(stream: bytes) -> dict[str, int | str]:
     """Parse the status line for a response.
 
     :param stream: The byte stream to parse.
@@ -327,7 +327,7 @@ def parse_response_status(stream: bytes) -> dict[str, Union[str, int]]:
 
 
 def parse_message_class_value(
-    stream: Union[str, MessageClassOption],
+    stream: str | MessageClassOption,
 ) -> MessageClassValue:
     """Parses the `Message-class` header value.
 
@@ -350,7 +350,7 @@ def parse_message_class_value(
     return MessageClassValue(value=value)
 
 
-def parse_content_length_value(stream: Union[str, int]) -> ContentLengthValue:
+def parse_content_length_value(stream: str | int) -> ContentLengthValue:
     """Parses the `Content-length` header value.
 
     :param stream: String or integer value of the header.
@@ -381,7 +381,7 @@ def parse_compress_value(stream: str) -> CompressValue:
     return CompressValue(algorithm=stream.strip())
 
 
-def parse_set_remove_value(stream: Union[ActionOption, str]) -> SetOrRemoveValue:
+def parse_set_remove_value(stream: ActionOption | str) -> SetOrRemoveValue:
     """Parse a value for the :class:`aiospamc.header_values.DidRemove`, :class:`aiospamc.header_values.DidSet`, :class:`aiospamc.header_values.Remove`, and :class:`aiospamc.header_values.Set` headers.
 
     :param stream: String to parse or an instance of :class:`aiospamc.header_values.ActionOption`.
@@ -458,7 +458,7 @@ def parse_user_value(stream: str) -> UserValue:
     return UserValue(name=stream.strip())
 
 
-def parse_header_value(header: str, value: Union[str, bytes]) -> Any:
+def parse_header_value(header: str, value: str | bytes) -> Any:
     """Sends the header value stream to the header value parsing function.
 
     :param header: Name of the header.
@@ -482,7 +482,7 @@ def parse_header_value(header: str, value: Union[str, bytes]) -> Any:
             except UnicodeDecodeError:
                 return BytesHeaderValue(value)
         else:
-            return GenericHeaderValue(value)
+            return GenericHeaderValue(cast(str, value))
 
 
 def parse_header(stream: bytes) -> tuple[str, Any]:

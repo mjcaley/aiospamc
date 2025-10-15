@@ -5,19 +5,18 @@ from base64 import b64encode
 from collections import UserDict
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional, Protocol
+from typing import Any, Protocol
 
 
 class HeaderValue(Protocol):  # pragma: no cover
     """Protocol for headers."""
 
-    def __bytes__(self) -> bytes:
-        pass
+    def __bytes__(self) -> bytes: ...
 
     def to_json(self) -> Any:
         """Convert to a JSON object."""
 
-        pass
+        ...
 
 
 @dataclass
@@ -198,7 +197,7 @@ class UserValue:
 class Headers(UserDict):
     """Class to store headers with shortcut properties."""
 
-    def get_header(self, name: str) -> Optional[str]:
+    def get_header(self, name: str) -> str | None:
         """Get a string header if it exists.
 
         :param name: Name of the header.
@@ -218,7 +217,7 @@ class Headers(UserDict):
 
         self.data[name] = GenericHeaderValue(value)
 
-    def get_bytes_header(self, name: str) -> Optional[bytes]:
+    def get_bytes_header(self, name: str) -> bytes | None:
         """Get a bytes header if it exists.
 
         :param name: Name of the header.
@@ -239,7 +238,7 @@ class Headers(UserDict):
         self.data[name] = BytesHeaderValue(value)
 
     @property
-    def compress(self) -> Optional[str]:
+    def compress(self) -> str | None:
         """Gets the Compress header if it exists.
 
         :return: Compress header value.
@@ -259,7 +258,7 @@ class Headers(UserDict):
         self.data["Compress"] = CompressValue(value)
 
     @property
-    def content_length(self) -> Optional[int]:
+    def content_length(self) -> int | None:
         """Gets the Content-length header if it exists.
 
         :return: Content-length header value.
@@ -279,7 +278,7 @@ class Headers(UserDict):
         self.data["Content-length"] = ContentLengthValue(value)
 
     @property
-    def message_class(self) -> Optional[MessageClassOption]:
+    def message_class(self) -> MessageClassOption | None:
         """Gets the Message-class header if it exists.
 
         :return: Message-class header value.
@@ -299,7 +298,7 @@ class Headers(UserDict):
         self.data["Message-class"] = MessageClassValue(value)
 
     @property
-    def set_(self) -> Optional[ActionOption]:
+    def set_(self) -> ActionOption | None:
         """Gets the Set header if it exists.
 
         :return: Set header value.
@@ -319,7 +318,7 @@ class Headers(UserDict):
         self.data["Set"] = SetOrRemoveValue(value)
 
     @property
-    def remove(self) -> Optional[ActionOption]:
+    def remove(self) -> ActionOption | None:
         """Gets the Remove header if it exists.
 
         :return: Remove header value.
@@ -339,7 +338,7 @@ class Headers(UserDict):
         self.data["Remove"] = SetOrRemoveValue(value)
 
     @property
-    def did_set(self) -> Optional[ActionOption]:
+    def did_set(self) -> ActionOption | None:
         """Gets the DidSet header if it exists.
 
         :return: DidSet header value.
@@ -359,7 +358,7 @@ class Headers(UserDict):
         self.data["DidSet"] = SetOrRemoveValue(value)
 
     @property
-    def did_remove(self) -> Optional[ActionOption]:
+    def did_remove(self) -> ActionOption | None:
         """Gets the DidRemove header if it exists.
 
         :return: DidRemove header value.
@@ -379,7 +378,7 @@ class Headers(UserDict):
         self.data["DidRemove"] = SetOrRemoveValue(value)
 
     @property
-    def spam(self) -> Optional[SpamValue]:
+    def spam(self) -> SpamValue | None:
         """Gets the Spam header if it exists.
 
         :return: Spam header value.
@@ -397,7 +396,7 @@ class Headers(UserDict):
         self.data["Spam"] = value
 
     @property
-    def user(self) -> Optional[str]:
+    def user(self) -> str | None:
         """Gets the User header if it exists.
 
         :return: User header value.

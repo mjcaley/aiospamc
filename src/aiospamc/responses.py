@@ -5,7 +5,7 @@ from __future__ import annotations
 import zlib
 from base64 import b64encode
 from enum import IntEnum
-from typing import Any, SupportsBytes, Union
+from typing import Any, SupportsBytes
 
 from .exceptions import TimeoutException
 from .header_values import ContentLengthValue, Headers
@@ -39,9 +39,9 @@ class Response:
     def __init__(
         self,
         version: str = "1.5",
-        status_code: Union[Status, int] = 0,
+        status_code: Status | int = 0,
         message: str = "",
-        headers: Union[dict[str, Any], Headers, None] = None,
+        headers: dict[str, Any] | Headers | None = None,
         body: bytes = b"",
         **_,
     ):
@@ -61,7 +61,7 @@ class Response:
             self.headers = headers
         else:
             self.headers = Headers()
-        self._status_code: Union[Status, int]
+        self._status_code: Status | int
         self.status_code = status_code
         self.message = message
         self.body = body
@@ -122,7 +122,7 @@ class Response:
             return False
 
     @property
-    def status_code(self) -> Union[Status, int]:
+    def status_code(self) -> Status | int:
         """Status code property getter.
 
         :return: Value of status code.
@@ -131,7 +131,7 @@ class Response:
         return self._status_code
 
     @status_code.setter
-    def status_code(self, code: Union[Status, int]) -> None:
+    def status_code(self, code: Status | int) -> None:
         """Status code property setter.
 
         :param code: Status code value to set.
@@ -152,7 +152,7 @@ class Response:
         return self._body
 
     @body.setter
-    def body(self, value: Union[bytes, SupportsBytes]) -> None:
+    def body(self, value: SupportsBytes) -> None:
         """Body property setter.
 
         :param value: Value to set the body.
