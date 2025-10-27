@@ -35,14 +35,14 @@ jobs:
         run: uv run pytest -m integration --junit-xml="output/integration-tests.xml"
       - name: Publish test results
         if: success() || failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results
           path: output/**
       - name: Build package
         run: uv build
       - name: Publish package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: package
           path: dist/
