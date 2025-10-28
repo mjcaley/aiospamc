@@ -33,7 +33,7 @@ jobs:
           --cov-report="html:output/htmlcov"
       - name: Publish test results
         if: success() || failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.python }}
           path: output/**
