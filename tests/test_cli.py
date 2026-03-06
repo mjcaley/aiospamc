@@ -174,7 +174,7 @@ def test_ping_json(mocker, fake_tcp_server, response_pong):
         "exit_code": 0,
     }
 
-    assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
+    assert f"{json.dumps(expected, indent=4)}\n" == result.output
 
 
 @pytest.mark.parametrize(
@@ -197,7 +197,7 @@ def test_command_with_message_json(mocker, fake_tcp_server, gtube, args):
         "exit_code": 0,
     }
 
-    assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
+    assert f"{json.dumps(expected, indent=4)}\n" == result.output
 
 
 def test_check_json(mocker: MockerFixture, fake_tcp_server, response_not_spam, gtube):
@@ -214,7 +214,7 @@ def test_check_json(mocker: MockerFixture, fake_tcp_server, response_not_spam, g
         "exit_code": 0,
     }
 
-    assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
+    assert f"{json.dumps(expected, indent=4)}\n" == result.output
 
 
 def test_report_json(mocker, fake_tcp_server, response_reported, gtube):
@@ -231,7 +231,7 @@ def test_report_json(mocker, fake_tcp_server, response_reported, gtube):
         "exit_code": 0,
     }
 
-    assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
+    assert f"{json.dumps(expected, indent=4)}\n" == result.output
 
 
 def test_revoke_json(mocker, fake_tcp_server, response_revoked, gtube):
@@ -248,7 +248,7 @@ def test_revoke_json(mocker, fake_tcp_server, response_revoked, gtube):
         "exit_code": 0,
     }
 
-    assert f"{json.dumps(expected, indent=4)}\n" == result.stdout
+    assert f"{json.dumps(expected, indent=4)}\n" == result.output
 
 
 def test_command_without_message_response_exception(fake_tcp_server, ex_usage):
@@ -258,7 +258,7 @@ def test_command_without_message_response_exception(fake_tcp_server, ex_usage):
     result = runner.invoke(app, ["ping", "--host", host, "--port", port])
 
     assert 64 == result.exit_code
-    assert "Response error from server: EX_USAGE\n" == result.stdout
+    assert "Response error from server: EX_USAGE\n" == result.output
 
 
 @pytest.mark.parametrize(
@@ -280,7 +280,7 @@ def test_command_with_message_response_exception(
     result = runner.invoke(app, args + [str(gtube), "--host", host, "--port", port])
 
     assert 64 == result.exit_code
-    assert "Response error from server: EX_USAGE\n" == result.stdout
+    assert "Response error from server: EX_USAGE\n" == result.output
 
 
 def test_command_without_message_parser_exception(fake_tcp_server, response_invalid):
@@ -290,7 +290,7 @@ def test_command_without_message_parser_exception(fake_tcp_server, response_inva
     result = runner.invoke(app, ["ping", "--host", host, "--port", port])
 
     assert BAD_RESPONSE == result.exit_code
-    assert "Error parsing response\n" == result.stdout
+    assert "Error parsing response\n" == result.output
 
 
 @pytest.mark.parametrize(
@@ -312,7 +312,7 @@ def test_command_with_message_parser_exception(
     result = runner.invoke(app, args + [str(gtube), "--host", host, "--port", port])
 
     assert BAD_RESPONSE == result.exit_code
-    assert "Error parsing response\n" == result.stdout
+    assert "Error parsing response\n" == result.output
 
 
 def test_command_without_message_timeout_exception(mock_reader_writer):
@@ -322,7 +322,7 @@ def test_command_without_message_timeout_exception(mock_reader_writer):
     result = runner.invoke(app, ["ping"])
 
     assert TIMEOUT_ERROR == result.exit_code
-    assert "Error: timeout\n" == result.stdout
+    assert "Error: timeout\n" == result.output
 
 
 @pytest.mark.parametrize(
@@ -343,7 +343,7 @@ def test_command_with_message_timeout_exception(mock_reader_writer, gtube, args)
     result = runner.invoke(app, args + [str(gtube)])
 
     assert TIMEOUT_ERROR == result.exit_code
-    assert "Error: timeout\n" == result.stdout
+    assert "Error: timeout\n" == result.output
 
 
 @pytest.mark.parametrize(
@@ -357,7 +357,7 @@ def test_command_without_message_connection_exception(mock_reader_writer, raises
     result = runner.invoke(app, ["ping"])
 
     assert CONNECTION_ERROR == result.exit_code
-    assert "Error: Connection error\n" == result.stdout
+    assert "Error: Connection error\n" == result.output
 
 
 @pytest.mark.parametrize(
@@ -387,7 +387,7 @@ def test_command_with_message_connection_exception(
     result = runner.invoke(app, args + [str(gtube)])
 
     assert CONNECTION_ERROR == result.exit_code
-    assert "Error: Connection error\n" == result.stdout
+    assert "Error: Connection error\n" == result.output
 
 
 def test_ping(fake_tcp_server, response_pong):
@@ -397,7 +397,7 @@ def test_ping(fake_tcp_server, response_pong):
     result = runner.invoke(app, ["ping", "--host", host, "--port", port])
 
     assert PING_SUCCESS == result.exit_code
-    assert "PONG\n" == result.stdout
+    assert "PONG\n" == result.output
 
 
 def test_ping_server_ssl_ca(fake_tcp_ssl_server, response_pong, ca_cert_path):
@@ -410,7 +410,7 @@ def test_ping_server_ssl_ca(fake_tcp_ssl_server, response_pong, ca_cert_path):
     )
 
     assert PING_SUCCESS == result.exit_code
-    assert "PONG\n" == result.stdout
+    assert "PONG\n" == result.output
 
 
 def test_ping_server_ssl_client(
@@ -438,7 +438,7 @@ def test_ping_server_ssl_client(
     )
 
     assert PING_SUCCESS == result.exit_code
-    assert "PONG\n" == result.stdout
+    assert "PONG\n" == result.output
 
 
 def test_check_spam(fake_tcp_server, response_spam_header, gtube):
@@ -448,7 +448,7 @@ def test_check_spam(fake_tcp_server, response_spam_header, gtube):
     result = runner.invoke(app, ["check", str(gtube), "--host", host, "--port", port])
 
     assert IS_SPAM == result.exit_code
-    assert "1000.0/1.0\n" == result.stdout
+    assert "1000.0/1.0\n" == result.output
 
 
 def test_check_ham(fake_tcp_server, response_not_spam, gtube):
@@ -458,7 +458,7 @@ def test_check_ham(fake_tcp_server, response_not_spam, gtube):
     result = runner.invoke(app, ["check", str(gtube), "--host", host, "--port", port])
 
     assert NOT_SPAM == result.exit_code
-    assert "0.0/1.0\n" == result.stdout
+    assert "0.0/1.0\n" == result.output
 
 
 def test_check_server_ssl_ca(
@@ -483,7 +483,7 @@ def test_check_server_ssl_ca(
     )
 
     assert IS_SPAM == result.exit_code
-    assert "1000.0/1.0\n" == result.stdout
+    assert "1000.0/1.0\n" == result.output
 
 
 def test_check_server_ssl_client(
@@ -517,7 +517,7 @@ def test_check_server_ssl_client(
     )
 
     assert IS_SPAM == result.exit_code
-    assert "1000.0/1.0\n" == result.stdout
+    assert "1000.0/1.0\n" == result.output
 
 
 def test_check_no_spam_header(fake_tcp_server, response_with_body, gtube):
@@ -537,7 +537,7 @@ def test_check_no_spam_header(fake_tcp_server, response_with_body, gtube):
     )
 
     assert UNEXPECTED_ERROR == result.exit_code
-    assert "Could not find 'Spam' header\n" == result.stdout
+    assert "Could not find 'Spam' header\n" == result.output
 
 
 def test_learn_success(fake_tcp_server, response_learned, gtube):
@@ -547,7 +547,7 @@ def test_learn_success(fake_tcp_server, response_learned, gtube):
     result = runner.invoke(app, ["learn", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully learned\n" == result.stdout
+    assert "Message successfully learned\n" == result.output
 
 
 def test_learn_already_learned(fake_tcp_server, response_tell, gtube):
@@ -557,7 +557,7 @@ def test_learn_already_learned(fake_tcp_server, response_tell, gtube):
     result = runner.invoke(app, ["learn", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
-    assert "Message was already learned\n" == result.stdout
+    assert "Message was already learned\n" == result.output
 
 
 def test_learn_ssl_ca(fake_tcp_ssl_server, response_learned, gtube, ca_cert_path):
@@ -580,7 +580,7 @@ def test_learn_ssl_ca(fake_tcp_ssl_server, response_learned, gtube, ca_cert_path
     )
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully learned\n" == result.stdout
+    assert "Message successfully learned\n" == result.output
 
 
 def test_learn_ssl_client(
@@ -616,7 +616,7 @@ def test_learn_ssl_client(
     )
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully learned\n" == result.stdout
+    assert "Message successfully learned\n" == result.output
 
 
 def test_forget_success(fake_tcp_server, response_forgotten, gtube):
@@ -626,7 +626,7 @@ def test_forget_success(fake_tcp_server, response_forgotten, gtube):
     result = runner.invoke(app, ["forget", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully forgotten\n" == result.stdout
+    assert "Message successfully forgotten\n" == result.output
 
 
 def test_forget_ssl_ca(fake_tcp_ssl_server, response_forgotten, gtube, ca_cert_path):
@@ -649,7 +649,7 @@ def test_forget_ssl_ca(fake_tcp_ssl_server, response_forgotten, gtube, ca_cert_p
     )
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully forgotten\n" == result.stdout
+    assert "Message successfully forgotten\n" == result.output
 
 
 def test_forget_ssl_client(
@@ -685,7 +685,7 @@ def test_forget_ssl_client(
     )
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully forgotten\n" == result.stdout
+    assert "Message successfully forgotten\n" == result.output
 
 
 def test_learn_already_forgotten(fake_tcp_server, response_tell, gtube):
@@ -695,7 +695,7 @@ def test_learn_already_forgotten(fake_tcp_server, response_tell, gtube):
     result = runner.invoke(app, ["forget", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
-    assert "Message was already forgotten\n" == result.stdout
+    assert "Message was already forgotten\n" == result.output
 
 
 def test_report_success(fake_tcp_server, response_reported, gtube):
@@ -705,7 +705,7 @@ def test_report_success(fake_tcp_server, response_reported, gtube):
     result = runner.invoke(app, ["report", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully reported\n" == result.stdout
+    assert "Message successfully reported\n" == result.output
 
 
 def test_report_failed(fake_tcp_server, response_tell, gtube):
@@ -715,7 +715,7 @@ def test_report_failed(fake_tcp_server, response_tell, gtube):
     result = runner.invoke(app, ["report", str(gtube), "--host", host, "--port", port])
 
     assert REPORT_FAILED == result.exit_code
-    assert "Unable to report message\n" == result.stdout
+    assert "Unable to report message\n" == result.output
 
 
 def test_report_ssl_ca(fake_tcp_ssl_server, response_reported, gtube, ca_cert_path):
@@ -738,7 +738,7 @@ def test_report_ssl_ca(fake_tcp_ssl_server, response_reported, gtube, ca_cert_pa
     )
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully reported\n" == result.stdout
+    assert "Message successfully reported\n" == result.output
 
 
 def test_report_ssl_client(
@@ -774,7 +774,7 @@ def test_report_ssl_client(
     )
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully reported\n" == result.stdout
+    assert "Message successfully reported\n" == result.output
 
 
 def test_revoke_success(fake_tcp_server, response_revoked, gtube):
@@ -784,7 +784,7 @@ def test_revoke_success(fake_tcp_server, response_revoked, gtube):
     result = runner.invoke(app, ["revoke", str(gtube), "--host", host, "--port", port])
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully revoked\n" == result.stdout
+    assert "Message successfully revoked\n" == result.output
 
 
 def test_revoke_failed(fake_tcp_server, response_tell, gtube):
@@ -794,7 +794,7 @@ def test_revoke_failed(fake_tcp_server, response_tell, gtube):
     result = runner.invoke(app, ["revoke", str(gtube), "--host", host, "--port", port])
 
     assert REVOKE_FAILED == result.exit_code
-    assert "Unable to revoke message\n" == result.stdout
+    assert "Unable to revoke message\n" == result.output
 
 
 def test_revoke_ssl_ca(fake_tcp_ssl_server, response_revoked, gtube, ca_cert_path):
@@ -817,7 +817,7 @@ def test_revoke_ssl_ca(fake_tcp_ssl_server, response_revoked, gtube, ca_cert_pat
     )
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully revoked\n" == result.stdout
+    assert "Message successfully revoked\n" == result.output
 
 
 def test_revoke_ssl_client(
@@ -853,14 +853,14 @@ def test_revoke_ssl_client(
     )
 
     assert SUCCESS == result.exit_code
-    assert "Message successfully revoked\n" == result.stdout
+    assert "Message successfully revoked\n" == result.output
 
 
 def test_version():
     runner = CliRunner()
     result = runner.invoke(app, ["--version"])
 
-    assert f"{aiospamc.__version__}\n" == result.stdout
+    assert f"{aiospamc.__version__}\n" == result.output
 
 
 def test_debug(mocker: MockerFixture):
