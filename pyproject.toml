@@ -25,7 +25,7 @@ requires-python = ">= 3.10, < 4.0"
 dependencies = [
     "certifi",
     "loguru >=0.7",
-    "typer>=0.13,<0.26"
+    "typer>=0.13,<0.27"
 ]
 
 [project.urls]
