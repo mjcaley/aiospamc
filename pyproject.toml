@@ -44,7 +44,7 @@ test = [
     "pytest-mock >=3.14,<4.0",
     "coverage[toml] >=7.9,<8.0",
     "trustme >=1.1,<2.0",
-    "cryptography>=43.0,<47.0"
+    "cryptography>=43.0,<49.0"
 ]
 docs = [
     "sphinx>=6.2,<9.0",
