@@ -16,7 +16,6 @@ classifiers = [
     'Programming Language :: Python :: 3.14',
     'Intended Audience :: Developers',
     'Intended Audience :: System Administrators',
-    'License :: OSI Approved :: MIT License',
     'Topic :: Communications :: Email :: Filters'
 ]
 keywords = ["spam", "spamc", "spamassassin"]
