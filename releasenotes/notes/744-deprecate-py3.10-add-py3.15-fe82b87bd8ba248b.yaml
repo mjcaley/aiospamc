@@ -1,0 +1,5 @@
+---
+features:
+  - Add support for Python 3.15 :github:issue:`744`
+deprecations:
+  - Remove support for Python 3.10 :github:issue:`744`
