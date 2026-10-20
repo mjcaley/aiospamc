@@ -20,7 +20,7 @@ from .frontend import (
 from .header_values import ActionOption, MessageClassOption
 
 __author__ = "Michael Caley"
-__copyright__ = "Copyright 2016-2025 Michael Caley"
+__copyright__ = "Copyright 2016-2026 Michael Caley"
 __license__ = "MIT"
 __version__ = version("aiospamc")
 __email__ = "mjcaley@darkarctic.com"
