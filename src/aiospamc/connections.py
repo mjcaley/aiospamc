@@ -6,7 +6,7 @@ import asyncio
 import ssl
 from enum import Enum, auto
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Self
 
 import certifi
 import loguru
@@ -83,7 +83,7 @@ class ConnectionManagerBuilder:
         else:
             return self._unix_builder.set_timeout(self._timeout).build()
 
-    def with_unix_socket(self, path: Path) -> ConnectionManagerBuilder:
+    def with_unix_socket(self, path: Path) -> Self:
         """Configures the builder to use a Unix socket connection.
 
         :param path: Path to the Unix socket.
@@ -97,7 +97,7 @@ class ConnectionManagerBuilder:
 
         return self
 
-    def with_tcp(self, host: str, port: int = 783) -> ConnectionManagerBuilder:
+    def with_tcp(self, host: str, port: int = 783) -> Self:
         """Configures the builder to use a TCP connection.
 
         :param host: Hostname to use.
@@ -112,7 +112,7 @@ class ConnectionManagerBuilder:
 
         return self
 
-    def add_ssl_context(self, context: ssl.SSLContext) -> ConnectionManagerBuilder:
+    def add_ssl_context(self, context: ssl.SSLContext) -> Self:
         """Adds an SSL context when a TCP connection is being used.
 
         :param context: :class:`ssl.SSLContext` instance.
@@ -125,7 +125,7 @@ class ConnectionManagerBuilder:
 
         return self
 
-    def set_timeout(self, timeout: Timeout) -> ConnectionManagerBuilder:
+    def set_timeout(self, timeout: Timeout) -> Self:
         """Sets the timeout for the connection.
 
         :param timeout: Timeout object.
@@ -437,7 +437,7 @@ class SSLContextBuilder:
 
         return self._context
 
-    def with_context(self, context: ssl.SSLContext) -> SSLContextBuilder:
+    def with_context(self, context: ssl.SSLContext) -> Self:
         """Use the SSL context.
 
         :param context: Provided SSL context.
@@ -449,7 +449,7 @@ class SSLContextBuilder:
 
         return self
 
-    def add_ca_file(self, file: Path) -> SSLContextBuilder:
+    def add_ca_file(self, file: Path) -> Self:
         """Add certificate authority from a file.
 
         :param file: File of concatenated certificates.
@@ -461,7 +461,7 @@ class SSLContextBuilder:
 
         return self
 
-    def add_ca_dir(self, dir: Path) -> SSLContextBuilder:
+    def add_ca_dir(self, dir: Path) -> Self:
         """Add certificate authority from a directory.
 
         :param dir: Directory of certificates.
@@ -473,7 +473,7 @@ class SSLContextBuilder:
 
         return self
 
-    def add_ca(self, path: Path) -> SSLContextBuilder:
+    def add_ca(self, path: Path) -> Self:
         """Add a certificate authority.
 
         :param path: Directory or file of certificates.
@@ -488,7 +488,7 @@ class SSLContextBuilder:
         else:
             raise FileNotFoundError(path)
 
-    def add_default_ca(self) -> SSLContextBuilder:
+    def add_default_ca(self) -> Self:
         """Add default certificate authorities.
 
         :return: The builder instance.
@@ -503,7 +503,7 @@ class SSLContextBuilder:
         file: Path,
         key: Path | None = None,
         password: Callable[[], str | bytes | bytearray] | None = None,
-    ) -> SSLContextBuilder:
+    ) -> Self:
         """Add client certificate.
 
         :param file: Path to the client certificate.
@@ -515,7 +515,7 @@ class SSLContextBuilder:
 
         return self
 
-    def dont_verify(self) -> SSLContextBuilder:
+    def dont_verify(self) -> Self:
         """Set the context to not verify certificates."""
 
         self._context.check_hostname = False

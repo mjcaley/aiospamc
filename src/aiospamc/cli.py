@@ -8,10 +8,10 @@ from enum import Enum
 from getpass import getpass, getuser
 from io import BufferedReader
 from pathlib import Path
+from typing import Annotated, Self
 
 import typer
 from loguru import logger
-from typing_extensions import Annotated
 
 from aiospamc.exceptions import (
     AIOSpamcConnectionFailed,
@@ -82,7 +82,7 @@ class CliClientBuilder:
         host: str = "localhost",
         port: int = 783,
         socket_path: Path | None = None,
-    ) -> "CliClientBuilder":
+    ) -> Self:
         """Sets the type of connection manager to use.
 
         Defaults to TCP, but if a Unix socket is provided it will be used.
@@ -103,7 +103,7 @@ class CliClientBuilder:
 
         return self
 
-    def set_timeout(self, timeout: Timeout) -> "CliClientBuilder":
+    def set_timeout(self, timeout: Timeout) -> Self:
         """Sets the timeout for the connection.
 
         :param timeout: Timeout object.
@@ -115,7 +115,7 @@ class CliClientBuilder:
 
         return self
 
-    def add_verify(self, verify: bool) -> "CliClientBuilder":
+    def add_verify(self, verify: bool) -> Self:
         """Adds an SSL context to the connection manager.
 
         :param verify: How to configure the SSL context. If `True`, add the default
@@ -131,7 +131,7 @@ class CliClientBuilder:
 
         return self
 
-    def add_ca_cert(self, ca_cert: Path | None) -> "CliClientBuilder":
+    def add_ca_cert(self, ca_cert: Path | None) -> Self:
         """Adds trusted certificate authorities.
 
         :param ca_cert: Path to the cerficiate file or directory.
@@ -159,7 +159,7 @@ class CliClientBuilder:
         cert: Path | None,
         key: Path | None = None,
         password: str | None = None,
-    ) -> "CliClientBuilder":
+    ) -> Self:
         """Add a client certificate to authenticate to the server.
 
         :param cert: Path to the client certificate and optionally the key.

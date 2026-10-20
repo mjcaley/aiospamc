@@ -5,7 +5,7 @@ from __future__ import annotations
 import ssl
 from functools import partial
 from pathlib import Path
-from typing import Any, SupportsBytes, cast
+from typing import Any, Self, SupportsBytes, cast
 
 from loguru import logger
 
@@ -44,7 +44,7 @@ class FrontendClientBuilder:
         host: str = "localhost",
         port: int = 783,
         socket_path: Path | None = None,
-    ) -> FrontendClientBuilder:
+    ) -> Self:
         """Sets the type of connection manager to use.
 
         Defaults to TCP, but if a Unix socket is provided it will be used.
@@ -67,7 +67,7 @@ class FrontendClientBuilder:
 
     def add_verify(
         self, verify: bool | Path | ssl.SSLContext | None = None
-    ) -> FrontendClientBuilder:
+    ) -> Self:
         """Adds an SSL context to the connection manager.
 
         :param verify: How to configure the SSL context. If `True`, add the default
@@ -99,7 +99,7 @@ class FrontendClientBuilder:
         | tuple[Path, Path | None]
         | tuple[Path, Path | None, str | None]
         | None = None,
-    ) -> FrontendClientBuilder:
+    ) -> Self:
         """Add a client certificate to authenticate to the server.
 
         :param cert: Client certificate. Takes up to three a three tuple value.
@@ -142,7 +142,7 @@ class FrontendClientBuilder:
 
         return self
 
-    def set_timeout(self, timeout: Timeout | None = None) -> FrontendClientBuilder:
+    def set_timeout(self, timeout: Timeout | None = None) -> Self:
         """Sets the timeout for the connection.
 
         :param timeout: Timeout object.
