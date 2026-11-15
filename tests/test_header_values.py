@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from base64 import b64encode
 
 import pytest
@@ -111,22 +109,6 @@ def test_user_bytes():
     u = UserValue(name="username")
 
     assert bytes(u) == b"username"
-
-
-@pytest.mark.parametrize(
-    "test_input",
-    [
-        GenericHeaderValue("value"),
-        CompressValue(),
-        ContentLengthValue(),
-        SetOrRemoveValue(ActionOption(local=True, remote=False)),
-        MessageClassValue(value=MessageClassOption.ham),
-        SpamValue(),
-        UserValue(),
-    ],
-)
-def test_equal(test_input):
-    assert test_input == test_input
 
 
 @pytest.mark.parametrize(

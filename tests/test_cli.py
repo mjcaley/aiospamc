@@ -1,4 +1,3 @@
-import asyncio
 import json
 from pathlib import Path
 from ssl import SSLError
@@ -316,8 +315,8 @@ def test_command_with_message_parser_exception(
 
 
 def test_command_without_message_timeout_exception(mock_reader_writer):
-    reader, writer = mock_reader_writer
-    reader.read.side_effect = asyncio.TimeoutError()
+    reader, _writer = mock_reader_writer
+    reader.read.side_effect = TimeoutError()
     runner = CliRunner()
     result = runner.invoke(app, ["ping"])
 
@@ -337,7 +336,7 @@ def test_command_without_message_timeout_exception(mock_reader_writer):
 )
 def test_command_with_message_timeout_exception(mock_reader_writer, gtube, args):
     reader, _ = mock_reader_writer
-    reader.read.side_effect = asyncio.TimeoutError()
+    reader.read.side_effect = TimeoutError()
 
     runner = CliRunner()
     result = runner.invoke(app, args + [str(gtube)])

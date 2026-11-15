@@ -21,7 +21,7 @@ class Client:
 
         self.connection_manager = connection_manager
 
-    async def request(self, req: Request):
+    async def request(self, req: Request) -> Response:
         """Sends a request and returns the parsed response.
 
         :param req: The request to send.
