@@ -65,9 +65,7 @@ class FrontendClientBuilder:
 
         return self
 
-    def add_verify(
-        self, verify: bool | Path | ssl.SSLContext | None = None
-    ) -> Self:
+    def add_verify(self, verify: bool | Path | ssl.SSLContext | None = None) -> Self:
         """Adds an SSL context to the connection manager.
 
         :param verify: How to configure the SSL context. If `True`, add the default

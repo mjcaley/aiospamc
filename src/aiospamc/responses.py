@@ -112,14 +112,16 @@ class Response:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Response):
             return False
-        
-        return all((
-            self.version == other.version,
-            self.headers == other.headers,
-            self.status_code == other.status_code,
-            self.message == other.message,
-            self.body == other.body,
-        ))
+
+        return all(
+            (
+                self.version == other.version,
+                self.headers == other.headers,
+                self.status_code == other.status_code,
+                self.message == other.message,
+                self.body == other.body,
+            )
+        )
 
     @property
     def status_code(self) -> Status | int:
