@@ -53,7 +53,7 @@ def test_init_message():
     r = Response(version="1.5", status_code=0, message="EX_OK")
     result = bytes(r).split(b"\r\n")[0]
 
-    assert result.endswith("EX_OK".encode())
+    assert result.endswith(b"EX_OK")
 
 
 def test_bytes_status():

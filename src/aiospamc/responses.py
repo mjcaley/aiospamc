@@ -109,7 +109,7 @@ class Response:
             f"object at {hex(id(self))}>"
         )
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         try:
             return (
                 self.version == other.version

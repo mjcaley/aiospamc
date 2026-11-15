@@ -217,25 +217,25 @@ class CommandRunner:
 
         try:
             response = await self.client.request(self.request)
-        except BadResponse as e:
-            self._logger.exception(e)
+        except BadResponse as e1:
+            self._logger.exception("Bad response")
             self.exit_code = BAD_RESPONSE
-            self.exception = e
+            self.exception = e1
             self.exit("Error parsing response", True)
         except ResponseException as e:
             self._logger = self._logger.bind(response=e.response)
-            self._logger.exception(e)
+            self._logger.exception()
             self.response = e.response
             self.exit_code = int(self.response.status_code)
             self.exception = e
             self.exit(f"Response error from server: {self.response.message}", True)
-        except (asyncio.TimeoutError, ClientTimeoutException) as e:
-            self._logger.exception(e)
+        except (TimeoutError, ClientTimeoutException) as e:
+            self._logger.exception()
             self.exit_code = TIMEOUT_ERROR
             self.exception = e
             self.exit("Error: timeout", True)
         except (AIOSpamcConnectionFailed, OSError, ConnectionError, ssl.SSLError) as e:
-            self._logger.exception(e)
+            self._logger.exception()
             self.exit_code = CONNECTION_ERROR
             self.exception = e
             self.exit("Error: Connection error", True)
@@ -843,5 +843,3 @@ def main(
     ] = False,
 ):
     """aiospamc sends messages to the SpamAssasin daemon."""
-
-    pass

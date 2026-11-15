@@ -37,7 +37,7 @@ class Request:
         self.body = bytes(body)
 
     def __bytes__(self) -> bytes:
-        if "Compress" in self.headers.keys():
+        if "Compress" in self.headers:
             body = zlib.compress(self.body)
         else:
             body = self.body

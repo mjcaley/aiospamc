@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Callable, Mapping
 from enum import Enum, auto
-from typing import Any, Callable, Mapping, cast
+from typing import Any, cast
 
 import loguru
 from loguru import logger

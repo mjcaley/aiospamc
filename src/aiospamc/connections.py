@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import ssl
+from collections.abc import Callable
 from enum import Enum, auto
 from pathlib import Path
-from typing import Callable, Self
+from typing import Self
 
 import certifi
 import loguru
@@ -171,7 +172,7 @@ class ConnectionManager:
 
         try:
             response = await asyncio.wait_for(self._send(data), self.timeout.total)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             self.logger.exception("Total timeout reached")
             raise
 
@@ -209,7 +210,7 @@ class ConnectionManager:
 
         try:
             response = await asyncio.wait_for(reader.read(), self.timeout.response)
-        except asyncio.TimeoutError as error:
+        except TimeoutError as error:
             self.logger.exception("Timed out receiving data")
             raise ClientTimeoutException from error
 
@@ -227,7 +228,7 @@ class ConnectionManager:
             reader, writer = await asyncio.wait_for(
                 self.open(), self.timeout.connection
             )
-        except asyncio.TimeoutError as error:
+        except TimeoutError as error:
             self.logger.exception("Timeout when connecting")
             raise ClientTimeoutException from error
 
