@@ -224,18 +224,18 @@ class CommandRunner:
             self.exit("Error parsing response", True)
         except ResponseException as e:
             self._logger = self._logger.bind(response=e.response)
-            self._logger.exception()
+            self._logger.exception("Error response from server")
             self.response = e.response
             self.exit_code = int(self.response.status_code)
             self.exception = e
             self.exit(f"Response error from server: {self.response.message}", True)
         except (TimeoutError, ClientTimeoutException) as e:
-            self._logger.exception()
+            self._logger.exception("Timeout occurred")
             self.exit_code = TIMEOUT_ERROR
             self.exception = e
             self.exit("Error: timeout", True)
         except (AIOSpamcConnectionFailed, OSError, ConnectionError, ssl.SSLError) as e:
-            self._logger.exception()
+            self._logger.exception("Connection error occurred")
             self.exit_code = CONNECTION_ERROR
             self.exception = e
             self.exit("Error: Connection error", True)
