@@ -110,16 +110,16 @@ class Response:
         )
 
     def __eq__(self, other: object) -> bool:
-        try:
-            return (
-                self.version == other.version
-                and self.headers == other.headers
-                and self.status_code == other.status_code
-                and self.message == other.message
-                and self.body == other.body
-            )
-        except AttributeError:
+        if not isinstance(other, Response):
             return False
+        
+        return all((
+            self.version == other.version,
+            self.headers == other.headers,
+            self.status_code == other.status_code,
+            self.message == other.message,
+            self.body == other.body,
+        ))
 
     @property
     def status_code(self) -> Status | int:
