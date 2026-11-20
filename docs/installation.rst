@@ -6,7 +6,7 @@ Installation
 Requirements
 ************
 
-* Python 3.9 or later
+* Python 3.11 or later
 * SpamAssassin running as a service
 
 *******

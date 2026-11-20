@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    Fix wrong minimum Python version mentioned in installation documentation :github:issue:`754`
